@@ -1,0 +1,740 @@
+'use client'
+
+import Link from 'next/link'
+import { useState, useEffect, useRef } from 'react'
+import { supabaseClient } from '@/lib/auth'
+import SearchFilters from '@/components/SearchFilters'
+import ReportRangeModal from '@/components/ReportRangeModal'
+
+interface Province {
+  id: string
+  name: string
+  slug: string
+}
+
+interface City {
+  id: string
+  name: string
+  slug: string
+  province_id: string
+  province?: Province
+  latitude?: number
+  longitude?: number
+}
+
+interface Range {
+  id: string
+  name: string
+  slug: string
+  city_id: string
+  range_type: string
+  amenities: string[]
+  price_range: string
+  is_premium?: boolean
+  photos?: string[]
+  description?: string
+  phone?: string
+  website?: string
+  latitude?: number
+  longitude?: number
+  city?: City
+  distance?: number
+}
+
+interface SearchResult {
+  type: 'province' | 'city' | 'range'
+  id: string
+  name: string
+  slug: string
+  parentName?: string
+  provinceSlug?: string
+  citySlug?: string
+}
+
+interface FilterState {
+  rangeType: string[]
+  amenities: string[]
+  priceRange: string[]
+}
+
+interface UserLocation {
+  latitude: number
+  longitude: number
+  city?: string
+  province?: string
+}
+
+export default function Home() {
+  const [provinces, setProvinces] = useState<Province[]>([])
+  const [cities, setCities] = useState<City[]>([])
+  const [ranges, setRanges] = useState<Range[]>([])
+  const [featuredRanges, setFeaturedRanges] = useState<Range[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState<FilterState>({
+    rangeType: [],
+    amenities: [],
+    priceRange: []
+  })
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null)
+  const [locationLoading, setLocationLoading] = useState(false)
+  const [locationError, setLocationError] = useState<string | null>(null)
+  const [searchLocation, setSearchLocation] = useState<{ lat: number; lon: number; name: string } | null>(null)
+  const [showReportModal, setShowReportModal] = useState(false)
+  const resultsRef = useRef<HTMLDivElement>(null)
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLon = (lon2 - lon1) * Math.PI / 180
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    const distance = R * c
+    return Math.round(distance * 10) / 10
+  }
+
+  const getUserLocation = () => {
+    setLocationLoading(true)
+    setLocationError(null)
+
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser')
+      setLocationLoading(false)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
+
+        try {
+          const nearestCity = cities.reduce((nearest, city) => {
+            if (!city.latitude || !city.longitude) return nearest
+            const distance = calculateDistance(latitude, longitude, city.latitude, city.longitude)
+            if (!nearest || distance < nearest.distance) {
+              return { city, distance }
+            }
+            return nearest
+          }, null as { city: City; distance: number } | null)
+
+          setUserLocation({
+            latitude,
+            longitude,
+            city: nearestCity?.city.name,
+            province: nearestCity?.city.province?.name
+          })
+        } catch (error) {
+          console.error('Error reverse geocoding:', error)
+        }
+
+        setLocationLoading(false)
+      },
+      (error) => {
+        console.log('Location not available:', error.message)
+        setLocationLoading(false)
+      }
+    )
+  }
+
+  useEffect(() => {
+    async function fetchData() {
+      const { data: provincesData } = await supabaseClient
+        .from('provinces')
+        .select('*')
+        .order('name')
+
+      const { data: citiesData } = await supabaseClient
+        .from('cities')
+        .select('*, province:provinces(*)')
+        .order('name')
+
+      const { data: rangesData } = await supabaseClient
+        .from('ranges')
+        .select('*, city:cities(*, province:provinces(*))')
+        .order('name')
+
+      if (provincesData) setProvinces(provincesData)
+      if (citiesData) setCities(citiesData as any)
+      if (rangesData) {
+        setRanges(rangesData as any)
+      }
+      setLoading(false)
+    }
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    if (cities.length > 0) {
+      getUserLocation()
+    }
+  }, [cities])
+
+  useEffect(() => {
+    if (ranges.length === 0) return
+
+    const premiumRanges = ranges.filter((r) => r.is_premium)
+
+    const referenceLocation = searchLocation || (userLocation ? {
+      lat: userLocation.latitude,
+      lon: userLocation.longitude,
+      name: userLocation.city || 'Your Location'
+    } : null)
+
+    if (referenceLocation) {
+      const rangesWithDistance = premiumRanges.map(range => ({
+        ...range,
+        distance: range.latitude && range.longitude
+          ? calculateDistance(
+            referenceLocation.lat,
+            referenceLocation.lon,
+            range.latitude,
+            range.longitude
+          )
+          : Infinity
+      }))
+
+      const nearby = rangesWithDistance
+        .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity))
+        .slice(0, 3)
+
+      setFeaturedRanges(nearby)
+    } else {
+      setFeaturedRanges(premiumRanges.slice(0, 3))
+    }
+  }, [ranges, userLocation, searchLocation])
+
+  useEffect(() => {
+    if (!searchQuery.trim() && filters.rangeType.length === 0 && filters.amenities.length === 0 && filters.priceRange.length === 0) {
+      setSearchResults([])
+      setSearchLocation(null)
+      return
+    }
+
+    const query = searchQuery.toLowerCase().trim()
+    const results: SearchResult[] = []
+
+    const fuzzyMatch = (text: string, search: string): boolean => {
+      const textLower = text.toLowerCase()
+      if (textLower.includes(search)) return true
+      const searchWords = search.split(' ')
+      return searchWords.every(word => textLower.includes(word))
+    }
+
+    let filteredRanges = ranges
+
+    if (filters.rangeType.length > 0) {
+      filteredRanges = filteredRanges.filter(r => filters.rangeType.includes(r.range_type))
+    }
+
+    if (filters.amenities.length > 0) {
+      filteredRanges = filteredRanges.filter(r =>
+        filters.amenities.some(amenity => r.amenities?.includes(amenity))
+      )
+    }
+
+    if (filters.priceRange.length > 0) {
+      filteredRanges = filteredRanges.filter(r => filters.priceRange.includes(r.price_range))
+    }
+
+    if (!query || query === '') {
+      provinces.forEach(province => {
+        results.push({
+          type: 'province',
+          id: province.id,
+          name: province.name,
+          slug: province.slug,
+        })
+      })
+    } else {
+      provinces.forEach(province => {
+        if (fuzzyMatch(province.name, query)) {
+          results.push({
+            type: 'province',
+            id: province.id,
+            name: province.name,
+            slug: province.slug,
+          })
+        }
+      })
+
+      cities.forEach(city => {
+        if (fuzzyMatch(city.name, query)) {
+          results.push({
+            type: 'city',
+            id: city.id,
+            name: city.name,
+            slug: city.slug,
+            parentName: city.province?.name,
+            provinceSlug: city.province?.slug,
+          })
+
+          if (city.latitude && city.longitude) {
+            setSearchLocation({
+              lat: city.latitude,
+              lon: city.longitude,
+              name: city.name + ', ' + city.province?.name
+            })
+          }
+        }
+      })
+    }
+
+    filteredRanges.forEach(range => {
+      if (!query || fuzzyMatch(range.name, query)) {
+        results.push({
+          type: 'range',
+          id: range.id,
+          name: range.name,
+          slug: range.slug,
+          parentName: range.city?.name + ', ' + range.city?.province?.name,
+          provinceSlug: range.city?.province?.slug,
+          citySlug: range.city?.slug,
+        })
+      }
+    })
+
+    setSearchResults(results)
+
+    if (results.length > 0 && (query || filters.rangeType.length > 0 || filters.amenities.length > 0 || filters.priceRange.length > 0)) {
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 300)
+    }
+  }, [searchQuery, filters, provinces, cities, ranges])
+
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilters(newFilters)
+  }
+
+  const hasActiveFilters = filters.rangeType.length > 0 || filters.amenities.length > 0 || filters.priceRange.length > 0
+
+  const getLocationDisplayName = () => {
+    if (searchLocation) return searchLocation.name
+    if (userLocation) return userLocation.city || 'Your Area'
+    return 'Featured'
+  }
+
+  const locationDisplayName = getLocationDisplayName()
+
+  return (
+    <div className="min-h-screen bg-white">
+      <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
+        <div className="container mx-auto px-4 flex items-center justify-between">
+          <Link href="/" className="hover:opacity-90 transition-opacity">
+            <img
+              src="/logo.png?v=2"
+              alt="Archery Ranges Canada"
+              className="h-28 w-auto object-contain"
+            />
+          </Link>
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link href="/" className="hover:text-green-100 transition-colors font-medium">
+              Home
+            </Link>
+            <Link href="/blog" className="hover:text-green-100 transition-colors font-medium">
+              Blog
+            </Link>
+            <Link href="/compare" className="hover:text-green-100 transition-colors font-medium">
+              Compare
+            </Link>
+            <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
+              Pricing
+            </Link>
+            <div className="border-l border-green-600 pl-6 flex items-center space-x-3">
+              <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium">
+                Sign In
+              </Link>
+              <Link href="/auth/signup" className="bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors">
+                Sign Up
+              </Link>
+            </div>
+          </nav>
+          <button className="md:hidden text-white">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <section className="relative text-white">
+        <div className="absolute inset-0">
+          <img
+            src="/hero-bg.png?v=1"
+            alt="Archery background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black opacity-40"></div>
+        </div>
+        <div className="relative container mx-auto px-4 py-20 text-center">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4">
+            🏹 Find Archery Ranges in Canada
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 text-green-50">
+            Discover indoor and outdoor archery facilities across all provinces
+          </p>
+
+          <div className="max-w-2xl mx-auto">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search by province, city, or range name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-6 py-4 text-lg text-gray-800 rounded-full shadow-2xl focus:outline-none focus:ring-4 focus:ring-green-300"
+              />
+              <button className="absolute right-2 top-2 bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-full font-semibold transition-colors">
+                Search
+              </button>
+            </div>
+
+            <div className="flex items-center justify-center space-x-4 mt-4 flex-wrap gap-2">
+              <p className="text-green-100 text-sm">
+                {provinces.length} provinces • {cities.length} cities • {ranges.length} ranges
+              </p>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={'text-sm px-4 py-2 rounded-full transition-colors ' + (hasActiveFilters || showFilters ? 'bg-white text-green-700 font-bold' : 'bg-white/20 text-white hover:bg-white/30')}
+              >
+                🔧 Filters {hasActiveFilters && '(' + (filters.rangeType.length + filters.amenities.length + filters.priceRange.length) + ')'}
+              </button>
+
+              {userLocation ? (
+                <div className="text-sm px-4 py-2 rounded-full bg-green-500 text-white flex items-center gap-2">
+                  📍 {userLocation.city || 'Location Detected'}
+                </div>
+              ) : locationLoading ? (
+                <div className="text-sm px-4 py-2 rounded-full bg-white/20 text-white flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Detecting...
+                </div>
+              ) : (
+                <button
+                  onClick={getUserLocation}
+                  className="text-sm px-4 py-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors flex items-center gap-2"
+                >
+                  📍 Enable Location
+                </button>
+              )}
+            </div>
+
+            {locationError && (
+              <div className="mt-2 text-yellow-200 text-sm">
+                {locationError}
+              </div>
+            )}
+
+            {(searchQuery.trim() !== '' || hasActiveFilters) && (
+              <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 inline-block">
+                <p className="text-white font-semibold">
+                  {searchResults.length > 0
+                    ? 'Found ' + searchResults.length + ' result' + (searchResults.length !== 1 ? 's' : '')
+                    : 'No results found - try different keywords or filters'}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <main className="container mx-auto px-4 py-12">
+        {showFilters && (
+          <div className="mb-12 max-w-7xl mx-auto">
+            <SearchFilters onFilterChange={handleFilterChange} />
+          </div>
+        )}
+
+        {(searchQuery.trim() === '' && !hasActiveFilters && featuredRanges.length > 0) && (
+          <section className="mb-20">
+            <div className="text-center mb-12">
+              <div className="inline-block">
+                <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                  ⭐ Premium Featured
+                </span>
+              </div>
+              <h2 className="text-4xl font-bold text-gray-800 mt-4 mb-4">
+                Featured Ranges Near {locationDisplayName}
+              </h2>
+              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                {searchLocation
+                  ? 'Top-rated ranges in ' + locationDisplayName
+                  : userLocation
+                    ? 'Top-rated ranges near you'
+                    : 'Top-rated ranges with premium listings'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {featuredRanges.map((range, index) => (
+                <Link
+                  key={range.id}
+                  href={'/' + range.city?.province?.slug + '/' + range.city?.slug + '/' + range.slug}
+                  className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-green-500"
+                >
+                  <div className="relative h-48 bg-gradient-to-br from-green-400 to-green-600 overflow-hidden">
+                    <img
+                      src={range.photos && range.photos.length > 0
+                        ? range.photos[0]
+                        : 'https://images.unsplash.com/photo-1574607774561-e645c79a2478?w=800&h=400&fit=crop'
+                      }
+                      alt={range.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute top-4 right-4">
+                      <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                        ⭐ PREMIUM
+                      </span>
+                    </div>
+                    <div className="absolute bottom-4 left-4 flex gap-2">
+                      <span className="bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+                        {range.range_type || 'Indoor/Outdoor'}
+                      </span>
+                      {range.distance !== undefined && range.distance !== Infinity && (
+                        <span className="bg-blue-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
+                          📍 {range.distance} km
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors">
+                      {range.name}
+                    </h3>
+                    <p className="text-gray-600 flex items-center mb-4">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {range.city?.name}, {range.city?.province?.name}
+                    </p>
+
+                    {range.description && (
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {range.description}
+                      </p>
+                    )}
+
+                    {range.amenities && range.amenities.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {range.amenities.slice(0, 3).map((amenity, idx) => (
+                          <span
+                            key={idx}
+                            className="bg-green-50 text-green-700 text-xs px-2 py-1 rounded-full"
+                          >
+                            {amenity}
+                          </span>
+                        ))}
+                        {range.amenities.length > 3 && (
+                          <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+                            +{range.amenities.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex gap-2 pt-4 border-t border-gray-100">
+                      <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
+                        View Details
+                      </button>
+                      {range.phone && (
+                        <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                          📞
+                        </button>
+                      )}
+                      {range.website && (
+                        <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                          🌐
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="text-center mt-8">
+              <Link
+                href="/featured"
+                className="inline-block bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all"
+              >
+                View All Featured Ranges →
+              </Link>
+            </div>
+          </section>
+        )}
+
+        <section ref={resultsRef}>
+          {(searchQuery.trim() !== '' || hasActiveFilters) && searchResults.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-3xl font-bold text-gray-800 mb-6">
+                {searchQuery ? 'Search Results' : 'Filtered Results'}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {searchResults.map((result) => (
+                  <Link
+                    key={result.type + '-' + result.id}
+                    href={
+                      result.type === 'province'
+                        ? '/' + result.slug
+                        : result.type === 'city'
+                          ? '/' + result.provinceSlug + '/' + result.slug
+                          : '/' + result.provinceSlug + '/' + result.citySlug + '/' + result.slug
+                    }
+                    className="group bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-green-500 hover:shadow-xl transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <span className="text-xs font-semibold text-green-600 uppercase">
+                          {result.type}
+                        </span>
+                        <h3 className="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors">
+                          {result.name}
+                        </h3>
+                        {result.parentName && (
+                          <p className="text-sm text-gray-600 mt-1">{result.parentName}</p>
+                        )}
+                      </div>
+                      <span className="text-2xl">
+                        {result.type === 'province' ? '🍁' : result.type === 'city' ? '🏙️' : '🎯'}
+                      </span>
+                    </div>
+                    <p className="text-green-600 font-medium group-hover:underline">
+                      View details →
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {(searchQuery.trim() === '' && !hasActiveFilters) && (
+          <section className="mb-16">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+              <img
+                src="/hero-banner.png?v=1"
+                alt="Most Accurate Archery Directory in Canada"
+                className="w-full h-[400px] object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center">
+                <div className="container mx-auto px-8">
+                  <div className="max-w-2xl">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                      MOST ACCURATE ARCHERY DIRECTORY IN CANADA
+                    </h2>
+                    <p className="text-xl text-green-200 mb-6">
+                      If we don't have an archery range in your area, please notify us so we can improve your experience
+                    </p>
+                    <button
+                      onClick={() => setShowReportModal(true)}
+                      className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-semibold transition-colors shadow-lg"
+                    >
+                      Notify Missing Ranges
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {(searchQuery.trim() === '' && !hasActiveFilters) && (
+          <section>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                Browse by Province
+              </h2>
+              <p className="text-gray-600 text-lg">
+                Select your province to find nearby archery ranges
+              </p>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Loading provinces...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                {provinces.map((province) => (
+                  <Link
+                    key={province.id}
+                    href={'/' + province.slug}
+                    className="group bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-green-500 hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors">
+                        {province.name}
+                      </h3>
+                      <span className="text-2xl">🍁</span>
+                    </div>
+                    <p className="text-green-600 font-medium group-hover:underline">
+                      View ranges →
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+      </main>
+
+      <footer className="bg-gray-900 text-white py-12 mt-20">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <img
+                src="/logo.png?v=2"
+                alt="Archery Ranges Canada"
+                className="h-20 w-auto object-contain mb-4"
+              />
+              <p className="text-gray-400">
+                Your complete directory of archery ranges across Canada
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/" className="hover:text-white">Home</Link></li>
+                <li><Link href="/blog" className="hover:text-white">Blog</Link></li>
+                <li><Link href="/compare" className="hover:text-white">Compare Ranges</Link></li>
+                <li><Link href="/about" className="hover:text-white">About</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Range Owners</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/claim" className="hover:text-white">Claim Your Listing</Link></li>
+                <li><Link href="/premium" className="hover:text-white">Premium Features</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/blog" className="hover:text-white">Archery Tips</Link></li>
+                <li><Link href="/blog" className="hover:text-white">Beginner Guides</Link></li>
+                <li><Link href="/blog" className="hover:text-white">Equipment Reviews</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
+            <p>© 2025 Archery Ranges Canada. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+
+      <ReportRangeModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+      />
+    </div>
+  )
+}
