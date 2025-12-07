@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         const invoice = event.data.object as Stripe.Invoice
         
         // Find range and mark subscription as past_due
-        if (invoice as any).subscription) {
+        if ((invoice as any).subscription) {
           const { data: range } = await supabaseAdmin
             .from('ranges')
             .select('id')
