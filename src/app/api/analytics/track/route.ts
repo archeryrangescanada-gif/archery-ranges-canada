@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       .digest('hex')
       .substring(0, 16);
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data: range, error: rangeError } = await supabase.from('ranges').select('id, subscription_tier').eq('id', rangeId).single();
 
