@@ -44,19 +44,15 @@ export default function SignUpPage() {
     setLoading(true)
 
     try {
-      const { data, error } = await signUp(
+      await signUp(
         formData.email,
         formData.password,
         formData.fullName
       )
 
-      if (error) {
-        setError(error.message)
-      } else {
-        // Success! Check email for verification
-        alert('Success! Please check your email to verify your account.')
-        router.push('/auth/login')
-      }
+      // Success! Check email for verification
+      alert('Success! Please check your email to verify your account.')
+      router.push('/auth/login')
     } catch (err: any) {
       setError(err.message || 'An error occurred during sign up')
     } finally {

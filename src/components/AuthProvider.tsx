@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { supabaseClient, getCurrentUser } from '@/lib/auth'
+import { supabaseClient } from '@/lib/auth'
 
 interface AuthContextType {
   user: User | null
@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Get initial session
-    getCurrentUser().then(({ user }) => {
+    supabaseClient.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       setLoading(false)
     })

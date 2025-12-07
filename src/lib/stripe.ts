@@ -2,7 +2,7 @@ import Stripe from 'stripe'
 
 // Initialize Stripe
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-11-17.clover',
 })
 
 // Pricing tiers
@@ -120,37 +120,3 @@ export async function cancelSubscription(subscriptionId: string) {
 
   return subscription
 }
-```
-
----
-
-## 📁 **WHERE TO PUT THEM:**
-```
-src/
-  lib/
-    auth.ts      ← FILE 1 (copy code above)
-    server.ts    ← FILE 2 (copy code above)
-    stripe.ts    ← FILE 3 (copy code above)
-```
-
----
-
-## 💾 **STEPS:**
-
-1. **Create/Replace** `src/lib/auth.ts` with FILE 1 code
-2. **Create/Replace** `src/lib/server.ts` with FILE 2 code
-3. **Create/Replace** `src/lib/stripe.ts` with FILE 3 code
-4. **Save all files** (Ctrl + S on each)
-5. **Wait for server to recompile**
-6. **Refresh browser**
-
----
-
-## ✅ **AFTER COPYING:**
-
-Your `lib` folder should look like:
-```
-lib/
-  auth.ts       ✅
-  server.ts     ✅
-  stripe.ts     ✅

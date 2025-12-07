@@ -126,7 +126,7 @@ export default function OnboardingPage() {
         .limit(10)
 
       if (error) throw error
-      setSearchResults(data || [])
+      setSearchResults((data as any) || [])
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -293,7 +293,7 @@ export default function OnboardingPage() {
         throw insertError
       }
 
-      if (formData.selectedPlan && formData.selectedPlan !== 'free') {
+      if (formData.selectedPlan) {
         router.push('/dashboard/subscribe?plan=' + formData.selectedPlan + '&range=' + data.id)
       } else {
         router.push('/dashboard')

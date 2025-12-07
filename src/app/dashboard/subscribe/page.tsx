@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -174,7 +176,7 @@ export default function SubscribePage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-stone-800">{plan.name} Plan</h2>
-                {plan.popular && (
+                {(plan as any).popular && (
                   <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
                     Most Popular
                   </span>

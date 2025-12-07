@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-11-17.clover',
 })
 
 const supabaseAdmin = createClient(
@@ -61,13 +61,13 @@ export async function POST(request: Request) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
-        
+
         // Find range and mark subscription as past_due
-        if (invoice.subscription) {
+        if ((invoice as any).subscription) {
           const { data: range } = await supabaseAdmin
             .from('ranges')
             .select('id')
-            .eq('stripe_subscription_id', invoice.subscription)
+            .eq('stripe_subscription_id', (invoice as any).subscription)
             .single()
 
           if (range) {

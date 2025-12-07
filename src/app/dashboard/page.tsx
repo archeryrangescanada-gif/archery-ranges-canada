@@ -67,7 +67,7 @@ export default function DashboardPage() {
         `)
                 .eq('owner_id', user.id)
 
-            setRanges(rangesData || [])
+            setRanges((rangesData as any) || [])
             setLoading(false)
         }
 

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data: range, error: rangeError } = await supabase.from('ranges').select('id, subscription_tier, subscription_expires_at').eq('id', rangeId).single();
 
