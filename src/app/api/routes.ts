@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Range ID is required' }, { status: 400 });
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data, error, count } = await supabase
       .from('range_reviews')
