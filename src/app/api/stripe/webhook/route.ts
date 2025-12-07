@@ -67,7 +67,7 @@ export async function POST(request: Request) {
           const { data: range } = await supabaseAdmin
             .from('ranges')
             .select('id')
-            .eq('stripe_subscription_id', invoice.subscription)
+            .eq('stripe_subscription_id', (invoice as any).subscription)
             .single()
 
           if (range) {
