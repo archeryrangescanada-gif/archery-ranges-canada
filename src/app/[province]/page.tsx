@@ -307,12 +307,17 @@ export default async function ProvincePage({ params }: PageProps) {
 }
 
 export async function generateStaticParams() {
-  const supabase = createStaticClient()
-  const { data: provinces } = await supabase
-    .from('provinces')
-    .select('slug')
+  try {
+    const supabase = await createClient()
+    const { data: provinces } = await supabase
+      .from('provinces')
+      .select('slug')
 
-  return provinces?.map((province) => ({
-    province: province.slug,
-  })) || []
+    return provinces?.map((province) => ({
+      province: province.slug,
+    })) || []
+  } catch (error) {
+    console.error('Build error fetching provinces:', error)
+    return []
+  }
 }
