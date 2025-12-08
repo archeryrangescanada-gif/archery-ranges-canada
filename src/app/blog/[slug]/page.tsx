@@ -172,16 +172,21 @@ export default async function BlogPostPage({ params }: PageProps) {
 }
 
 export async function generateStaticParams() {
-  const supabase = createStaticClient()
+  try {
+    const supabase = await createClient()
 
-  const { data: posts } = await supabase
-    .from('blog_posts')
-    .select('slug')
-    .eq('is_published', true)
+    const { data: posts } = await supabase
+      .from('blog_posts')
+      .select('slug')
+      .eq('is_published', true)
 
-  if (!posts) return []
+    if (!posts) return []
 
-  return posts.map((post) => ({
-    slug: post.slug,
-  }))
+    return posts.map((post) => ({
+      slug: post.slug,
+    }))
+  } catch (error) {
+    console.error('Build error fetching blog posts:', error)
+    return []
+  }
 }
