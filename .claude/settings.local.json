@@ -4,7 +4,9 @@
       "Bash(npm run build:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(for file in src/app/page.tsx src/app/pricing/page.tsx src/app/blog/page.tsx src/app/featured/page.tsx src/app/compare/page.tsx src/app/dashboard/page.tsx src/app/dashboard/onboarding/page.tsx src/app/dashboard/subscribe/page.tsx src/app/auth/login/page.tsx src/app/auth/signup/page.tsx)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []
