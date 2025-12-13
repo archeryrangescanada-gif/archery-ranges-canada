@@ -2,17 +2,18 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
-  LayoutDashboard, 
-  MapPin, 
-  UserCheck, 
-  Megaphone, 
-  Users, 
+import {
+  LayoutDashboard,
+  MapPin,
+  UserCheck,
+  Megaphone,
+  Users,
   BarChart3,
   Settings,
   FileText,
   CreditCard,
-  LogOut
+  LogOut,
+  Upload
 } from 'lucide-react'
 
 export default function AdminLayout({
@@ -25,6 +26,7 @@ export default function AdminLayout({
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Listings', href: '/admin/listings', icon: MapPin },
+    { name: 'Import CSV', href: '/admin/import-csv', icon: Upload },
     { name: 'Claims', href: '/admin/claims', icon: UserCheck },
     { name: 'Ads', href: '/admin/ads', icon: Megaphone },
     { name: 'Announcements', href: '/admin/announcements', icon: FileText },
