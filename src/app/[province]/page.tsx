@@ -308,7 +308,7 @@ export default async function ProvincePage({ params }: PageProps) {
 
 export async function generateStaticParams() {
   try {
-    const supabase = await createClient()
+    const supabase = createStaticClient()
     const { data: provinces } = await supabase
       .from('provinces')
       .select('slug')

@@ -60,17 +60,17 @@ export default function ClaimsPage() {
 
   const handleApproveClaim = async (claimId: string) => {
     if (!confirm('Are you sure you want to approve this claim?')) return
-    
+
     // TODO: Update in Supabase
     // 1. Update claim status to 'approved'
     // 2. Update listing to mark as claimed
     // 3. Assign owner_id to the user
     // 4. Send approval email to claimant
-    
-    setClaims(claims.map(c => 
+
+    setClaims(claims.map(c =>
       c.id === claimId ? { ...c, status: 'approved' as const } : c
     ))
-    
+
     alert('Claim approved successfully!')
   }
 
@@ -89,11 +89,11 @@ export default function ClaimsPage() {
     // 1. Update claim status to 'rejected'
     // 2. Save rejection reason
     // 3. Send rejection email to claimant
-    
-    setClaims(claims.map(c => 
+
+    setClaims(claims.map(c =>
       c.id === selectedClaim.id ? { ...c, status: 'rejected' as const } : c
     ))
-    
+
     setShowModal(false)
     setRejectionReason('')
     setSelectedClaim(null)
@@ -272,7 +272,7 @@ export default function ClaimsPage() {
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-4">Claim Details</h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Listing</label>
@@ -309,7 +309,7 @@ export default function ClaimsPage() {
                 {selectedClaim.proof_document_url && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Proof Document</label>
-                    <a 
+                    <a
                       href={selectedClaim.proof_document_url}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -324,7 +324,7 @@ export default function ClaimsPage() {
                 {selectedClaim.business_license_url && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Business License</label>
-                    <a 
+                    <a
                       href={selectedClaim.business_license_url}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -345,7 +345,8 @@ export default function ClaimsPage() {
                       value={rejectionReason}
                       onChange={(e) => setRejectionReason(e.target.value)}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 !text-black bg-white placeholder:text-gray-500"
+                      style={{ color: 'black' }}
                       placeholder="Provide a reason for rejection..."
                     />
                   </div>

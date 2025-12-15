@@ -2,8 +2,8 @@ import { DollarSign, Users, Calendar, GraduationCap, AlertCircle } from 'lucide-
 
 interface PricingInfoProps {
   membershipRequired?: boolean;
-  membershipPrice?: number;
-  dropInPrice?: number;
+  membershipPrice?: number | string;
+  dropInPrice?: number | string;
   lessonPriceRange?: string;
 }
 
@@ -12,7 +12,8 @@ export function PricingInfo({ membershipRequired, membershipPrice, dropInPrice, 
 
   if (!hasPricing) return null;
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | string) => {
+    if (typeof price === 'string') return price;
     return new Intl.NumberFormat('en-CA', {
       style: 'currency',
       currency: 'CAD',

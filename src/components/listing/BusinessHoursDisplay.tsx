@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { BusinessHours, DayOfWeek } from '@/types/range';
 
 interface BusinessHoursDisplayProps {
-  hours: BusinessHours;
+  hours: BusinessHours | string;
 }
 
 const daysOrder: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -64,6 +64,23 @@ function isCurrentlyOpen(hours: BusinessHours): { isOpen: boolean; nextChange: s
 
 export function BusinessHoursDisplay({ hours }: BusinessHoursDisplayProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  if (typeof hours === 'string') {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+        <div className="flex items-center gap-4 mb-3">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center bg-stone-100">
+            <Clock className="w-5 h-5 text-stone-500" />
+          </div>
+          <div>
+            <h3 className="font-medium text-stone-800">Business Hours</h3>
+            <p className="text-sm text-stone-500 whitespace-pre-line">{hours}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const currentDay = getCurrentDay();
   const { isOpen, nextChange } = isCurrentlyOpen(hours);
   const todayHours = hours[currentDay];

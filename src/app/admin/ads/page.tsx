@@ -1,90 +1,79 @@
-// src/app/admin/ads/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
 import { Plus, Edit, Trash2, Eye, Play, Pause, BarChart2 } from 'lucide-react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 
-interface Ad {
+interface AdCampaign {
   id: string
   title: string
-  advertiser_name: string
-  ad_type: 'image' | 'html' | 'video'
+  client_name: string
+  image_url: string
   status: 'draft' | 'active' | 'paused' | 'expired' | 'completed'
-  start_date?: string
-  end_date?: string
-  impressions_count: number
-  clicks_count: number
-  impression_limit?: number
-  click_limit?: number
-  placements: string[]
+  start_date: string
+  end_date: string
+  total_impressions: number
+  total_clicks: number
+  budget: number
   created_at: string
 }
 
 export default function AdsPage() {
-  const [ads, setAds] = useState<Ad[]>([])
+  const [ads, setAds] = useState<AdCampaign[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const supabase = createClient()
 
   useEffect(() => {
     fetchAds()
   }, [statusFilter])
 
   const fetchAds = async () => {
-    // TODO: Fetch from Supabase
-    setAds([
-      {
-        id: '1',
-        title: 'Hoyt Archery - Spring Sale',
-        advertiser_name: 'Hoyt Archery',
-        ad_type: 'image',
-        status: 'active',
-        start_date: '2024-03-01',
-        end_date: '2024-04-30',
-        impressions_count: 15234,
-        clicks_count: 432,
-        impression_limit: 50000,
-        placements: ['homepage_header', 'province_page_header'],
-        created_at: '2024-02-28'
-      },
-      {
-        id: '2',
-        title: 'Mathews Bows - New V3X',
-        advertiser_name: 'Mathews',
-        ad_type: 'image',
-        status: 'active',
-        start_date: '2024-03-10',
-        impressions_count: 8945,
-        clicks_count: 234,
-        placements: ['sidebar_top'],
-        created_at: '2024-03-09'
-      },
-      {
-        id: '3',
-        title: 'PSE Archery Banner',
-        advertiser_name: 'PSE Archery',
-        ad_type: 'image',
-        status: 'paused',
-        impressions_count: 12450,
-        clicks_count: 189,
-        placements: ['listing_page_banner'],
-        created_at: '2024-02-15'
-      }
-    ])
+    setLoading(true)
+    let query = supabase
+      .from('ad_campaigns')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter)
+    }
+
+    const { data, error } = await query
+    if (error) {
+      console.error('Error fetching ads:', error)
+    } else {
+      setAds(data || [])
+    }
     setLoading(false)
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this ad?')) return
-    // TODO: Delete from Supabase
-    setAds(ads.filter(a => a.id !== id))
+    if (!confirm('Are you sure you want to delete this ad campaign?')) return
+
+    const { error } = await supabase.from('ad_campaigns').delete().eq('id', id)
+    if (error) {
+      alert('Error deleting: ' + error.message)
+    } else {
+      setAds(ads.filter(a => a.id !== id))
+    }
   }
 
   const toggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'paused' : 'active'
-    // TODO: Update in Supabase
-    setAds(ads.map(a => 
-      a.id === id ? { ...a, status: newStatus as any } : a
-    ))
+
+    const { error } = await supabase
+      .from('ad_campaigns')
+      .update({ status: newStatus })
+      .eq('id', id)
+
+    if (error) {
+      alert('Error updating status: ' + error.message)
+    } else {
+      setAds(ads.map(a =>
+        a.id === id ? { ...a, status: newStatus as any } : a
+      ))
+    }
   }
 
   const getStatusBadge = (status: string) => {
@@ -99,12 +88,12 @@ export default function AdsPage() {
   }
 
   const calculateCTR = (impressions: number, clicks: number) => {
-    if (impressions === 0) return '0.00'
+    if (!impressions || impressions === 0) return '0.00'
     return ((clicks / impressions) * 100).toFixed(2)
   }
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div className="p-8">Loading campaigns...</div>
   }
 
   return (
@@ -126,11 +115,11 @@ export default function AdsPage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm text-gray-600">Total Ads</p>
+          <p className="text-sm text-gray-600">Total Campaigns</p>
           <p className="text-3xl font-bold text-gray-900">{ads.length}</p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm text-gray-600">Active Ads</p>
+          <p className="text-sm text-gray-600">Active</p>
           <p className="text-3xl font-bold text-green-600">
             {ads.filter(a => a.status === 'active').length}
           </p>
@@ -138,13 +127,13 @@ export default function AdsPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-sm text-gray-600">Total Impressions</p>
           <p className="text-3xl font-bold text-blue-600">
-            {ads.reduce((sum, ad) => sum + ad.impressions_count, 0).toLocaleString()}
+            {ads.reduce((sum, ad) => sum + (ad.total_impressions || 0), 0).toLocaleString()}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-sm text-gray-600">Total Clicks</p>
           <p className="text-3xl font-bold text-purple-600">
-            {ads.reduce((sum, ad) => sum + ad.clicks_count, 0).toLocaleString()}
+            {ads.reduce((sum, ad) => sum + (ad.total_clicks || 0), 0).toLocaleString()}
           </p>
         </div>
       </div>
@@ -157,14 +146,14 @@ export default function AdsPage() {
               href="/admin/ads/placements"
               className="text-blue-600 hover:text-blue-800 flex items-center"
             >
-              Manage Placements
+              Manage Placements & Pricing
             </Link>
             <Link
               href="/admin/ads/analytics"
               className="text-blue-600 hover:text-blue-800 flex items-center"
             >
               <BarChart2 className="w-4 h-4 mr-1" />
-              View Analytics
+              View Analytics Dashboard
             </Link>
           </div>
           <select
@@ -194,9 +183,6 @@ export default function AdsPage() {
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Type
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Performance
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -208,83 +194,76 @@ export default function AdsPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {ads.map((ad) => (
-              <tr key={ad.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-gray-900">{ad.title}</div>
-                  <div className="text-sm text-gray-500">{ad.advertiser_name}</div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    Placements: {ad.placements.length}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(ad.status)}`}>
-                    {ad.status.charAt(0).toUpperCase() + ad.status.slice(1)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {ad.ad_type.toUpperCase()}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">
-                    <div className="flex items-center">
-                      <Eye className="w-4 h-4 mr-1 text-gray-400" />
-                      {ad.impressions_count.toLocaleString()}
-                      {ad.impression_limit && (
-                        <span className="text-xs text-gray-500 ml-1">
-                          / {ad.impression_limit.toLocaleString()}
+            {ads.length === 0 ? (
+              <tr><td colSpan={5} className="px-6 py-4 text-center text-gray-500">No campaigns found. Create one to get started.</td></tr>
+            ) : (
+              ads.map((ad) => (
+                <tr key={ad.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900">{ad.title}</div>
+                    <div className="text-sm text-gray-500">{ad.client_name}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(ad.status)}`}>
+                      {ad.status.charAt(0).toUpperCase() + ad.status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">
+                      <div className="flex items-center">
+                        <Eye className="w-4 h-4 mr-1 text-gray-400" />
+                        {(ad.total_impressions || 0).toLocaleString()}
+                      </div>
+                      <div className="flex items-center mt-1">
+                        <span className="text-xs text-gray-500">
+                          👆 {ad.total_clicks || 0} clicks • CTR: {calculateCTR(ad.total_impressions, ad.total_clicks)}%
                         </span>
-                      )}
+                      </div>
                     </div>
-                    <div className="flex items-center mt-1">
-                      <span className="text-xs text-gray-500">
-                        👆 {ad.clicks_count} clicks • CTR: {calculateCTR(ad.impressions_count, ad.clicks_count)}%
-                      </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div>
+                      {ad.start_date ? new Date(ad.start_date).toLocaleDateString() : 'N/A'}
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div>
-                    {ad.start_date ? new Date(ad.start_date).toLocaleDateString() : 'N/A'}
-                  </div>
-                  <div className="text-xs">
-                    {ad.end_date ? `to ${new Date(ad.end_date).toLocaleDateString()}` : 'No end date'}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
-                    <Link
-                      href={`/admin/ads/${ad.id}/edit`}
-                      className="text-blue-600 hover:text-blue-900"
-                      title="Edit"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Link>
-                    <button
-                      onClick={() => toggleStatus(ad.id, ad.status)}
-                      className={ad.status === 'active' ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'}
-                      title={ad.status === 'active' ? 'Pause' : 'Activate'}
-                    >
-                      {ad.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    </button>
-                    <Link
-                      href={`/admin/ads/${ad.id}/analytics`}
-                      className="text-purple-600 hover:text-purple-900"
-                      title="Analytics"
-                    >
-                      <BarChart2 className="w-4 h-4" />
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(ad.id)}
-                      className="text-red-600 hover:text-red-900"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                    <div className="text-xs">
+                      {ad.end_date ? `to ${new Date(ad.end_date).toLocaleDateString()}` : 'No end date'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <Link
+                        href={`/admin/ads/${ad.id}/edit`}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => toggleStatus(ad.id, ad.status)}
+                        className={ad.status === 'active' ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'}
+                        title={ad.status === 'active' ? 'Pause' : 'Activate'}
+                      >
+                        {ad.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                      </button>
+                      <Link
+                        href={`/admin/ads/analytics?campaign=${ad.id}`}
+                        className="text-purple-600 hover:text-purple-900"
+                        title="Analytics"
+                      >
+                        <BarChart2 className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(ad.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

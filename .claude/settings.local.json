@@ -6,7 +6,14 @@
       "Bash(git commit:*)",
       "Bash(git push)",
       "Bash(for file in src/app/page.tsx src/app/pricing/page.tsx src/app/blog/page.tsx src/app/featured/page.tsx src/app/compare/page.tsx src/app/dashboard/page.tsx src/app/dashboard/onboarding/page.tsx src/app/dashboard/subscribe/page.tsx src/app/auth/login/page.tsx src/app/auth/signup/page.tsx)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(npm install:*)",
+      "Bash(npm run update-descriptions:*)",
+      "Bash(npm run update-descriptions-simple:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(npx supabase:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

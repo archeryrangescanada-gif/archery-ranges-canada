@@ -6,7 +6,7 @@ interface AmenitiesGridProps {
   hasFieldCourse?: boolean;
   equipmentRental?: boolean;
   lessonsAvailable?: boolean;
-  parkingAvailable?: boolean;
+  parkingAvailable?: boolean | string;
   accessibility?: string;
 }
 
@@ -25,7 +25,13 @@ export function AmenitiesGrid({ hasProShop, has3dCourse, hasFieldCourse, equipme
     { key: 'field-course', label: 'Field Course', icon: <TreePine className="w-5 h-5" />, available: hasFieldCourse ?? false },
     { key: 'equipment-rental', label: 'Equipment Rental', icon: <Package className="w-5 h-5" />, available: equipmentRental ?? false },
     { key: 'lessons', label: 'Lessons Available', icon: <GraduationCap className="w-5 h-5" />, available: lessonsAvailable ?? false },
-    { key: 'parking', label: 'Parking', icon: <Car className="w-5 h-5" />, available: parkingAvailable ?? false },
+    {
+      key: 'parking',
+      label: 'Parking',
+      icon: <Car className="w-5 h-5" />,
+      available: !!parkingAvailable,
+      details: typeof parkingAvailable === 'string' ? parkingAvailable : undefined
+    },
   ];
 
   if (accessibility) {

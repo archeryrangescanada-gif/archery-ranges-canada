@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Check, ArrowRight, ArrowLeft, Building2, Phone, Image, CreditCard, Search, Plus, MapPin, ChevronRight } from 'lucide-react'
 
-type Mode = 'choose' | 'claim' | 'create'
+type Mode = 'choose' | 'claim' | 'create' | 'ai'
 type Step = 'business' | 'contact' | 'details' | 'plan'
 
 interface Range {
@@ -337,20 +337,37 @@ export default function OnboardingPage() {
               </span>
             </button>
 
+            {/* AI Auto-Import */}
+            <button
+              onClick={() => setMode('ai')}
+              className="bg-white rounded-2xl shadow-sm border-2 border-stone-200 hover:border-purple-500 p-8 text-left transition-all group"
+            >
+              <div className="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center mb-4 group-hover:bg-purple-500 transition-colors">
+                <Star className="w-7 h-7 text-purple-600 group-hover:text-white transition-colors" />
+              </div>
+              <h2 className="text-xl font-semibold text-stone-800 mb-2">AI Auto-Import</h2>
+              <p className="text-stone-600 mb-4">
+                Paste your website URL and let our AI instantly fill in all your business details.
+              </p>
+              <span className="inline-flex items-center text-purple-600 font-medium group-hover:gap-2 transition-all">
+                Auto-fill details <ChevronRight className="w-5 h-5" />
+              </span>
+            </button>
+
             {/* Create New Listing */}
             <button
               onClick={() => setMode('create')}
-              className="bg-white rounded-2xl shadow-sm border-2 border-stone-200 hover:border-emerald-500 p-8 text-left transition-all group"
+              className="bg-white rounded-2xl shadow-sm border-2 border-stone-200 hover:border-blue-500 p-8 text-left transition-all group"
             >
               <div className="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center mb-4 group-hover:bg-blue-500 transition-colors">
                 <Plus className="w-7 h-7 text-blue-600 group-hover:text-white transition-colors" />
               </div>
-              <h2 className="text-xl font-semibold text-stone-800 mb-2">Create New Listing</h2>
+              <h2 className="text-xl font-semibold text-stone-800 mb-2">Manual Setup</h2>
               <p className="text-stone-600 mb-4">
-                Your range isn't listed yet? Add it to our directory and start attracting customers.
+                Your range isn't listed yet? Manually enter your details to create a new listing.
               </p>
               <span className="inline-flex items-center text-blue-600 font-medium group-hover:gap-2 transition-all">
-                Add my range <ChevronRight className="w-5 h-5" />
+                Start manually <ChevronRight className="w-5 h-5" />
               </span>
             </button>
           </div>
@@ -359,6 +376,100 @@ export default function OnboardingPage() {
             <Link href="/" className="text-stone-500 hover:text-stone-700">
               ← Back to Home
             </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // AI Import Mode
+  if (mode === 'ai') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
+        <div className="bg-white border-b border-stone-200">
+          <div className="max-w-3xl mx-auto px-4 py-6">
+            <button
+              onClick={() => setMode('choose')}
+              className="text-stone-500 hover:text-stone-700 mb-2 flex items-center gap-1"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+            <h1 className="text-2xl font-bold text-stone-800 flex items-center gap-2">
+              <Star className="text-purple-600" />
+              AI Auto-Import
+            </h1>
+            <p className="text-stone-600 mt-1">Paste your business URL to instantly fill your listing.</p>
+          </div>
+        </div>
+
+        <div className="max-w-xl mx-auto px-4 py-12">
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
+            <label className="block text-sm font-medium text-stone-700 mb-2">
+              Website or Google Maps URL
+            </label>
+            <input
+              type="url"
+              placeholder="https://your-archery-range.com"
+              className="w-full px-4 py-3 rounded-lg border border-stone-300 mb-4 focus:ring-2 focus:ring-purple-500 outline-none text-black placeholder:text-gray-500"
+              style={{ color: 'black' }}
+              onChange={(e) => setSearchQuery(e.target.value)} // Reusing searchQuery state for URL
+            />
+
+            <button
+              onClick={async () => {
+                if (!searchQuery) return;
+                setLoading(true);
+                try {
+                  const res = await fetch('/api/admin/listings/ai-extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: searchQuery })
+                  });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error);
+
+                  // Populate Form Data
+                  const extracted = data.data;
+                  setFormData(prev => ({
+                    ...prev,
+                    name: extracted.name || '',
+                    address: extracted.address || '',
+                    city: extracted.city || '',
+                    province: extracted.province || '', // Might need mapping if exact match fails
+                    phone: extracted.phone_number || '',
+                    email: extracted.email || '',
+                    website: extracted.website || extractUrl,
+                    description: extracted.description || '',
+                    facilityType: extracted.facility_type?.includes('indoor') ? 'indoor' : extracted.facility_type?.includes('outdoor') ? 'outdoor' : 'both',
+                    hasProShop: !!extracted.has_pro_shop,
+                    has3dCourse: !!extracted.has_3d_course,
+                    // Map other fields as needed
+                  }));
+
+                  // Switch to Create Mode to review
+                  setMode('create');
+                  setCurrentStep('business');
+
+                } catch (err: any) {
+                  setError(err.message);
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
+              className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <span>Analyzing... (This takes ~10s)</span>
+              ) : (
+                <>
+                  <Star className="w-5 h-5" />
+                  Auto-Fill Details
+                </>
+              )}
+            </button>
+
+            {error && <p className="text-red-600 mt-4 text-sm bg-red-50 p-3 rounded">{error}</p>}
           </div>
         </div>
       </div>
@@ -523,10 +634,10 @@ export default function OnboardingPage() {
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
                 <div className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${currentStep === step.id
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : index < currentStepIndex
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-stone-100 text-stone-500'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : index < currentStepIndex
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-stone-100 text-stone-500'
                   }`}>
                   {index < currentStepIndex ? (
                     <Check className="w-5 h-5" />
@@ -651,8 +762,8 @@ export default function OnboardingPage() {
                       type="button"
                       onClick={() => updateField('facilityType', option.value)}
                       className={`px-4 py-3 rounded-lg border-2 font-medium transition-colors ${formData.facilityType === option.value
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                          : 'border-stone-200 hover:border-stone-300 text-stone-700'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-stone-200 hover:border-stone-300 text-stone-700'
                         }`}
                     >
                       {option.label}
@@ -750,8 +861,8 @@ export default function OnboardingPage() {
                     <label
                       key={amenity.field}
                       className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${formData[amenity.field as keyof FormData]
-                          ? 'border-emerald-500 bg-emerald-50'
-                          : 'border-stone-200 hover:border-stone-300'
+                        ? 'border-emerald-500 bg-emerald-50'
+                        : 'border-stone-200 hover:border-stone-300'
                         }`}
                     >
                       <input
@@ -806,8 +917,8 @@ export default function OnboardingPage() {
                     type="button"
                     onClick={() => updateField('selectedPlan', plan.id)}
                     className={`w-full text-left p-6 rounded-xl border-2 transition-all ${formData.selectedPlan === plan.id
-                        ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500 ring-offset-2'
-                        : 'border-stone-200 hover:border-stone-300'
+                      ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500 ring-offset-2'
+                      : 'border-stone-200 hover:border-stone-300'
                       }`}
                   >
                     <div className="flex items-start justify-between">
