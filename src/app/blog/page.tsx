@@ -57,9 +57,6 @@ export default function BlogPage() {
             <Link href="/blog" className="text-green-100 font-medium border-b-2 border-green-100">
               Blog
             </Link>
-            <Link href="/compare" className="hover:text-green-100 transition-colors font-medium">
-              Compare
-            </Link>
             <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
               Pricing
             </Link>
@@ -155,7 +152,7 @@ export default function BlogPage() {
       </main>
 
       {/* Footer - Same as Home Page */}
-      <footer className="bg-gray-900 text-white py-12 mt-20">
+      <footer className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-12 mt-20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -164,36 +161,35 @@ export default function BlogPage() {
                 alt="Archery Ranges Canada"
                 className="h-20 w-auto object-contain mb-4"
               />
-              <p className="text-gray-400">
+              <p className="text-green-100">
                 Your complete directory of archery ranges across Canada
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/" className="hover:text-white">Home</Link></li>
                 <li><Link href="/blog" className="hover:text-white">Blog</Link></li>
-                <li><Link href="/compare" className="hover:text-white">Compare Ranges</Link></li>
                 <li><Link href="/about" className="hover:text-white">About</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Range Owners</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/pricing" className="hover:text-white">Claim Your Listing</Link></li>
                 <li><Link href="/pricing" className="hover:text-white">Premium Features</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/blog" className="hover:text-white">Archery Tips</Link></li>
                 <li><Link href="/blog" className="hover:text-white">Beginner Guides</Link></li>
                 <li><Link href="/blog" className="hover:text-white">Equipment Reviews</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
+          <div className="border-t border-green-600 pt-8 text-center text-green-100">
             <p>© 2025 Archery Ranges Canada. All rights reserved.</p>
           </div>
         </div>

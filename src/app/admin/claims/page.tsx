@@ -1,264 +1,196 @@
-// src/app/admin/claims/page.tsx
 'use client'
-import { useEffect, useState } from 'react'
-import { CheckCircle, XCircle, Eye, Clock, FileText } from 'lucide-react'
 
-interface Claim {
+import { useEffect, useState } from 'react'
+import { CheckCircle, XCircle, Eye, Clock, FileText, Camera, Phone, Facebook } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+
+interface VerificationRequest {
   id: string
-  listing_name: string
-  claimant_name: string
-  claimant_email: string
-  claimant_phone: string
-  position: string
-  status: 'pending' | 'approved' | 'rejected'
-  proof_document_url?: string
-  business_license_url?: string
-  verification_notes?: string
+  range_id: string
+  user_id: string
+  method: 'social' | 'photo' | 'call'
+  proof_image_url?: string
+  verification_code?: string
+  status: 'pending' | 'approved' | 'denied'
+  rejection_reason?: string
   created_at: string
+  range?: {
+    name: string
+  }
+  user?: {
+    email: string
+  }
 }
 
 export default function ClaimsPage() {
-  const [claims, setClaims] = useState<Claim[]>([])
+  const supabase = createClient()
+  const [requests, setRequests] = useState<VerificationRequest[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null)
+  const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
+  const [processing, setProcessing] = useState(false)
 
   useEffect(() => {
-    fetchClaims()
+    fetchRequests()
   }, [])
 
-  const fetchClaims = async () => {
-    // TODO: Fetch from Supabase
-    setClaims([
-      {
-        id: '1',
-        listing_name: 'Toronto Archery Range',
-        claimant_name: 'John Smith',
-        claimant_email: 'john@torontoarchery.com',
-        claimant_phone: '416-555-1234',
-        position: 'Owner',
-        status: 'pending',
-        proof_document_url: '/documents/proof1.pdf',
-        business_license_url: '/documents/license1.pdf',
-        verification_notes: 'I am the owner of this facility.',
-        created_at: '2024-03-10T10:30:00Z'
-      },
-      {
-        id: '2',
-        listing_name: 'Vancouver Archery Club',
-        claimant_name: 'Sarah Johnson',
-        claimant_email: 'sarah@vancouverarchery.com',
-        claimant_phone: '604-555-5678',
-        position: 'Manager',
-        status: 'pending',
-        created_at: '2024-03-09T14:20:00Z'
-      }
-    ])
-    setLoading(false)
+  const fetchRequests = async () => {
+    setLoading(true)
+    try {
+      // In a real app, we'd use a join or handle the user data properly. 
+      // For now, we fetch requests and try to get range names.
+      const { data, error } = await supabase
+        .from('verification_requests')
+        .select(`
+          *,
+          range:ranges(name)
+        `)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setRequests(data as any || [])
+    } catch (err) {
+      console.error('Error fetching requests:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleApproveClaim = async (claimId: string) => {
-    if (!confirm('Are you sure you want to approve this claim?')) return
+  const handleApprove = async (request: VerificationRequest) => {
+    if (!confirm('Are you sure you want to approve this claim? This will set the owner and mark the range as claimed.')) return
 
-    // TODO: Update in Supabase
-    // 1. Update claim status to 'approved'
-    // 2. Update listing to mark as claimed
-    // 3. Assign owner_id to the user
-    // 4. Send approval email to claimant
+    setProcessing(true)
+    try {
+      // 1. Update request status
+      const { error: reqError } = await supabase
+        .from('verification_requests')
+        .update({ status: 'approved' })
+        .eq('id', request.id)
 
-    setClaims(claims.map(c =>
-      c.id === claimId ? { ...c, status: 'approved' as const } : c
-    ))
+      if (reqError) throw reqError
 
-    alert('Claim approved successfully!')
+      // 2. Update range owner
+      const { error: rangeError } = await supabase
+        .from('ranges')
+        .update({
+          owner_id: request.user_id,
+          is_claimed: true
+        })
+        .eq('id', request.range_id)
+
+      if (rangeError) throw rangeError
+
+      alert('Claim approved successfully!')
+      fetchRequests()
+      setShowModal(false)
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    } finally {
+      setProcessing(false)
+    }
   }
 
-  const handleRejectClaim = async (claimId: string) => {
-    setSelectedClaim(claims.find(c => c.id === claimId) || null)
-    setShowModal(true)
-  }
-
-  const submitRejection = async () => {
-    if (!selectedClaim || !rejectionReason.trim()) {
-      alert('Please provide a rejection reason')
+  const handleDeny = async () => {
+    if (!selectedRequest || !rejectionReason.trim()) {
+      alert('Please provide a reason for denial.')
       return
     }
 
-    // TODO: Update in Supabase
-    // 1. Update claim status to 'rejected'
-    // 2. Save rejection reason
-    // 3. Send rejection email to claimant
+    setProcessing(true)
+    try {
+      const { error } = await supabase
+        .from('verification_requests')
+        .update({
+          status: 'denied',
+          rejection_reason: rejectionReason
+        })
+        .eq('id', selectedRequest.id)
 
-    setClaims(claims.map(c =>
-      c.id === selectedClaim.id ? { ...c, status: 'rejected' as const } : c
-    ))
+      if (error) throw error
 
-    setShowModal(false)
-    setRejectionReason('')
-    setSelectedClaim(null)
-    alert('Claim rejected')
-  }
-
-  const viewClaimDetails = (claim: Claim) => {
-    setSelectedClaim(claim)
-    setShowModal(true)
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-            <Clock className="w-4 h-4 mr-1" />
-            Pending
-          </span>
-        )
-      case 'approved':
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-            <CheckCircle className="w-4 h-4 mr-1" />
-            Approved
-          </span>
-        )
-      case 'rejected':
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-            <XCircle className="w-4 h-4 mr-1" />
-            Rejected
-          </span>
-        )
+      alert('Claim denied.')
+      fetchRequests()
+      setShowModal(false)
+      setRejectionReason('')
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    } finally {
+      setProcessing(false)
     }
   }
 
-  if (loading) {
-    return <div>Loading...</div>
+  const getMethodIcon = (method: string) => {
+    switch (method) {
+      case 'photo': return <Camera className="w-5 h-5 text-emerald-500" />
+      case 'social': return <Facebook className="w-5 h-5 text-blue-500" />
+      case 'call': return <Phone className="w-5 h-5 text-amber-500" />
+      default: return null
+    }
   }
 
+  if (loading) return <div className="p-12 text-center text-stone-500">Loading claims...</div>
+
   return (
-    <div>
+    <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Claims Management</h1>
-        <p className="text-gray-600 mt-2">Review and approve business listing claims</p>
+        <h1 className="text-3xl font-black text-stone-900">Verification Requests</h1>
+        <p className="text-stone-500 mt-2 text-lg">Review and process business ownership claims</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Pending Claims</p>
-              <p className="text-3xl font-bold text-yellow-600">
-                {claims.filter(c => c.status === 'pending').length}
-              </p>
-            </div>
-            <Clock className="w-10 h-10 text-yellow-500" />
-          </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+          <p className="text-sm font-bold text-stone-500 uppercase tracking-wider">Pending</p>
+          <p className="text-4xl font-black text-amber-600 mt-1">{requests.filter(r => r.status === 'pending').length}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Approved</p>
-              <p className="text-3xl font-bold text-green-600">
-                {claims.filter(c => c.status === 'approved').length}
-              </p>
-            </div>
-            <CheckCircle className="w-10 h-10 text-green-500" />
-          </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+          <p className="text-sm font-bold text-stone-500 uppercase tracking-wider">Approved</p>
+          <p className="text-4xl font-black text-emerald-600 mt-1">{requests.filter(r => r.status === 'approved').length}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Rejected</p>
-              <p className="text-3xl font-bold text-red-600">
-                {claims.filter(c => c.status === 'rejected').length}
-              </p>
-            </div>
-            <XCircle className="w-10 h-10 text-red-500" />
-          </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+          <p className="text-sm font-bold text-stone-500 uppercase tracking-wider">Denied</p>
+          <p className="text-4xl font-black text-red-600 mt-1">{requests.filter(r => r.status === 'denied').length}</p>
         </div>
       </div>
 
-      {/* Claims Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-stone-50 border-b border-stone-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Listing
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Claimant
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Position
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Actions
-              </th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-stone-600">Range Name</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-stone-600">Method</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-stone-600">Status</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-stone-600">Submitted</th>
+              <th className="px-6 py-4 text-right text-sm font-bold text-stone-600">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {claims.map((claim) => (
-              <tr key={claim.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-gray-900">
-                    {claim.listing_name}
+          <tbody className="divide-y divide-stone-100">
+            {requests.map((request) => (
+              <tr key={request.id} className="hover:bg-stone-50 transition-colors">
+                <td className="px-6 py-6 font-bold text-stone-800">{request.range?.name || 'Unknown Range'}</td>
+                <td className="px-6 py-6">
+                  <div className="flex items-center gap-2">
+                    {getMethodIcon(request.method)}
+                    <span className="capitalize text-stone-700">{request.method}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">{claim.claimant_name}</div>
-                  <div className="text-sm text-gray-500">{claim.claimant_email}</div>
-                  <div className="text-sm text-gray-500">{claim.claimant_phone}</div>
+                <td className="px-6 py-6">
+                  <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-tight ${request.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
+                      request.status === 'denied' ? 'bg-red-100 text-red-700' :
+                        'bg-amber-100 text-amber-700'
+                    }`}>
+                    {request.status}
+                  </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{claim.position}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(claim.status)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(claim.created_at).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  {claim.status === 'pending' ? (
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => viewClaimDetails(claim)}
-                        className="text-blue-600 hover:text-blue-900 flex items-center"
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        View
-                      </button>
-                      <button
-                        onClick={() => handleApproveClaim(claim.id)}
-                        className="text-green-600 hover:text-green-900 flex items-center"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleRejectClaim(claim.id)}
-                        className="text-red-600 hover:text-red-900 flex items-center"
-                      >
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Reject
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => viewClaimDetails(claim)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      View Details
-                    </button>
-                  )}
+                <td className="px-6 py-6 text-sm text-stone-500">{new Date(request.created_at).toLocaleDateString()}</td>
+                <td className="px-6 py-6 text-right">
+                  <button
+                    onClick={() => { setSelectedRequest(request); setShowModal(true); }}
+                    className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold rounded-lg transition-colors"
+                  >
+                    View Details
+                  </button>
                 </td>
               </tr>
             ))}
@@ -266,125 +198,89 @@ export default function ClaimsPage() {
         </table>
       </div>
 
-      {/* Claim Details Modal */}
-      {showModal && selectedClaim && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-4">Claim Details</h2>
+      {showModal && selectedRequest && (
+        <div className="fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-3xl font-black text-stone-900 mb-6">Review Claim</h2>
 
-              <div className="space-y-4">
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Listing</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedClaim.listing_name}</p>
+                  <label className="block text-xs font-black text-stone-400 uppercase mb-1">Range</label>
+                  <p className="text-xl font-bold text-stone-900">{selectedRequest.range?.name}</p>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Claimant Name</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedClaim.claimant_name}</p>
+                  <label className="block text-xs font-black text-stone-400 uppercase mb-1">Method</label>
+                  <p className="text-xl font-bold text-stone-900 capitalize">{selectedRequest.method}</p>
                 </div>
+              </div>
 
+              {selectedRequest.method === 'photo' && selectedRequest.proof_image_url && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedClaim.claimant_email}</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedClaim.claimant_phone || 'N/A'}</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Position</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedClaim.position}</p>
-                </div>
-
-                {selectedClaim.verification_notes && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Verification Notes</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedClaim.verification_notes}</p>
-                  </div>
-                )}
-
-                {selectedClaim.proof_document_url && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Proof Document</label>
-                    <a
-                      href={selectedClaim.proof_document_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1 text-sm text-blue-600 hover:text-blue-800 flex items-center"
-                    >
-                      <FileText className="w-4 h-4 mr-1" />
-                      View Document
-                    </a>
-                  </div>
-                )}
-
-                {selectedClaim.business_license_url && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Business License</label>
-                    <a
-                      href={selectedClaim.business_license_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1 text-sm text-blue-600 hover:text-blue-800 flex items-center"
-                    >
-                      <FileText className="w-4 h-4 mr-1" />
-                      View License
-                    </a>
-                  </div>
-                )}
-
-                {selectedClaim.status === 'pending' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Rejection Reason (if rejecting)
-                    </label>
-                    <textarea
-                      value={rejectionReason}
-                      onChange={(e) => setRejectionReason(e.target.value)}
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 !text-black bg-white placeholder:text-gray-500"
-                      style={{ color: 'black' }}
-                      placeholder="Provide a reason for rejection..."
+                  <label className="block text-xs font-black text-stone-400 uppercase mb-2">Proof Image</label>
+                  <div className="rounded-2xl border-4 border-stone-100 overflow-hidden bg-stone-50 aspect-video flex items-center justify-center">
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/verification-proofs/${selectedRequest.proof_image_url}`}
+                      className="max-h-full object-contain"
+                      alt="Proof"
                     />
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              <div className="mt-6 flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setShowModal(false)
-                    setRejectionReason('')
-                    setSelectedClaim(null)
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
-                >
-                  Close
-                </button>
-                {selectedClaim.status === 'pending' && (
-                  <>
-                    <button
-                      onClick={() => {
-                        handleApproveClaim(selectedClaim.id)
-                        setShowModal(false)
-                        setSelectedClaim(null)
-                      }}
-                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                      Approve Claim
-                    </button>
-                    <button
-                      onClick={submitRejection}
-                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                    >
-                      Reject Claim
-                    </button>
-                  </>
-                )}
-              </div>
+              {selectedRequest.method === 'social' && (
+                <div className="p-4 bg-blue-50 border-2 border-blue-100 rounded-2xl">
+                  <label className="block text-xs font-black text-blue-400 uppercase mb-1">Verification Code Sent</label>
+                  <p className="text-3xl font-mono font-black text-blue-900">{selectedRequest.verification_code || 'N/A'}</p>
+                </div>
+              )}
+
+              {selectedRequest.method === 'call' && (
+                <div className="p-4 bg-amber-50 border-2 border-amber-100 rounded-2xl">
+                  <p className="text-lg font-bold text-amber-900">User is waiting for a phone call to verify ownership.</p>
+                </div>
+              )}
+
+              {selectedRequest.status === 'pending' && (
+                <div className="pt-6 border-t border-stone-100">
+                  <label className="block text-sm font-bold text-stone-700 mb-3">Rejection Reason (only for Denial)</label>
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    className="w-full p-4 border-2 border-stone-100 rounded-2xl focus:border-emerald-500 focus:ring-0 outline-none transition-all"
+                    placeholder="Tell the user why you're denying their claim..."
+                    rows={3}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-10 flex gap-4">
+              <button
+                onClick={() => setShowModal(false)}
+                className="flex-1 py-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-2xl transition-all"
+              >
+                Close
+              </button>
+
+              {selectedRequest.status === 'pending' && (
+                <>
+                  <button
+                    onClick={() => handleDeny()}
+                    disabled={processing}
+                    className="flex-1 py-4 bg-red-100 hover:bg-red-200 text-red-700 font-black rounded-2xl transition-all disabled:opacity-50"
+                  >
+                    DENY CLAIM
+                  </button>
+                  <button
+                    onClick={() => handleApprove(selectedRequest)}
+                    disabled={processing}
+                    className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-emerald-200 transition-all disabled:opacity-50"
+                  >
+                    ACCEPT CLAIM
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -8,12 +8,9 @@ export const dynamic = 'force-dynamic'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: {
-    default: 'Archery Ranges Canada - Find Indoor & Outdoor Archery Ranges Near You',
-    template: '%s | Archery Ranges Canada'
-  },
-  description: 'Canada\'s #1 directory for archery ranges. Find indoor and outdoor facilities, lessons, pro shops, and archery clubs across all provinces. Compare prices, read reviews, and book today.',
-  keywords: ['archery ranges Canada', 'indoor archery', 'outdoor archery', 'archery lessons', 'bow shop', 'archery club', 'target shooting', '3D archery'],
+  title: 'Archery Near Me | Canadian Archery Range Directory',
+  description: 'Search the largest directory of archery ranges in Canada. Find indoor and outdoor archery near me, including clubs, pro shops, and ranges with equipment rentals.',
+  keywords: ['archery near me', 'archery range', 'archery ranges Canada', 'indoor archery', 'outdoor archery', 'archery lessons', 'bow shop', 'archery club'],
   authors: [{ name: 'Archery Ranges Canada' }],
   creator: 'Archery Ranges Canada',
   openGraph: {

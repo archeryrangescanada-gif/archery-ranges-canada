@@ -28,13 +28,14 @@ interface Range {
   name: string
   slug: string
   city_id: string
-  range_type: string
+  facility_type: string
   amenities: string[]
   price_range: string
   is_premium?: boolean
+  is_featured?: boolean
   photos?: string[]
   description?: string
-  phone?: string
+  phone_number?: string
   website?: string
   latitude?: number
   longitude?: number
@@ -114,23 +115,42 @@ export default function Home() {
         const { latitude, longitude } = position.coords
 
         try {
-          const nearestCity = cities.reduce((nearest, city) => {
-            if (!city.latitude || !city.longitude) return nearest
-            const distance = calculateDistance(latitude, longitude, city.latitude, city.longitude)
-            if (!nearest || distance < nearest.distance) {
-              return { city, distance }
-            }
-            return nearest
-          }, null as { city: City; distance: number } | null)
+          // 1. Digital Reverse Geocoding (Town-level precision via Nominatim)
+          let detectedCityName = 'Toronto'
+          try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`, {
+              headers: { 'Accept-Language': 'en-US,en;q=0.9' }
+            })
+            const geoData = await response.json()
+            detectedCityName = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || 'Toronto'
+          } catch (apiErr) {
+            console.warn('Reverse geocode API failed, falling back to coordinate matching:', apiErr)
+          }
+
+          // 2. Match against our database cities
+          // Try exact match first
+          let matchedCity = cities.find(c => c.name.toLowerCase() === detectedCityName.toLowerCase())
+
+          // 3. Fallback: Coordinate-based matching if no name match or API failed
+          if (!matchedCity) {
+            matchedCity = cities.reduce((nearest, city) => {
+              if (!city.latitude || !city.longitude) return nearest
+              const distance = calculateDistance(latitude, longitude, city.latitude, city.longitude)
+              if (!nearest || distance < nearest.distance) {
+                return { city, distance }
+              }
+              return nearest
+            }, null as { city: City; distance: number } | null)?.city || null
+          }
 
           setUserLocation({
             latitude,
             longitude,
-            city: nearestCity?.city.name,
-            province: nearestCity?.city.province?.name
+            city: matchedCity?.name || detectedCityName,
+            province: matchedCity?.province?.name
           })
         } catch (error) {
-          console.error('Error reverse geocoding:', error)
+          console.error('Error in location detection:', error)
         }
 
         setLocationLoading(false)
@@ -156,7 +176,7 @@ export default function Home() {
 
       const { data: rangesData } = await supabaseClient
         .from('ranges')
-        .select('*, city:cities(*, province:provinces(*))')
+        .select('id, name, slug, facility_type, price_range, photos, description, is_premium, is_featured, latitude, longitude, city:cities(*, province:provinces(*))')
         .order('name')
 
       if (provincesData) setProvinces(provincesData)
@@ -176,9 +196,17 @@ export default function Home() {
   }, [cities])
 
   useEffect(() => {
-    if (ranges.length === 0) return
+    // Filter and sort for the featured section
+    const featuredCandidateList = ranges.filter(r => r.is_premium || r.is_featured);
 
-    const premiumRanges = ranges.filter((r) => r.is_premium)
+    // Sort: Featured first, then Premium
+    featuredCandidateList.sort((a, b) => {
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      return 0;
+    });
+
+    setFeaturedRanges(featuredCandidateList.slice(0, 6));
 
     const referenceLocation = searchLocation || (userLocation ? {
       lat: userLocation.latitude,
@@ -187,7 +215,7 @@ export default function Home() {
     } : null)
 
     if (referenceLocation) {
-      const rangesWithDistance = premiumRanges.map(range => ({
+      const rangesWithDistance = featuredCandidateList.map(range => ({
         ...range,
         distance: range.latitude && range.longitude
           ? calculateDistance(
@@ -200,12 +228,13 @@ export default function Home() {
       }))
 
       const nearby = rangesWithDistance
+        .filter(r => (r.distance || Infinity) <= 100) // 100km radius restriction
         .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity))
-        .slice(0, 3)
+        .slice(0, 6)
 
       setFeaturedRanges(nearby)
     } else {
-      setFeaturedRanges(premiumRanges.slice(0, 3))
+      setFeaturedRanges(featuredCandidateList.slice(0, 6))
     }
   }, [ranges, userLocation, searchLocation])
 
@@ -229,7 +258,7 @@ export default function Home() {
     let filteredRanges = ranges
 
     if (filters.rangeType.length > 0) {
-      filteredRanges = filteredRanges.filter(r => filters.rangeType.includes(r.range_type))
+      filteredRanges = filteredRanges.filter(r => filters.rangeType.includes(r.facility_type))
     }
 
     if (filters.amenities.length > 0) {
@@ -340,9 +369,6 @@ export default function Home() {
             <Link href="/blog" className="hover:text-green-100 transition-colors font-medium">
               Blog
             </Link>
-            <Link href="/compare" className="hover:text-green-100 transition-colors font-medium">
-              Compare
-            </Link>
             <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
               Pricing
             </Link>
@@ -370,14 +396,14 @@ export default function Home() {
             alt="Archery background"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black opacity-40"></div>
+          <div className="absolute inset-0 bg-black opacity-60"></div>
         </div>
         <div className="relative container mx-auto px-4 py-20 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-4">
-            🏹 Find Archery Ranges in Canada
+            Archery Near Me <span className="mx-6 align-middle">|</span> Canadian Archery Range Directory
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-green-50">
-            Discover indoor and outdoor archery facilities across all provinces
+            Find local archery ranges and clubs across Canada. Search by province, city, or range name to discover facilities near you.
           </p>
 
           <div className="max-w-2xl mx-auto">
@@ -462,7 +488,7 @@ export default function Home() {
                 </span>
               </div>
               <h2 className="text-4xl font-bold text-gray-800 mt-4 mb-4">
-                Featured Ranges Near {locationDisplayName}
+                Featured Archery Clubs & Ranges Near {locationDisplayName}
               </h2>
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">
                 {searchLocation
@@ -496,7 +522,7 @@ export default function Home() {
                     </div>
                     <div className="absolute bottom-4 left-4 flex gap-2">
                       <span className="bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
-                        {range.range_type || 'Indoor/Outdoor'}
+                        {range.facility_type || 'Indoor/Outdoor'}
                       </span>
                       {range.distance !== undefined && range.distance !== Infinity && (
                         <span className="bg-blue-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
@@ -508,7 +534,7 @@ export default function Home() {
 
                   <div className="p-6">
                     <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors">
-                      {range.name}
+                      {range.name} – {range.city?.name || 'Local'}, Ontario
                     </h3>
                     <p className="text-gray-600 flex items-center mb-4">
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -520,7 +546,7 @@ export default function Home() {
 
                     {range.description && (
                       <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                        {range.description}
+                        {range.description} This public archery range offers indoor facilities and equipment rentals.
                       </p>
                     )}
 
@@ -546,7 +572,7 @@ export default function Home() {
                       <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
                         View Details
                       </button>
-                      {range.phone && (
+                      {range.phone_number && (
                         <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
                           📞
                         </button>
@@ -652,7 +678,7 @@ export default function Home() {
           <section>
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                Browse by Province
+                Explore Archery Ranges by Province
               </h2>
               <p className="text-gray-600 text-lg">
                 Select your province to find nearby archery ranges
@@ -673,7 +699,7 @@ export default function Home() {
                   >
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors">
-                        {province.name}
+                        {province.name === 'Ontario' ? 'Archery Ranges in Ontario' : province.name}
                       </h3>
                       <span className="text-2xl">🍁</span>
                     </div>
@@ -688,7 +714,7 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="bg-gray-900 text-white py-12 mt-20">
+      <footer className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-12 mt-20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -697,36 +723,35 @@ export default function Home() {
                 alt="Archery Ranges Canada"
                 className="h-20 w-auto object-contain mb-4"
               />
-              <p className="text-gray-400">
+              <p className="text-green-100">
                 Your complete directory of archery ranges across Canada
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/" className="hover:text-white">Home</Link></li>
                 <li><Link href="/blog" className="hover:text-white">Blog</Link></li>
-                <li><Link href="/compare" className="hover:text-white">Compare Ranges</Link></li>
                 <li><Link href="/about" className="hover:text-white">About</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Range Owners</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/claim" className="hover:text-white">Claim Your Listing</Link></li>
                 <li><Link href="/premium" className="hover:text-white">Premium Features</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/blog" className="hover:text-white">Archery Tips</Link></li>
                 <li><Link href="/blog" className="hover:text-white">Beginner Guides</Link></li>
                 <li><Link href="/blog" className="hover:text-white">Equipment Reviews</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
+          <div className="border-t border-green-600 pt-8 text-center text-green-100">
             <p>© 2025 Archery Ranges Canada. All rights reserved.</p>
           </div>
         </div>
@@ -736,6 +761,6 @@ export default function Home() {
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
       />
-    </div>
+    </div >
   )
 }

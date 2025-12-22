@@ -70,7 +70,7 @@ export default function SettingsPage() {
             setFormData({
                 name: rangeData.name || '',
                 address: rangeData.address || '',
-                phone: rangeData.phone || '',
+                phone: rangeData.phone_number || '',
                 email: rangeData.email || '',
                 website: rangeData.website || '',
                 description: rangeData.post_content || '',
@@ -102,7 +102,7 @@ export default function SettingsPage() {
                 .update({
                     name: formData.name,
                     address: formData.address,
-                    phone: formData.phone,
+                    phone_number: formData.phone,
                     email: formData.email,
                     website: formData.website,
                     post_content: formData.description,
@@ -265,8 +265,8 @@ export default function SettingsPage() {
                                     <label
                                         key={amenity.field}
                                         className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${formData[amenity.field as keyof FormData]
-                                                ? 'border-emerald-500 bg-emerald-50'
-                                                : 'border-stone-200 hover:border-stone-300'
+                                            ? 'border-emerald-500 bg-emerald-50'
+                                            : 'border-stone-200 hover:border-stone-300'
                                             }`}
                                     >
                                         <input

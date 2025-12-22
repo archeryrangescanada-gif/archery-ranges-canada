@@ -12,7 +12,7 @@ const tiers = [
     name: 'Bronze',
     tagline: 'The Guest',
     description: 'Entry-level listing to get on the map',
-    badge: '🥉',
+    badge: '/bronze-badge.png',
     monthlyPrice: 0,
     yearlyPrice: 0,
     searchRank: 'Standard (Bottom)',
@@ -38,7 +38,7 @@ const tiers = [
     name: 'Silver',
     tagline: 'The Member',
     description: 'Your digital business card for clubs and small ranges',
-    badge: '🥈',
+    badge: '/silver-badge.png',
     monthlyPrice: 49,
     yearlyPrice: 499,
     searchRank: 'Boosted (Above Bronze)',
@@ -64,7 +64,7 @@ const tiers = [
     name: 'Gold',
     tagline: 'The Marketer',
     description: 'Growth package for commercial ranges driving traffic',
-    badge: '🥇',
+    badge: '/gold-badge.png',
     monthlyPrice: 149,
     yearlyPrice: 1500,
     searchRank: 'Priority (Top of Results)',
@@ -91,7 +91,7 @@ const tiers = [
     name: 'Platinum',
     tagline: 'The Partner',
     description: 'Dominance package with exclusive visibility + SaaS tools',
-    badge: '💎',
+    badge: '/platinum-badge.png',
     monthlyPrice: 399,
     yearlyPrice: 3999,
     searchRank: 'Maximum (Pinned Above All)',
@@ -118,7 +118,7 @@ const comparisonFeatures = [
   {
     category: 'Visibility & Search',
     features: [
-      { name: 'Badge Type', bronze: '🥉 Bronze', silver: '🥈 Silver', gold: '🥇 Gold', platinum: '💎 Platinum + Verified' },
+      { name: 'Badge Type', bronze: 'bronze-badge', silver: 'silver-badge', gold: 'gold-badge', platinum: 'platinum-badge' },
       { name: 'Search Ranking', bronze: 'Bottom', silver: 'Middle', gold: 'Top', platinum: 'Pinned Top' },
       { name: 'Home Page Feature (50km)', bronze: false, silver: false, gold: false, platinum: true },
       { name: 'No Competitor Ads', bronze: false, silver: false, gold: false, platinum: true },
@@ -289,7 +289,7 @@ export default function PricingPage() {
                 <div className="p-6">
                   {/* Badge & Name */}
                   <div className="text-center mb-4">
-                    <span className="text-4xl">{tier.badge}</span>
+                    <img src={tier.badge} alt={tier.name} className="h-16 w-16 mx-auto object-contain" />
                     <h3 className="text-2xl font-bold text-stone-800 mt-2">{tier.name}</h3>
                     <p className="text-green-600 font-medium">{tier.tagline}</p>
                   </div>
@@ -369,10 +369,30 @@ export default function PricingPage() {
             {/* Table Header */}
             <div className="grid grid-cols-5 bg-stone-800 text-white">
               <div className="p-4 font-semibold">Feature</div>
-              <div className="p-4 text-center font-semibold">🥉 Bronze</div>
-              <div className="p-4 text-center font-semibold">🥈 Silver</div>
-              <div className="p-4 text-center font-semibold bg-green-700">🥇 Gold</div>
-              <div className="p-4 text-center font-semibold">💎 Platinum</div>
+              <div className="p-4 text-center font-semibold">
+                <div className="flex items-center justify-center gap-2">
+                  <img src="/bronze-badge.png" alt="Bronze" className="h-6 w-6 object-contain" />
+                  <span>Bronze</span>
+                </div>
+              </div>
+              <div className="p-4 text-center font-semibold">
+                <div className="flex items-center justify-center gap-2">
+                  <img src="/silver-badge.png" alt="Silver" className="h-6 w-6 object-contain" />
+                  <span>Silver</span>
+                </div>
+              </div>
+              <div className="p-4 text-center font-semibold bg-green-700">
+                <div className="flex items-center justify-center gap-2">
+                  <img src="/gold-badge.png" alt="Gold" className="h-6 w-6 object-contain" />
+                  <span>Gold</span>
+                </div>
+              </div>
+              <div className="p-4 text-center font-semibold">
+                <div className="flex items-center justify-center gap-2">
+                  <img src="/platinum-badge.png" alt="Platinum" className="h-6 w-6 object-contain" />
+                  <span>Platinum</span>
+                </div>
+              </div>
             </div>
 
             {/* Price Row */}
@@ -414,6 +434,26 @@ export default function PricingPage() {
                             ) : (
                               <X className="w-5 h-5 text-stone-300 mx-auto" />
                             )
+                          ) : value === 'bronze-badge' ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <img src="/bronze-badge.png" alt="Bronze" className="h-6 w-6 object-contain" />
+                              <span className="text-stone-700 font-medium">Bronze</span>
+                            </div>
+                          ) : value === 'silver-badge' ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <img src="/silver-badge.png" alt="Silver" className="h-6 w-6 object-contain" />
+                              <span className="text-stone-700 font-medium">Silver</span>
+                            </div>
+                          ) : value === 'gold-badge' ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <img src="/gold-badge.png" alt="Gold" className="h-6 w-6 object-contain" />
+                              <span className="text-stone-700 font-medium">Gold</span>
+                            </div>
+                          ) : value === 'platinum-badge' ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <img src="/platinum-badge.png" alt="Platinum" className="h-6 w-6 object-contain" />
+                              <span className="text-stone-700 font-medium">Platinum + Verified</span>
+                            </div>
                           ) : (
                             <span className="text-stone-700 font-medium">{value}</span>
                           )}
@@ -437,7 +477,7 @@ export default function PricingPage() {
 
             <div className="relative">
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-5xl">💎</span>
+                <img src="/platinum-badge.png" alt="Platinum" className="w-20 h-20 object-contain" />
                 <div>
                   <h2 className="text-3xl font-bold">Platinum Partner Program</h2>
                   <p className="text-amber-400 font-medium">The Ultimate Range Management Solution</p>
@@ -555,7 +595,7 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-stone-900 text-white py-12">
+      <footer className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -564,13 +604,13 @@ export default function PricingPage() {
                 alt="Archery Ranges Canada"
                 className="h-16 w-auto object-contain mb-4"
               />
-              <p className="text-stone-400">
+              <p className="text-green-100">
                 Canada's most comprehensive archery range directory
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-stone-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
                 <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
                 <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
@@ -578,20 +618,20 @@ export default function PricingPage() {
             </div>
             <div>
               <h4 className="font-semibold mb-4">Range Owners</h4>
-              <ul className="space-y-2 text-stone-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/auth/signup" className="hover:text-white transition-colors">List Your Range</Link></li>
                 <li><Link href="/claim" className="hover:text-white transition-colors">Claim Listing</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-stone-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
                 <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-stone-800 pt-8 text-center text-stone-400">
+          <div className="border-t border-green-600 pt-8 text-center text-green-100">
             <p>© 2025 Archery Ranges Canada. All rights reserved.</p>
           </div>
         </div>

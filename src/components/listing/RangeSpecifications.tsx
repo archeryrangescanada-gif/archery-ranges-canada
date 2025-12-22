@@ -2,11 +2,11 @@ import { Ruler, Target, Building2, TreePine, Crosshair, Weight } from 'lucide-re
 import { FacilityType, BowType } from '@/types/range';
 
 interface RangeSpecificationsProps {
-  lengthYards?: number;
-  numberOfLanes?: number;
-  facilityType?: FacilityType;
-  bowTypesAllowed?: BowType[];
-  maxDrawWeight?: number;
+  lengthYards?: number | string;
+  numberOfLanes?: number | string;
+  facilityType?: FacilityType | string;
+  bowTypesAllowed?: BowType[] | string;
+  maxDrawWeight?: number | string;
 }
 
 const bowTypeLabels: Record<BowType, string> = {
@@ -97,20 +97,28 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
               </div>
               <span className="text-sm text-stone-500">Facility</span>
             </div>
-            <p className="text-lg font-bold text-stone-800 capitalize">{facilityType === 'both' ? 'Indoor & Outdoor' : facilityType}</p>
+            <p className="text-lg font-bold text-stone-800 capitalize">
+              {(facilityType as string) === 'both' ? 'Indoor & Outdoor' : facilityType}
+            </p>
           </div>
         )}
       </div>
 
-      {bowTypesAllowed && bowTypesAllowed.length > 0 && (
+      {bowTypesAllowed && (Array.isArray(bowTypesAllowed) ? bowTypesAllowed.length > 0 : true) && (
         <div>
           <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider mb-3">Bow Types Allowed</h3>
           <div className="flex flex-wrap gap-2">
-            {bowTypesAllowed.map((bowType) => (
-              <span key={bowType} className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border ${bowTypeColors[bowType]}`}>
-                {bowTypeLabels[bowType]}
+            {Array.isArray(bowTypesAllowed) ? (
+              bowTypesAllowed.map((bowType) => (
+                <span key={bowType} className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border ${bowTypeColors[bowType]}`}>
+                  {bowTypeLabels[bowType]}
+                </span>
+              ))
+            ) : (
+              <span className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border bg-stone-100 text-stone-700 border-stone-200">
+                {bowTypesAllowed}
               </span>
-            ))}
+            )}
           </div>
         </div>
       )}

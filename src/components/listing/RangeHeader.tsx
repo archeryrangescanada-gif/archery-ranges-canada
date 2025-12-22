@@ -7,7 +7,7 @@ interface RangeHeaderProps {
   city: string;
   province: string;
   postalCode?: string;
-  facilityType?: FacilityType;
+  facilityType?: FacilityType | string;
   rating: number | null;
   reviewCount: number;
 }
@@ -40,8 +40,8 @@ export function RangeHeader({
     <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8">
       {facilityType && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 text-stone-600 text-sm font-medium mb-4">
-          {facilityIcons[facilityType]}
-          {facilityLabels[facilityType]}
+          {facilityIcons[facilityType as FacilityType] || <Building2 className="w-4 h-4" />}
+          {facilityLabels[facilityType as FacilityType] || facilityType}
         </div>
       )}
 
@@ -61,9 +61,8 @@ export function RangeHeader({
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className={`w-5 h-5 ${
-                    star <= Math.round(rating) ? 'text-amber-400 fill-amber-400' : 'text-stone-300'
-                  }`}
+                  className={`w-5 h-5 ${star <= Math.round(rating) ? 'text-amber-400 fill-amber-400' : 'text-stone-300'
+                    }`}
                 />
               ))}
             </div>

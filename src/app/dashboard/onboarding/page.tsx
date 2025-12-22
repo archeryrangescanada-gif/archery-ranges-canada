@@ -4,9 +4,9 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { supabaseClient as supabase } from '@/lib/auth'
 import Link from 'next/link'
-import { Check, ArrowRight, ArrowLeft, Building2, Phone, Image, CreditCard, Search, Plus, MapPin, ChevronRight } from 'lucide-react'
+import { Check, ArrowRight, ArrowLeft, Building2, Phone, Image, CreditCard, Search, Plus, MapPin, ChevronRight, Star } from 'lucide-react'
 
 type Mode = 'choose' | 'claim' | 'create' | 'ai'
 type Step = 'business' | 'contact' | 'details' | 'plan'
@@ -17,7 +17,7 @@ interface Range {
   address: string
   city?: { name: string }
   province?: { name: string }
-  range_type: string
+  facility_type: string
 }
 
 interface FormData {
@@ -55,7 +55,6 @@ const provinces = [
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const supabase = createClient()
 
   const [mode, setMode] = useState<Mode>('choose')
   const [currentStep, setCurrentStep] = useState<Step>('business')
@@ -109,28 +108,49 @@ export default function OnboardingPage() {
 
   // Search for existing ranges
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return
+    const trimmedQuery = searchQuery.trim()
+    if (!trimmedQuery) return
 
     setSearching(true)
+    setError('')
+    console.log('[Search] Starting search for:', trimmedQuery)
+
     try {
-      const { data, error } = await supabase
+      // We search for everything first, then filter or show status
+      const { data, error: searchError } = await supabase
         .from('ranges')
         .select(`
           id, 
           name, 
           address, 
-          range_type,
+          facility_type,
+          owner_id,
           city:cities(name),
           province:provinces(name)
         `)
-        .ilike('name', `%${searchQuery}%`)
-        .is('owner_id', null)
-        .limit(10)
+        .ilike('name', `%${trimmedQuery}%`)
+        .limit(20)
 
-      if (error) throw error
-      setSearchResults((data as any) || [])
+      if (searchError) {
+        console.error('[Search] Error:', searchError)
+        throw searchError
+      }
+
+      console.log('[Search] Raw data returned:', data)
+
+      // Filter for unclaimed listings
+      const unclaimed = data?.filter(r => !r.owner_id) || []
+      console.log('[Search] Unclaimed results:', unclaimed.length)
+
+      setSearchResults(unclaimed as any)
+
+      if (unclaimed.length === 0 && data && data.length > 0) {
+        setError('All matching ranges are already claimed. If you believe this is an error, please contact support.')
+      }
+
     } catch (err: any) {
-      setError(err.message)
+      console.error('[Search] Exception:', err)
+      setError(err.message || 'Search failed')
     } finally {
       setSearching(false)
     }
@@ -163,9 +183,8 @@ export default function OnboardingPage() {
 
       if (claimError) throw claimError
 
-      // Redirect to success or dashboard
-      alert('Claim submitted successfully! We will review your request and get back to you.')
-      router.push('/dashboard')
+      // Redirect to verification flow
+      router.push(`/dashboard/verify/${selectedRange.id}`)
     } catch (err: any) {
       setError(err.message || 'Failed to submit claim')
     } finally {
@@ -275,7 +294,7 @@ export default function OnboardingPage() {
           province_id: provinceId,
           postal_code: formData.postalCode,
           facility_type: formData.facilityType,
-          phone: formData.phone,
+          phone_number: formData.phone,
           email: formData.email,
           website: formData.website,
           post_content: formData.description,
@@ -430,20 +449,26 @@ export default function OnboardingPage() {
 
                   // Populate Form Data
                   const extracted = data.data;
+                  console.log('[AI] Extracted data:', extracted);
+
                   setFormData(prev => ({
                     ...prev,
-                    name: extracted.name || '',
-                    address: extracted.address || '',
-                    city: extracted.city || '',
-                    province: extracted.province || '', // Might need mapping if exact match fails
-                    phone: extracted.phone_number || '',
+                    name: extracted.name || extracted.post_title || '',
+                    address: extracted.address || extracted.post_address || '',
+                    city: extracted.city || extracted.post_city || '',
+                    province: extracted.province || extracted.post_region || '',
+                    phone: extracted.phone_number || extracted.phone || '',
                     email: extracted.email || '',
-                    website: extracted.website || extractUrl,
-                    description: extracted.description || '',
-                    facilityType: extracted.facility_type?.includes('indoor') ? 'indoor' : extracted.facility_type?.includes('outdoor') ? 'outdoor' : 'both',
+                    website: extracted.website || searchQuery,
+                    description: extracted.description || extracted.post_content || '',
+                    facilityType: (extracted.facility_type?.toLowerCase().includes('indoor') ? 'indoor' :
+                      extracted.facility_type?.toLowerCase().includes('outdoor') ? 'outdoor' :
+                        (extracted.facility_type?.toLowerCase().includes('both') ? 'both' : 'indoor')),
                     hasProShop: !!extracted.has_pro_shop,
                     has3dCourse: !!extracted.has_3d_course,
-                    // Map other fields as needed
+                    hasFieldCourse: !!extracted.has_field_course,
+                    equipmentRental: !!extracted.equipment_rental_available,
+                    lessonsAvailable: !!extracted.lessons_available,
                   }));
 
                   // Switch to Create Mode to review
@@ -542,7 +567,7 @@ export default function OnboardingPage() {
                               {range.province && `, ${range.province.name}`}
                             </p>
                             <span className="inline-block mt-1 text-xs px-2 py-0.5 bg-stone-100 text-stone-600 rounded">
-                              {range.range_type}
+                              {range.facility_type}
                             </span>
                           </div>
                         </div>

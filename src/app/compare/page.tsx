@@ -14,7 +14,7 @@ interface Range {
   city_id: string
   phone_number: string | null
   website: string | null
-  range_type: string
+  facility_type: string
   amenities: string[]
   price_range: string
   city?: {
@@ -66,10 +66,33 @@ export default function ComparePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
-        <div className="container mx-auto px-4">
-          <Link href="/" className="text-2xl font-bold hover:text-green-100 transition-colors">
-            🏹 Archery Ranges Canada
+        <div className="container mx-auto px-4 flex items-center justify-between">
+          <Link href="/" className="hover:opacity-90 transition-opacity">
+            <img
+              src="/logo.png?v=2"
+              alt="Archery Ranges Canada"
+              className="h-20 w-auto object-contain"
+            />
           </Link>
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link href="/" className="hover:text-green-100 transition-colors font-medium">
+              Home
+            </Link>
+            <Link href="/blog" className="hover:text-green-100 transition-colors font-medium">
+              Blog
+            </Link>
+            <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
+              Pricing
+            </Link>
+            <div className="border-l border-green-600 pl-6 flex items-center space-x-3">
+              <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium">
+                Sign In
+              </Link>
+              <Link href="/auth/signup" className="bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors">
+                Sign Up
+              </Link>
+            </div>
+          </nav>
         </div>
       </header>
 
@@ -123,7 +146,7 @@ export default function ComparePage() {
                     {range.city?.name}, {range.city?.province?.name}
                   </p>
                   <div className="space-y-2 text-sm">
-                    <p><span className="font-semibold">Type:</span> {range.range_type.replace('_', ' ')}</p>
+                    <p><span className="font-semibold">Type:</span> {range.facility_type?.replace('_', ' ')}</p>
                     <p><span className="font-semibold">Price:</span> {range.price_range}</p>
                     <p><span className="font-semibold">Address:</span> {range.address}</p>
                     {range.phone_number && (
@@ -181,8 +204,8 @@ export default function ComparePage() {
                   <div
                     key={range.id}
                     className={`border rounded-lg p-4 transition-all ${isSelected
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-green-300'
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 hover:border-green-300'
                       }`}
                   >
                     <h3 className="font-bold text-gray-900 mb-1">{range.name}</h3>
@@ -190,7 +213,7 @@ export default function ComparePage() {
                       {range.city?.name}, {range.city?.province?.name}
                     </p>
                     <p className="text-xs text-gray-500 mb-3 capitalize">
-                      {range.range_type.replace('_', ' ')} • {range.price_range}
+                      {range.facility_type?.replace('_', ' ')} • {range.price_range}
                     </p>
 
                     {isSelected ? (
@@ -205,8 +228,8 @@ export default function ComparePage() {
                         onClick={() => addToCompare(range)}
                         disabled={!canAdd}
                         className={`w-full px-4 py-2 rounded-lg font-semibold transition-colors text-sm ${canAdd
-                            ? 'bg-green-600 hover:bg-green-700 text-white'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          ? 'bg-green-600 hover:bg-green-700 text-white'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           }`}
                       >
                         {canAdd ? 'Add to Compare' : 'Max 3 Ranges'}
@@ -226,10 +249,10 @@ export default function ComparePage() {
         </section>
       </main>
 
-      <footer className="bg-gray-900 text-white py-8 mt-12">
+      <footer className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-8 mt-12">
         <div className="container mx-auto px-4 text-center">
           <p className="mb-2">© 2025 Archery Ranges Canada. All rights reserved.</p>
-          <p className="text-sm text-gray-400">Compare archery ranges across Canada</p>
+          <p className="text-sm text-green-100">Compare archery ranges across Canada</p>
         </div>
       </footer>
     </div>

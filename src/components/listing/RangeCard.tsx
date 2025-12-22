@@ -52,7 +52,7 @@ export function RangeCard({ range, provinceSlug, citySlug }: RangeCardProps) {
         {range.facility_type && (
           <div className="absolute bottom-3 right-3 z-10">
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 text-white text-xs font-medium backdrop-blur-sm">
-              {facilityIcons[range.facility_type]}
+              {facilityIcons[range.facility_type as FacilityType]}
               {range.facility_type === 'both' ? 'Indoor/Outdoor' : range.facility_type.charAt(0).toUpperCase() + range.facility_type.slice(1)}
             </span>
           </div>
@@ -74,10 +74,10 @@ export function RangeCard({ range, provinceSlug, citySlug }: RangeCardProps) {
         {shortDescription && <p className="text-sm text-stone-600 mb-4 line-clamp-2">{shortDescription}</p>}
 
         <div className="flex items-center justify-between pt-3 border-t border-stone-100">
-          {range.phone && (
+          {range.phone_number && (
             <div className="flex items-center gap-1.5 text-sm text-stone-500">
               <Phone className="w-4 h-4" />
-              <span className="hidden sm:inline">{range.phone}</span>
+              <span className="hidden sm:inline">{range.phone_number}</span>
               <span className="sm:hidden">Call</span>
             </div>
           )}
@@ -125,7 +125,7 @@ export function RangeCardFeatured({ range, provinceSlug, citySlug }: RangeCardPr
       <div className="p-6 md:w-3/5 md:flex md:flex-col md:justify-center">
         {range.facility_type && (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium w-fit mb-3">
-            {facilityIcons[range.facility_type]}
+            {facilityIcons[range.facility_type as FacilityType]}
             {range.facility_type === 'both' ? 'Indoor & Outdoor' : range.facility_type.charAt(0).toUpperCase() + range.facility_type.slice(1)} Range
           </span>
         )}

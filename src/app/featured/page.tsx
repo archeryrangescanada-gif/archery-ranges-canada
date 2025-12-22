@@ -24,13 +24,14 @@ interface Range {
   name: string
   slug: string
   city_id: string
-  range_type: string
+  facility_type: string
   amenities: string[]
   price_range: string
   is_premium?: boolean
+  is_featured?: boolean
   photos?: string[]
   description?: string
-  phone?: string
+  phone_number?: string
   website?: string
   latitude?: number
   longitude?: number
@@ -52,7 +53,7 @@ export default function FeaturedPage() {
       const { data, error } = await supabaseClient
         .from('ranges')
         .select('*, city:cities(*, province:provinces(*))')
-        .eq('is_premium', true)
+        .or('is_premium.eq.true,is_featured.eq.true')
         .order('name')
 
       if (data) {
@@ -81,9 +82,6 @@ export default function FeaturedPage() {
             </Link>
             <Link href="/blog" className="hover:text-green-100 transition-colors font-medium">
               Blog
-            </Link>
-            <Link href="/compare" className="hover:text-green-100 transition-colors font-medium">
-              Compare
             </Link>
             <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
               Pricing
@@ -176,14 +174,21 @@ export default function FeaturedPage() {
                         e.currentTarget.src = fallbackImages[index % fallbackImages.length]
                       }}
                     />
-                    <div className="absolute top-4 right-4">
-                      <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                        ⭐ PREMIUM
-                      </span>
+                    <div className="absolute top-4 right-4 flex flex-col gap-2">
+                      {range.is_featured && (
+                        <span className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full text-center">
+                          ⭐ FEATURED
+                        </span>
+                      )}
+                      {range.is_premium && (
+                        <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full text-center">
+                          💎 PREMIUM
+                        </span>
+                      )}
                     </div>
                     <div className="absolute bottom-4 left-4">
                       <span className="bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
-                        {range.range_type || 'Indoor/Outdoor'}
+                        {range.facility_type || 'Indoor/Outdoor'}
                       </span>
                     </div>
                   </div>
@@ -228,7 +233,7 @@ export default function FeaturedPage() {
                       <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
                         View Details
                       </button>
-                      {range.phone && (
+                      {range.phone_number && (
                         <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
                           📞
                         </button>
@@ -264,7 +269,7 @@ export default function FeaturedPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 mt-20">
+      <footer className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-12 mt-20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -273,36 +278,35 @@ export default function FeaturedPage() {
                 alt="Archery Ranges Canada"
                 className="h-20 w-auto object-contain mb-4"
               />
-              <p className="text-gray-400">
+              <p className="text-green-100">
                 Your complete directory of archery ranges across Canada
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/" className="hover:text-white">Home</Link></li>
                 <li><Link href="/blog" className="hover:text-white">Blog</Link></li>
-                <li><Link href="/compare" className="hover:text-white">Compare Ranges</Link></li>
                 <li><Link href="/about" className="hover:text-white">About</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Range Owners</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/claim" className="hover:text-white">Claim Your Listing</Link></li>
                 <li><Link href="/premium" className="hover:text-white">Premium Features</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-green-100">
                 <li><Link href="/blog" className="hover:text-white">Archery Tips</Link></li>
                 <li><Link href="/blog" className="hover:text-white">Beginner Guides</Link></li>
                 <li><Link href="/blog" className="hover:text-white">Equipment Reviews</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
+          <div className="border-t border-green-600 pt-8 text-center text-green-100">
             <p>© 2025 Archery Ranges Canada. All rights reserved.</p>
           </div>
         </div>

@@ -9,7 +9,7 @@ interface Range {
   latitude: number | null
   longitude: number | null
   address: string
-  range_type: string
+  facility_type: string
   city?: {
     name: string
     slug: string
@@ -26,11 +26,11 @@ interface MapViewProps {
   zoom?: number
 }
 
-export default function MapView({ 
-  ranges, 
-  centerLat = 43.6532, 
-  centerLng = -79.3832, 
-  zoom = 10 
+export default function MapView({
+  ranges,
+  centerLat = 43.6532,
+  centerLng = -79.3832,
+  zoom = 10
 }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
@@ -38,7 +38,7 @@ export default function MapView({
   useEffect(() => {
     // This is a placeholder for actual map integration
     // You would integrate Google Maps, Mapbox, or Leaflet here
-    
+
     if (!mapRef.current) return
 
     // For now, we'll show a placeholder with range locations
@@ -84,7 +84,7 @@ export default function MapView({
               <div>
                 <p className="font-medium text-gray-900">{range.name}</p>
                 <p className="text-gray-500 text-xs">
-                  {range.range_type} • {range.city?.name}
+                  {range.facility_type} • {range.city?.name}
                 </p>
               </div>
             </div>

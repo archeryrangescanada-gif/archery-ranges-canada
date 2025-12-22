@@ -34,7 +34,7 @@ export interface Range {
   postal_code?: string;
   latitude?: number;
   longitude?: number;
-  phone?: string;
+  phone_number?: string;
   email?: string;
   website?: string;
   facebook_url?: string;
@@ -78,6 +78,14 @@ export interface Range {
   owner_id?: string;
   created_at?: string;
   updated_at?: string;
+  cities?: {
+    name: string;
+    slug: string;
+    provinces: {
+      name: string;
+      slug: string;
+    };
+  };
 }
 
 export interface TierLimits {

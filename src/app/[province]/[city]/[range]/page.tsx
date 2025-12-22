@@ -101,7 +101,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (range.equipment_rental_available) features.push('Rentals');
 
   const featureText = features.length > 0 ? features.join(', ') + '. ' : '';
-  const description = `${range.name} - ${featureText}${range.facility_type ? range.facility_type.charAt(0).toUpperCase() + range.facility_type.slice(1) : 'Archery'} range in ${range.city}, ${range.province}. Hours, prices, reviews & directions.`;
+  const description = `${range.name} - ${featureText}${range.facility_type ? range.facility_type.charAt(0).toUpperCase() + range.facility_type.slice(1) : 'Archery'} range in ${range.cities?.name || range.city}, ${range.cities?.provinces?.name || range.province}. Hours, prices, reviews & directions.`;
 
   return {
     title: `${range.name} | ${range.facility_type === 'indoor' ? 'Indoor' : range.facility_type === 'outdoor' ? 'Outdoor' : ''} Archery Range in ${range.city} (2025)`,
@@ -139,8 +139,8 @@ export default async function RangeDetailPage({ params }: PageProps) {
     <main className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
       {/* Breadcrumb Navigation */}
       <BreadcrumbNav
-        province={{ name: range.province, slug: params.province }}
-        city={{ name: range.city, slug: params.city }}
+        province={{ name: range.cities!.provinces.name, slug: params.province }}
+        city={{ name: range.cities!.name, slug: params.city }}
         rangeName={range.name}
       />
 
@@ -215,7 +215,7 @@ export default async function RangeDetailPage({ params }: PageProps) {
             {/* Range Specifications */}
             <RangeSpecifications
               lengthYards={range.range_length_yards}
-              numberOfLanes={range.number_of_lanes}
+              numberOfLanes={range.number_of_lanes ?? undefined}
               facilityType={range.facility_type}
               bowTypesAllowed={range.bow_types_allowed}
               maxDrawWeight={range.max_draw_weight}
@@ -306,8 +306,8 @@ export default async function RangeDetailPage({ params }: PageProps) {
                 <div>
                   <h3 className="font-medium text-stone-800 mb-2">How do I contact {range.name}?</h3>
                   <p className="text-stone-600 text-sm">
-                    You can contact {range.name} {range.phone ? `by phone at ${range.phone}` : ''}
-                    {range.email ? `${range.phone ? ' or' : ''} by email at ${range.email}` : ''}.
+                    You can contact {range.name} {range.phone_number ? `by phone at ${range.phone_number}` : ''}
+                    {range.email ? `${range.phone_number ? ' or' : ''} by email at ${range.email}` : ''}.
                     {range.website && ' Visit their website for more information.'}
                   </p>
                 </div>
@@ -333,7 +333,7 @@ export default async function RangeDetailPage({ params }: PageProps) {
           <div className="space-y-6">
             {/* Contact Card */}
             <ContactSection
-              phone={range.phone}
+              phone={range.phone_number}
               email={range.email}
               website={range.website}
               rangeId={range.id}
