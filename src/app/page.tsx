@@ -140,7 +140,7 @@ export default function Home() {
                 return { city, distance }
               }
               return nearest
-            }, null as { city: City; distance: number } | null)?.city || null
+            }, undefined as { city: City; distance: number } | undefined)?.city || undefined
           }
 
           setUserLocation({

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const namesToCheck = [
         'Archery Canada Centre of Excellence - Cambridge 2022',

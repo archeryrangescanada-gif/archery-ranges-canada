@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     throw new Error('Missing Stripe Secret Key')
   }
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2025-11-17.clover',
+    apiVersion: '2025-12-15.clover',
   })
 
   // 2. Initialize Supabase INSIDE the function
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
-        
+
         // Find range by stripe_subscription_id
         const { data: range } = await supabaseAdmin
           .from('ranges')
