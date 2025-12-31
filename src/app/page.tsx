@@ -699,7 +699,7 @@ export default function Home() {
                   >
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors">
-                        {province.name === 'Ontario' ? 'Archery Ranges in Ontario' : province.name}
+                        {province.name}
                       </h3>
                       <span className="text-2xl">🍁</span>
                     </div>
