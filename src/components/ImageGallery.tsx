@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 
 interface ImageGalleryProps {
   images: string[]
@@ -48,16 +49,19 @@ export default function ImageGallery({ images, altText }: ImageGalleryProps) {
           className="relative h-96 rounded-xl overflow-hidden cursor-pointer group"
           onClick={() => openLightbox(selectedImage)}
         >
-          <img
+          <Image
             src={images[selectedImage]}
             alt={`${altText} - Image ${selectedImage + 1}`}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 66vw"
+            priority
           />
           <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity" />
-          <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+          <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm z-10">
             {selectedImage + 1} / {images.length}
           </div>
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
             <span className="text-white text-xl">🔍 Click to enlarge</span>
           </div>
         </div>
@@ -75,10 +79,12 @@ export default function ImageGallery({ images, altText }: ImageGalleryProps) {
                     : 'hover:scale-105 opacity-70 hover:opacity-100'
                 }`}
               >
-                <img
+                <Image
                   src={image}
                   alt={`${altText} thumbnail ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 25vw, 20vw"
                 />
               </button>
             ))}
@@ -113,11 +119,13 @@ export default function ImageGallery({ images, altText }: ImageGalleryProps) {
           )}
 
           {/* Main Image */}
-          <div className="max-w-7xl max-h-screen p-4">
-            <img
+          <div className="relative w-full max-w-7xl h-[80vh] mx-auto p-4">
+            <Image
               src={images[selectedImage]}
               alt={`${altText} - Image ${selectedImage + 1}`}
-              className="max-w-full max-h-full object-contain"
+              fill
+              className="object-contain"
+              sizes="100vw"
             />
           </div>
 
