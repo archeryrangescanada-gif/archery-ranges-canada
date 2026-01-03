@@ -2,6 +2,7 @@
 
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import { supabaseClient } from '@/lib/auth'
 import SearchFilters from '@/components/SearchFilters'
@@ -355,11 +356,13 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
-            <img
-              src="/logo.png?v=2"
+          <Link href="/" className="hover:opacity-90 transition-opacity relative h-28 w-28">
+            <Image
+              src="/logo.png"
               alt="Archery Ranges Canada"
-              className="h-28 w-auto object-contain"
+              fill
+              className="object-contain"
+              priority
             />
           </Link>
           <nav className="hidden md:flex items-center space-x-6">
@@ -391,10 +394,13 @@ export default function Home() {
 
       <section className="relative text-white">
         <div className="absolute inset-0">
-          <img
-            src="/hero-bg.png?v=1"
+          <Image
+            src="/hero-bg.png"
             alt="Archery background"
-            className="w-full h-full object-cover"
+            fill
+            priority
+            className="object-cover"
+            quality={90}
           />
           <div className="absolute inset-0 bg-black opacity-60"></div>
         </div>
@@ -507,16 +513,18 @@ export default function Home() {
                   className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-green-500"
                 >
                   <div className="relative h-48 bg-gradient-to-br from-green-400 to-green-600 overflow-hidden">
-                    <img
+                    <Image
                       src={range.photos && range.photos.length > 0
                         ? range.photos[0]
                         : 'https://images.unsplash.com/photo-1574607774561-e645c79a2478?w=800&h=400&fit=crop'
                       }
                       alt={range.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 33vw"
                     />
                     <div className="absolute top-4 right-4">
-                      <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                      <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full z-10 relative">
                         ⭐ PREMIUM
                       </span>
                     </div>
@@ -646,11 +654,12 @@ export default function Home() {
 
         {(searchQuery.trim() === '' && !hasActiveFilters) && (
           <section className="mb-16">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <img
-                src="/hero-banner.png?v=1"
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[400px]">
+              <Image
+                src="/hero-banner.png"
                 alt="Most Accurate Archery Directory in Canada"
-                className="w-full h-[400px] object-cover"
+                fill
+                className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center">
                 <div className="container mx-auto px-8">
@@ -718,11 +727,16 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <img
-                src="/logo.png?v=2"
-                alt="Archery Ranges Canada"
-                className="h-20 w-auto object-contain mb-4"
-              />
+              <div className="relative h-20 w-auto mb-4">
+                <Image
+                  src="/logo.png"
+                  alt="Archery Ranges Canada"
+                  height={80}
+                  width={200}
+                  className="object-contain"
+                  style={{ width: 'auto', height: '100%' }}
+                />
+              </div>
               <p className="text-green-100">
                 Your complete directory of archery ranges across Canada
               </p>
