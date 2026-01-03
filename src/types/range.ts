@@ -108,7 +108,7 @@ export interface TierLimits {
 
 export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
   free: {
-    maxPhotos: 0,
+    maxPhotos: 1,
     maxVideos: 0,
     hasAnalytics: false,
     hasContactForm: false,

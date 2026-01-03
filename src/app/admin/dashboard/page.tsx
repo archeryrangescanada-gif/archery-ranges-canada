@@ -16,7 +16,8 @@ export default function AdminDashboard() {
       activeAds: 0
     },
     recentUsers: [] as any[],
-    recentListings: [] as any[]
+    recentListings: [] as any[],
+    chartData: [] as any[]
   })
 
   useEffect(() => {
@@ -37,16 +38,8 @@ export default function AdminDashboard() {
     }
   }
 
-  // Mock chart data for now (harder to generate real historical data without timestamps setup for it)
-  // TODO: Implement real historical aggregation if needed in future
-  const chartData = [
-    { month: 'Jan', listings: 40, claims: 24, ads: 24 },
-    { month: 'Feb', listings: 30, claims: 13, ads: 22 },
-    { month: 'Mar', listings: 20, claims: 98, ads: 29 },
-    { month: 'Apr', listings: 27, claims: 39, ads: 20 },
-    { month: 'May', listings: 18, claims: 48, ads: 40 },
-    { month: 'Jun', listings: 23, claims: 38, ads: 25 }
-  ]
+  // Use real data if available, otherwise fallback to empty or processed in API
+  const chartData = data.chartData || []
 
   if (loading) {
     return (
@@ -117,7 +110,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Chart */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h3 className="text-lg font-bold text-gray-900 mb-6">Activity Trends (Demo Data)</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-6">Activity Trends</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />

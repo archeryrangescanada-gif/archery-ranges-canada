@@ -228,35 +228,64 @@ export default function ListingsPage() {
   }
 
   const handleStatusChange = async (id: string, newStatus: string) => {
-    // Note: status column might not exist in schema yet, adding placeholder logic
-    // const { error } = await supabase.from('ranges').update({ status: newStatus }).eq('id', id)
-    // if (error) return alert(error.message)
+    try {
+      const res = await fetch(`/api/admin/listings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
 
-    setListings(listings.map(l =>
-      l.id === id ? { ...l, status: newStatus as any } : l
-    ))
+      if (!res.ok) throw new Error('Failed to update status')
+
+      setListings(listings.map(l =>
+        l.id === id ? { ...l, status: newStatus as any } : l
+      ))
+    } catch (err: any) {
+      alert(err.message)
+    }
   }
 
   const togglePremium = async (id: string) => {
-    // Placeholder for column not in schema
-    setListings(listings.map(l =>
-      l.id === id ? { ...l, is_premium: !l.is_premium } : l
-    ))
+    const listing = listings.find(l => l.id === id)
+    if (!listing) return
+
+    const newVal = !listing.is_premium
+    try {
+      const res = await fetch(`/api/admin/listings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_premium: newVal })
+      })
+
+      if (!res.ok) throw new Error('Failed to update premium status')
+
+      setListings(listings.map(l =>
+        l.id === id ? { ...l, is_premium: newVal } : l
+      ))
+    } catch (err: any) {
+      alert(err.message)
+    }
   }
 
   const toggleFeatured = async (id: string) => {
     const listing = listings.find(l => l.id === id)
     if (!listing) return
 
+    const newVal = !listing.is_featured
     try {
-      const { error } = await supabase.from('ranges').update({ is_featured: !listing.is_featured }).eq('id', id)
-      if (error) throw error
+      const res = await fetch(`/api/admin/listings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_featured: newVal })
+      })
+
+      if (!res.ok) throw new Error('Failed to update featured status')
 
       setListings(listings.map(l =>
-        l.id === id ? { ...l, is_featured: !l.is_featured } : l
+        l.id === id ? { ...l, is_featured: newVal } : l
       ))
-    } catch (error: any) {
-      alert('Error updating: ' + error.message)
+    } catch (err: any) {
+      alert('Error updating: ' + err.message)
     }
   }
 

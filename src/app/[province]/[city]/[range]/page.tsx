@@ -171,8 +171,8 @@ export default async function RangeDetailPage({ params }: PageProps) {
             <RangeHeader
               name={range.name}
               address={range.address}
-              city={range.city}
-              province={range.province}
+              city={range.cities?.name || range.city}
+              province={range.cities?.provinces?.name || range.province}
               postalCode={range.postal_code}
               facilityType={range.facility_type}
               rating={reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null}

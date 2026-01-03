@@ -491,11 +491,9 @@ export default function Home() {
                 Featured Archery Clubs & Ranges Near {locationDisplayName}
               </h2>
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                {searchLocation
+                {searchLocation || userLocation
                   ? 'Top-rated ranges in ' + locationDisplayName
-                  : userLocation
-                    ? 'Top-rated ranges near you'
-                    : 'Top-rated ranges with premium listings'}
+                  : 'Top-rated ranges with premium listings'}
               </p>
             </div>
 

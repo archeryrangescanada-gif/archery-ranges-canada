@@ -57,7 +57,6 @@ export async function GET(request: NextRequest) {
 
 
         // Fetch Recent Activity (e.g., last 5 new users or listings)
-        // We'll combine them or just send separate lists
         const { data: recentUsers } = await adminSupabase
             .from('profiles')
             .select('email, created_at, role')
@@ -70,6 +69,40 @@ export async function GET(request: NextRequest) {
             .order('created_at', { ascending: false })
             .limit(5);
 
+        // Fetch all created_at dates for aggregation (lightweight enough for <1000 records)
+        // If dataset grows large, replace with a SQL RPC function for grouping
+        const { data: rangeDates } = await adminSupabase.from('ranges').select('created_at');
+        const { data: claimDates } = await adminSupabase.from('claims').select('created_at');
+
+        // Generate Chart Data (Last 6 Months)
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const today = new Date();
+        const chartData = [];
+
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const monthName = months[d.getMonth()];
+            const monthIdx = d.getMonth();
+            const year = d.getFullYear();
+
+            const listingsCount = rangeDates?.filter(r => {
+                const rd = new Date(r.created_at);
+                return rd.getMonth() === monthIdx && rd.getFullYear() === year;
+            }).length || 0;
+
+            const claimsCount = claimDates?.filter(c => {
+                const cd = new Date(c.created_at);
+                return cd.getMonth() === monthIdx && cd.getFullYear() === year;
+            }).length || 0;
+
+            chartData.push({
+                month: monthName,
+                listings: listingsCount,
+                claims: claimsCount,
+                ads: 0 // Placeholder until ads table exists
+            });
+        }
+
         return NextResponse.json({
             stats: {
                 totalUsers: totalUsers || 0,
@@ -77,10 +110,11 @@ export async function GET(request: NextRequest) {
                 totalClaims: totalClaims || 0,
                 pendingClaims: pendingClaims || 0,
                 activeAds: finalActiveAds,
-                totalAds: finalActiveAds // simplistic for now
+                totalAds: finalActiveAds
             },
             recentUsers: recentUsers || [],
-            recentListings: recentListings || []
+            recentListings: recentListings || [],
+            chartData // Include the real chart data
         });
 
     } catch (error) {
