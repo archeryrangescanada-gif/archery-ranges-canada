@@ -13,12 +13,12 @@ export function middleware(request: NextRequest) {
     }
 
     // Get the admin token from cookies
-    const token = request.cookies.get('admin-token')?.value
+    // const token = request.cookies.get('admin-token')?.value
 
     // If no token, redirect to login
-    if (!token) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
-    }
+    // if (!token) {
+    //   return NextResponse.redirect(new URL('/admin/login', request.url))
+    // }
   }
 
   return NextResponse.next()

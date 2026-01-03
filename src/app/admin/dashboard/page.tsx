@@ -2,35 +2,43 @@
 
 import { useState, useEffect } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { Loader2, ArrowUpRight, ArrowDownRight, Users, MapPin, UserCheck, Megaphone } from 'lucide-react'
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({
-    totalListings: 0,
-    totalClaims: 0,
-    totalAds: 0,
-    totalUsers: 0,
-    pendingClaims: 0,
-    activeAds: 0
+  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState({
+    stats: {
+      totalListings: 0,
+      totalClaims: 0,
+      totalAds: 0,
+      totalUsers: 0,
+      pendingClaims: 0,
+      activeAds: 0
+    },
+    recentUsers: [] as any[],
+    recentListings: [] as any[]
   })
 
   useEffect(() => {
-    // Fetch dashboard stats from your API
     fetchStats()
   }, [])
 
   const fetchStats = async () => {
     try {
-      // Replace with your actual API endpoint
       const response = await fetch('/api/admin/stats')
       if (response.ok) {
-        const data = await response.json()
-        setStats(data)
+        const result = await response.json()
+        setData(result)
       }
     } catch (error) {
       console.error('Error fetching stats:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
+  // Mock chart data for now (harder to generate real historical data without timestamps setup for it)
+  // TODO: Implement real historical aggregation if needed in future
   const chartData = [
     { month: 'Jan', listings: 40, claims: 24, ads: 24 },
     { month: 'Feb', listings: 30, claims: 13, ads: 22 },
@@ -40,79 +48,119 @@ export default function AdminDashboard() {
     { month: 'Jun', listings: 23, claims: 38, ads: 25 }
   ]
 
+  if (loading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+      </div>
+    )
+  }
+
   return (
-    <div className="mb-8">
-      <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-      <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your platform.</p>
+    <div className="mb-8 space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-2">Live overview of platform performance.</p>
+      </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-          <h3 className="text-gray-500 text-sm font-medium">Total Listings</h3>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalListings}</p>
-          <p className="text-gray-600 text-xs mt-2">↑ 2.5% from last month</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 text-sm font-medium">Total Listings</h3>
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <MapPin className="w-5 h-5 text-blue-600" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-gray-900">{data.stats.totalListings}</p>
+          <div className="flex items-center mt-2 text-xs text-green-600">
+            <span className="font-medium">Live Data</span>
+          </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-          <h3 className="text-gray-500 text-sm font-medium">Total Claims</h3>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalClaims}</p>
-          <p className="text-gray-600 text-xs mt-2">↑ 1.2% from last month</p>
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 text-sm font-medium">Pending Claims</h3>
+            <div className="p-2 bg-green-50 rounded-lg">
+              <UserCheck className="w-5 h-5 text-green-600" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-gray-900">{data.stats.pendingClaims}</p>
+          <p className="text-xs text-gray-500 mt-2">Total Claims: {data.stats.totalClaims}</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
-          <h3 className="text-gray-500 text-sm font-medium">Active Ads</h3>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{stats.activeAds}</p>
-          <p className="text-gray-600 text-xs mt-2">↑ 0.8% from last month</p>
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 text-sm font-medium">Active Ads</h3>
+            <div className="p-2 bg-orange-50 rounded-lg">
+              <Megaphone className="w-5 h-5 text-orange-600" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-gray-900">{data.stats.activeAds}</p>
+          <p className="text-xs text-gray-500 mt-2">Targeting active campaigns</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
-          <h3 className="text-gray-500 text-sm font-medium">Total Users</h3>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalUsers}</p>
-          <p className="text-gray-600 text-xs mt-2">↑ 3.1% from last month</p>
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-gray-500 text-sm font-medium">Total Users</h3>
+            <div className="p-2 bg-purple-50 rounded-lg">
+              <Users className="w-5 h-5 text-purple-600" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-gray-900">{data.stats.totalUsers}</p>
+          <div className="flex items-center mt-2 text-xs text-green-600">
+            <span className="font-medium">Registered Accounts</span>
+          </div>
         </div>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        {/* Line Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Listings & Claims Trend</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Chart */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-6">Activity Trends (Demo Data)</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+              <XAxis dataKey="month" axisLine={false} tickLine={false} />
+              <YAxis axisLine={false} tickLine={false} />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="listings" stroke="#3b82f6" />
-              <Line type="monotone" dataKey="claims" stroke="#10b981" />
+              <Line type="monotone" dataKey="listings" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="claims" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Bar Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Monthly Activity</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="listings" fill="#3b82f6" />
-              <Bar dataKey="ads" fill="#f59e0b" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+        {/* Recent Activity Feed */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex flex-col">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Activity</h3>
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4 max-h-[300px]">
+            {data.recentUsers.map((user, i) => (
+              <div key={i} className="flex items-start gap-3 text-sm">
+                <div className="w-2 h-2 mt-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                <div>
+                  <p className="text-gray-900 font-medium">New User Joined</p>
+                  <p className="text-gray-500">{user.email}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{new Date(user.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            ))}
+            {data.recentListings.map((listing, i) => (
+              <div key={'l-' + i} className="flex items-start gap-3 text-sm">
+                <div className="w-2 h-2 mt-1.5 rounded-full bg-green-500 flex-shrink-0" />
+                <div>
+                  <p className="text-gray-900 font-medium">New Listing Added</p>
+                  <p className="text-gray-500">{listing.name} ({listing.city || 'Unknown'})</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{new Date(listing.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            ))}
 
-      {/* Demo Credentials */}
-      <div className="mt-8 bg-blue-50 p-4 rounded-lg border border-blue-200">
-        <h3 className="text-xs text-blue-900 font-semibold mb-2">Demo Credentials:</h3>
-        <p className="text-xs text-blue-800 font-mono">Email: admin@archeryranges.com</p>
-        <p className="text-xs text-blue-800 font-mono">Password: password123</p>
-        <p className="text-xs text-gray-600 mt-2">© 2024 Archery Ranges Canada. All rights reserved.</p>
+            {data.recentUsers.length === 0 && data.recentListings.length === 0 && (
+              <p className="text-gray-500 italic text-center py-4">No recent activity found.</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

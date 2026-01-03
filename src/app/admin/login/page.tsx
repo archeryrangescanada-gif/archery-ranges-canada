@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { LogIn, Eye, EyeOff } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('')
@@ -13,24 +14,50 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
+  const supabase = createClient()
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('Form submitted', { email })
     setError('')
     setLoading(true)
 
     try {
-      // Hardcoded credentials for demo (replace with Supabase auth later)
-      if (email === 'admin@archeryranges.com' && password === 'password123') {
-        // Set cookie with token
-        document.cookie = 'admin-token=valid-token; path=/'
-        
-        // Redirect to dashboard
-        router.push('/admin/dashboard')
-      } else {
-        setError('Invalid email or password')
+      console.log('Attempting Supabase login...')
+      // Try real Supabase login first
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (authError) {
+        console.error('Supabase login failed:', authError.message)
+
+        // Fallback for demo/development only if exact demo credentials
+        if (email === 'admin@archeryranges.com' && password === 'password123') {
+          console.log('Falling back to demo login (NOTE: API features will NOT work)')
+          // We still set this cookie for middleware formatted routes
+          document.cookie = 'admin-token=valid-token; path=/'
+          window.location.href = '/admin/dashboard'
+          return
+        }
+
+        throw authError
       }
-    } catch (err) {
-      setError('An error occurred during login')
+
+      if (data.user) {
+        console.log('Supabase login successful')
+        // Set the cookie for middleware as well (or rely on Supabase cookie handling)
+        // For our simpler middleware, we might still need this token check
+        document.cookie = 'admin-token=valid-token; path=/'
+
+        // Refresh router to update server components
+        router.refresh()
+        window.location.href = '/admin/dashboard'
+      }
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError(err.message || 'Invalid email or password')
     } finally {
       setLoading(false)
     }

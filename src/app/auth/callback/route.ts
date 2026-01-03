@@ -9,16 +9,23 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
+
     if (!error) {
       // If there's a specific redirect, use it
       if (next) {
-        return NextResponse.redirect(`${origin}${next}`)
+        const response = NextResponse.redirect(`${origin}${next}`)
+
+        // If redirecting to admin, ensure the legacy admin cookie is set
+        if (next.startsWith('/admin')) {
+          response.cookies.set('admin-token', 'valid-token', { path: '/' })
+        }
+
+        return response
       }
 
       // Check if user already has a range listing
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (user) {
         const { data: ranges } = await supabase
           .from('ranges')

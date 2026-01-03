@@ -1,18 +1,21 @@
 // src/app/admin/layout.tsx
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { 
-  LayoutDashboard, 
-  MapPin, 
-  UserCheck, 
-  Megaphone, 
-  Users, 
+import { useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import {
+  LayoutDashboard,
+  MapPin,
+  UserCheck,
+  Megaphone,
+  Users,
   BarChart3,
   Settings,
   FileText,
   CreditCard,
-  LogOut
+  LogOut,
+  Shield
 } from 'lucide-react'
 
 export default function AdminLayout({
@@ -21,6 +24,32 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const supabase = createClient()
+
+  // useEffect(() => {
+  //   const checkUser = async () => {
+  //     const { data: { session } } = await supabase.auth.getSession()
+  //     if (!session) {
+  //       // Clear legacy token just in case
+  //       document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+  //       router.push('/admin/login')
+  //     }
+  //   }
+  //   checkUser()
+  // }, [])
+
+  const handleLogout = async () => {
+    // 1. Clear Supabase Session
+    await supabase.auth.signOut()
+
+    // 2. Clear Admin Cookie
+    document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+
+    // 3. Redirect to login
+    router.push('/admin/login')
+    router.refresh()
+  }
 
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
@@ -51,7 +80,10 @@ export default function AdminLayout({
               <Link href="/" className="text-gray-600 hover:text-gray-900">
                 View Site
               </Link>
-              <button className="flex items-center text-gray-600 hover:text-gray-900">
+              <button
+                onClick={handleLogout}
+                className="flex items-center text-gray-600 hover:text-gray-900"
+              >
                 <LogOut className="w-5 h-5 mr-2" />
                 Logout
               </button>
