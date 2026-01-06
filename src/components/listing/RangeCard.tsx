@@ -35,7 +35,13 @@ export function RangeCard({ range, provinceSlug, citySlug }: RangeCardProps) {
       {/* Image Section */}
       <div className="relative h-48 bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden">
         {imageUrl ? (
-          <Image src={imageUrl} alt={range.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+          <Image
+            src={imageUrl}
+            alt={range.name}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-400">
             <ImageIcon className="w-12 h-12 mb-2 opacity-50" />
@@ -106,7 +112,13 @@ export function RangeCardFeatured({ range, provinceSlug, citySlug }: RangeCardPr
       {/* Image Section */}
       <div className="relative h-64 md:h-auto md:w-2/5 bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden">
         {imageUrl ? (
-          <Image src={imageUrl} alt={range.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+          <Image
+            src={imageUrl}
+            alt={range.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 40vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-400">
             <ImageIcon className="w-16 h-16 mb-2 opacity-50" />
@@ -171,7 +183,13 @@ export function RangeCardCompact({ range, provinceSlug, citySlug }: RangeCardPro
       {/* Small Image */}
       <div className="relative w-20 h-20 rounded-lg bg-stone-100 overflow-hidden flex-shrink-0">
         {range.post_images?.[0] ? (
-          <Image src={range.post_images[0]} alt={range.name} fill className="object-cover" />
+          <Image
+            src={range.post_images[0]}
+            alt={range.name}
+            fill
+            sizes="80px"
+            className="object-cover"
+          />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <ImageIcon className="w-8 h-8 text-stone-300" />
