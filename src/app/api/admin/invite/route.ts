@@ -1,19 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createServerClient } from '@/lib/supabase/server';
-
-// Initialize Supabase Admin client (requires service role key)
-// We use a separate client here because we need administrative privileges to invite users
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-);
+import { getAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(request: NextRequest) {
     try {
@@ -48,6 +35,7 @@ export async function POST(request: NextRequest) {
         }
 
         // 3. Send Invite via Supabase Admin API
+        const supabaseAdmin = getAdminClient();
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
 
         if (inviteError) {

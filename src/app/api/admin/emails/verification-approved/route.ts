@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { EmailService } from '@/lib/email/service'
-import { createClient } from '@supabase/supabase-js'
+import { getAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = getAdminClient()
 
     const body = await request.json()
     const { requestId } = body
