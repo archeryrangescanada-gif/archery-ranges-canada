@@ -15,7 +15,8 @@ import {
   FileText,
   CreditCard,
   LogOut,
-  Shield
+  Shield,
+  Mail
 } from 'lucide-react'
 
 export default function AdminLayout({
@@ -57,6 +58,7 @@ export default function AdminLayout({
     { name: 'Claims', href: '/admin/claims', icon: UserCheck },
     { name: 'Ads', href: '/admin/ads', icon: Megaphone },
     { name: 'Announcements', href: '/admin/announcements', icon: FileText },
+    { name: 'Emails', href: '/admin/emails', icon: Mail },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },

@@ -112,7 +112,21 @@ export default function ClaimsPage() {
 
       if (rangeError) throw rangeError
 
-      alert('Claim approved successfully!')
+      // 3. Send approval email
+      try {
+        await fetch('/api/admin/emails/verification-approved', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            requestId: request.id,
+          }),
+        })
+      } catch (emailErr) {
+        console.error('Failed to send approval email:', emailErr)
+        // Don't fail the approval if email fails
+      }
+
+      alert('Claim approved successfully! Confirmation email sent.')
       fetchRequests()
       setShowModal(false)
     } catch (err: any) {
@@ -140,7 +154,22 @@ export default function ClaimsPage() {
 
       if (error) throw error
 
-      alert('Claim denied.')
+      // Send rejection email
+      try {
+        await fetch('/api/admin/emails/verification-rejected', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            requestId: selectedRequest.id,
+            reason: rejectionReason,
+          }),
+        })
+      } catch (emailErr) {
+        console.error('Failed to send rejection email:', emailErr)
+        // Don't fail the rejection if email fails
+      }
+
+      alert('Claim denied. Notification email sent.')
       fetchRequests()
       setShowModal(false)
       setRejectionReason('')
