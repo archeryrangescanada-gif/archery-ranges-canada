@@ -35,6 +35,14 @@ interface RangeImport {
   parking_available: boolean
 }
 
+// Valid Canadian provinces and territories
+const VALID_PROVINCES = [
+  'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick',
+  'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia',
+  'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec',
+  'Saskatchewan', 'Yukon'
+]
+
 export async function POST(request: NextRequest) {
   console.log('📦 Import API called')
 
@@ -102,28 +110,47 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Find or create province
+        // Find or create province (ONLY if it's a valid Canadian province)
         let provinceId: string | null = null
         if (range.post_region && range.post_region.trim()) {
-          const { data: existingProvince } = await supabase
-            .from('provinces')
-            .select('id')
-            .ilike('name', range.post_region.trim())
-            .single()
+          const provinceName = range.post_region.trim()
 
-          if (existingProvince) {
-            provinceId = existingProvince.id
-          } else {
-            const { data: newProvince, error: provinceError } = await supabase
+          // Check if it's a valid province
+          const isValidProvince = VALID_PROVINCES.some(
+            validProv => validProv.toLowerCase() === provinceName.toLowerCase()
+          )
+
+          if (isValidProvince) {
+            const { data: existingProvince } = await supabase
               .from('provinces')
-              .insert({ name: range.post_region.trim() })
               .select('id')
+              .ilike('name', provinceName)
               .single()
 
-            if (!provinceError && newProvince) {
-              provinceId = newProvince.id
-              console.log(`  ✅ Created new province: ${range.post_region}`)
+            if (existingProvince) {
+              provinceId = existingProvince.id
+            } else {
+              // Use the properly capitalized name from VALID_PROVINCES
+              const correctName = VALID_PROVINCES.find(
+                p => p.toLowerCase() === provinceName.toLowerCase()
+              )!
+
+              const { data: newProvince, error: provinceError } = await supabase
+                .from('provinces')
+                .insert({
+                  name: correctName,
+                  slug: correctName.toLowerCase().replace(/\s+/g, '-')
+                })
+                .select('id')
+                .single()
+
+              if (!provinceError && newProvince) {
+                provinceId = newProvince.id
+                console.log(`  ✅ Created new province: ${correctName}`)
+              }
             }
+          } else {
+            console.log(`  ⚠️  Skipping invalid province: "${provinceName}" (not a Canadian province)`)
           }
         }
 

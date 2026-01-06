@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabaseClient } from '@/lib/auth'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 
 interface Range {
   id: string
@@ -65,36 +67,7 @@ export default function ComparePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
-            <img
-              src="/logo.png?v=2"
-              alt="Archery Ranges Canada"
-              className="h-20 w-auto object-contain"
-            />
-          </Link>
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/" className="hover:text-green-100 transition-colors font-medium">
-              Home
-            </Link>
-            <Link href="/blog" className="hover:text-green-100 transition-colors font-medium">
-              Blog
-            </Link>
-            <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
-              Pricing
-            </Link>
-            <div className="border-l border-green-600 pl-6 flex items-center space-x-3">
-              <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium">
-                Sign In
-              </Link>
-              <Link href="/auth/signup" className="bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors">
-                Sign Up
-              </Link>
-            </div>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <nav className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
@@ -249,12 +222,7 @@ export default function ComparePage() {
         </section>
       </main>
 
-      <footer className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-8 mt-12">
-        <div className="container mx-auto px-4 text-center">
-          <p className="mb-2">© 2025 Archery Ranges Canada. All rights reserved.</p>
-          <p className="text-sm text-green-100">Compare archery ranges across Canada</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

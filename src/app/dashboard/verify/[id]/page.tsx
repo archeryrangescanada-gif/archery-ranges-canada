@@ -4,19 +4,12 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
-    Camera,
-    Facebook,
-    Phone,
-    ChevronRight,
-    CheckCircle2,
-    Upload,
     ArrowLeft,
     ShieldCheck,
-    Star,
-    Zap,
-    MessageSquare
+    CheckCircle2,
+    FileText,
+    Building2
 } from 'lucide-react'
-import Link from 'next/link'
 
 export default function VerificationPage() {
     const { id } = useParams()
@@ -25,9 +18,16 @@ export default function VerificationPage() {
 
     const [range, setRange] = useState<any>(null)
     const [loading, setLoading] = useState(true)
-    const [step, setStep] = useState<'choose' | 'social' | 'photo' | 'call' | 'success'>('choose')
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
+    const [success, setSuccess] = useState(false)
+
+    // Form data
+    const [firstName, setFirstName] = useState('')
+    const [lastName, setLastName] = useState('')
+    const [gstNumber, setGstNumber] = useState('')
+    const [businessLicense, setBusinessLicense] = useState<File | null>(null)
+    const [insurance, setInsurance] = useState<File | null>(null)
 
     useEffect(() => {
         async function fetchRange() {
@@ -50,294 +50,298 @@ export default function VerificationPage() {
         fetchRange()
     }, [id, supabase, router])
 
-    const handleSocialSubmit = async () => {
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
         setSubmitting(true)
+        setError('')
+
         try {
             const { data: { user } } = await supabase.auth.getUser()
-            const { error } = await supabase
+
+            if (!user) {
+                router.push('/auth/login')
+                return
+            }
+
+            // Validate required fields
+            if (!firstName || !lastName || !gstNumber || !businessLicense || !insurance) {
+                setError('Please fill in all required fields and upload all documents')
+                setSubmitting(false)
+                return
+            }
+
+            // Upload business license
+            const licenseExt = businessLicense.name.split('.').pop()
+            const licensePath = `${user.id}/${id}/license-${Date.now()}.${licenseExt}`
+            const { error: licenseError } = await supabase.storage
+                .from('verification-documents')
+                .upload(licensePath, businessLicense)
+
+            if (licenseError) {
+                console.error('License upload error:', licenseError)
+                throw new Error(`Failed to upload business license: ${licenseError.message}`)
+            }
+
+            // Upload insurance certificate
+            const insuranceExt = insurance.name.split('.').pop()
+            const insurancePath = `${user.id}/${id}/insurance-${Date.now()}.${insuranceExt}`
+            const { error: insuranceError } = await supabase.storage
+                .from('verification-documents')
+                .upload(insurancePath, insurance)
+
+            if (insuranceError) {
+                console.error('Insurance upload error:', insuranceError)
+                throw new Error(`Failed to upload insurance certificate: ${insuranceError.message}`)
+            }
+
+            // Create verification request
+            const { error: verificationError } = await supabase
                 .from('verification_requests')
                 .insert({
                     range_id: id,
-                    user_id: user?.id,
-                    method: 'social',
-                    verification_code: `ARC-${id?.toString().substring(0, 4).toUpperCase()}`,
-                    status: 'pending'
+                    user_id: user.id,
+                    first_name: firstName,
+                    last_name: lastName,
+                    gst_number: gstNumber,
+                    business_license_url: licensePath,
+                    insurance_certificate_url: insurancePath,
+                    status: 'pending',
+                    submitted_at: new Date().toISOString()
                 })
-            if (error) throw error
-            setStep('success')
+
+            if (verificationError) throw verificationError
+
+            setSuccess(true)
         } catch (err: any) {
-            setError(err.message)
+            console.error('Verification error:', err)
+            setError(err.message || 'Failed to submit verification. Please try again.')
         } finally {
             setSubmitting(false)
         }
     }
 
-    const handleCallRequest = async () => {
-        setSubmitting(true)
-        try {
-            const { data: { user } } = await supabase.auth.getUser()
-            const { error } = await supabase
-                .from('verification_requests')
-                .insert({
-                    range_id: id,
-                    user_id: user?.id,
-                    method: 'call',
-                    status: 'pending'
-                })
-            if (error) throw error
-            setStep('success')
-        } catch (err: any) {
-            setError(err.message)
-        } finally {
-            setSubmitting(false)
-        }
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-stone-50">
+                <div className="text-stone-600">Loading...</div>
+            </div>
+        )
     }
 
-    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-
-        setSubmitting(true)
-        try {
-            const { data: { user } } = await supabase.auth.getUser()
-
-            // Upload to storage
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${user?.id}/${Date.now()}.${fileExt}`
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('verification-proofs')
-                .upload(fileName, file)
-
-            if (uploadError) throw uploadError
-
-            const { error } = await supabase
-                .from('verification_requests')
-                .insert({
-                    range_id: id,
-                    user_id: user?.id,
-                    method: 'photo',
-                    proof_image_url: uploadData.path,
-                    status: 'pending'
-                })
-            if (error) throw error
-            setStep('success')
-        } catch (err: any) {
-            setError(err.message)
-        } finally {
-            setSubmitting(false)
-        }
+    if (success) {
+        return (
+            <div className="min-h-screen bg-stone-50 py-12 px-4">
+                <div className="max-w-2xl mx-auto">
+                    <div className="bg-white rounded-2xl shadow-lg border border-stone-200 p-10">
+                        <div className="text-center">
+                            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <CheckCircle2 className="w-12 h-12 text-emerald-600" />
+                            </div>
+                            <h2 className="text-3xl font-bold text-stone-900 mb-4">Verification Submitted!</h2>
+                            <p className="text-lg text-stone-600 mb-8">
+                                Thank you for submitting your verification documents. Our team will review your claim within 2-3 business days.
+                            </p>
+                            <p className="text-stone-500 mb-8">
+                                You'll receive an email notification once your claim has been approved or if we need any additional information.
+                            </p>
+                            <button
+                                onClick={() => router.push('/dashboard')}
+                                className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors"
+                            >
+                                Return to Dashboard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
     }
-
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-stone-50">Loading...</div>
 
     return (
         <div className="min-h-screen bg-stone-50 py-12 px-4">
-            <div className="max-w-2xl mx-auto">
-
+            <div className="max-w-3xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-8">
-                    <button onClick={() => step === 'choose' ? router.push('/dashboard') : setStep('choose')} className="p-2 hover:bg-stone-200 rounded-full transition-colors">
+                    <button
+                        onClick={() => router.push('/dashboard/onboarding')}
+                        className="p-2 hover:bg-stone-200 rounded-full transition-colors"
+                    >
                         <ArrowLeft className="w-6 h-6 text-stone-600" />
                     </button>
-                    <h1 className="text-3xl font-extrabold text-stone-900">Prove you own this range</h1>
+                    <div>
+                        <h1 className="text-3xl font-bold text-stone-900">Verify Your Business</h1>
+                        <p className="text-stone-600 mt-1">Claiming: {range?.name}</p>
+                    </div>
                 </div>
 
-                <div className="bg-white rounded-3xl shadow-xl border-4 border-emerald-500 overflow-hidden">
+                {/* Form */}
+                <div className="bg-white rounded-2xl shadow-lg border border-stone-200 p-8">
+                    <div className="flex items-start gap-4 mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <ShieldCheck className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                        <div>
+                            <h3 className="font-semibold text-blue-900 mb-1">Business Verification Required</h3>
+                            <p className="text-sm text-blue-700">
+                                To ensure the accuracy of our directory, we need to verify that you are the authorized representative of this archery range.
+                                Please provide the following information and documents.
+                            </p>
+                        </div>
+                    </div>
 
-                    {/* Main Content Area */}
-                    <div className="p-10">
-                        {step === 'choose' && (
-                            <div className="space-y-8">
-                                <div className="text-center mb-10">
-                                    <ShieldCheck className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
-                                    <p className="text-xl text-stone-600">To keep our data accurate, we need to verify that you are the real owner of <strong>{range?.name}</strong>.</p>
-                                </div>
-
-                                <div className="grid gap-6">
-                                    {/* Option 2: Photo Upload (Primary) */}
-                                    <button
-                                        onClick={() => setStep('photo')}
-                                        className="flex items-center gap-6 p-8 bg-emerald-50 hover:bg-emerald-100 border-4 border-emerald-500 rounded-2xl text-left transition-all transform hover:scale-[1.02]"
-                                    >
-                                        <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                            <Camera className="w-8 h-8 text-white" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-2xl font-bold text-emerald-900">Fastest: Upload a Photo</h2>
-                                            <p className="text-emerald-700 text-lg">Send a picture of your signage, business license, or insurance document.</p>
-                                        </div>
-                                        <ChevronRight className="w-8 h-8 text-emerald-500 ml-auto" />
-                                    </button>
-
-                                    {/* Option 1: Social Media */}
-                                    <button
-                                        onClick={() => setStep('social')}
-                                        className="flex items-center gap-6 p-8 bg-blue-50 hover:bg-blue-100 border-4 border-blue-400 rounded-2xl text-left transition-all transform hover:scale-[1.02]"
-                                    >
-                                        <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                            <Facebook className="w-8 h-8 text-white" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-2xl font-bold text-blue-900">Facebook Message</h2>
-                                            <p className="text-blue-700 text-lg">Send us a message from your official page to verify instantly.</p>
-                                        </div>
-                                        <ChevronRight className="w-8 h-8 text-blue-400 ml-auto" />
-                                    </button>
-
-                                    {/* Option 3: Phone/Call Request */}
-                                    <button
-                                        onClick={() => setStep('call')}
-                                        className="flex items-center gap-6 p-8 bg-amber-50 hover:bg-amber-100 border-4 border-amber-400 rounded-2xl text-left transition-all transform hover:scale-[1.02]"
-                                    >
-                                        <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                            <Phone className="w-8 h-8 text-white" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-2xl font-bold text-amber-900">Request a Call</h2>
-                                            <p className="text-amber-700 text-lg">If you can't upload a photo, we'll give you a call at the range number.</p>
-                                        </div>
-                                        <ChevronRight className="w-8 h-8 text-amber-400 ml-auto" />
-                                    </button>
-                                </div>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Personal Information */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-stone-700 mb-2">
+                                    First Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    required
+                                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-stone-900"
+                                    placeholder="John"
+                                />
                             </div>
-                        )}
+                            <div>
+                                <label className="block text-sm font-medium text-stone-700 mb-2">
+                                    Last Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    required
+                                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-stone-900"
+                                    placeholder="Smith"
+                                />
+                            </div>
+                        </div>
 
-                        {step === 'social' && (
-                            <div className="space-y-8 py-4">
-                                <div className="bg-blue-50 p-6 rounded-2xl border-2 border-blue-200">
-                                    <h3 className="text-2xl font-bold text-blue-900 mb-4 flex items-center gap-2">
-                                        <Facebook className="w-6 h-6" /> Instructions
-                                    </h3>
-                                    <ol className="list-decimal list-inside space-y-4 text-lg text-blue-800">
-                                        <li>Go to our <a href="https://facebook.com/ArcheryRangesCanada" target="_blank" className="font-bold underline decoration-2">Facebook Page</a></li>
-                                        <li>Compose a new message from your business account</li>
-                                        <li>Send the following code:</li>
-                                    </ol>
-                                    <div className="mt-6 p-6 bg-white border-2 border-dashed border-blue-400 rounded-xl text-center">
-                                        <span className="text-4xl font-mono font-black text-blue-900 select-all">ARC-{id?.toString().substring(0, 4).toUpperCase()}</span>
+                        {/* GST Number */}
+                        <div>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                                GST Number <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={gstNumber}
+                                onChange={(e) => setGstNumber(e.target.value)}
+                                required
+                                className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-stone-900"
+                                placeholder="123456789RT0001"
+                            />
+                            <p className="mt-1 text-sm text-stone-500">Your business GST/HST registration number</p>
+                        </div>
+
+                        {/* Business License Upload */}
+                        <div>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                                Master Business License <span className="text-red-500">*</span>
+                            </label>
+                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-stone-300 border-dashed rounded-lg hover:border-emerald-500 transition-colors">
+                                <div className="space-y-1 text-center">
+                                    <FileText className="mx-auto h-12 w-12 text-stone-400" />
+                                    <div className="flex text-sm text-stone-600">
+                                        <label
+                                            htmlFor="business-license"
+                                            className="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500 focus-within:outline-none"
+                                        >
+                                            <span>Upload a file</span>
+                                            <input
+                                                id="business-license"
+                                                name="business-license"
+                                                type="file"
+                                                className="sr-only"
+                                                accept=".pdf,.jpg,.jpeg,.png,.txt"
+                                                onChange={(e) => setBusinessLicense(e.target.files?.[0] || null)}
+                                                required
+                                            />
+                                        </label>
+                                        <p className="pl-1">or drag and drop</p>
                                     </div>
-                                </div>
-                                <button
-                                    onClick={handleSocialSubmit}
-                                    disabled={submitting}
-                                    className="w-full py-6 bg-emerald-500 hover:bg-emerald-600 text-white text-2xl font-black rounded-2xl shadow-xl transition-all disabled:bg-stone-300"
-                                >
-                                    {submitting ? 'Sending...' : 'I HAVE SENT THE MESSAGE'}
-                                </button>
-                            </div>
-                        )}
-
-                        {step === 'photo' && (
-                            <div className="space-y-8 py-4 text-center">
-                                <div className="border-4 border-dashed border-stone-200 rounded-3xl p-12 bg-stone-50">
-                                    <Upload className="w-20 h-20 text-stone-300 mx-auto mb-6" />
-                                    <h3 className="text-2xl font-bold text-stone-800 mb-4">Click below to pick a photo</h3>
-                                    <input
-                                        type="file"
-                                        id="photo-upload"
-                                        className="hidden"
-                                        onChange={handlePhotoUpload}
-                                        accept="image/*"
-                                    />
-                                    <label
-                                        htmlFor="photo-upload"
-                                        className="inline-block px-10 py-6 bg-emerald-500 hover:bg-emerald-600 text-white text-2xl font-black rounded-2xl cursor-pointer shadow-lg transition-all"
-                                    >
-                                        CHOOSE A PHOTO
-                                    </label>
-                                    <p className="mt-6 text-stone-500 text-lg">Signage, Business License, or Insurance Doc</p>
+                                    <p className="text-xs text-stone-500">PDF, PNG, JPG up to 10MB</p>
+                                    {businessLicense && (
+                                        <p className="text-sm text-emerald-600 font-medium mt-2">
+                                            ✓ {businessLicense.name}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
-                        )}
+                        </div>
 
-                        {step === 'call' && (
-                            <div className="space-y-8 py-4 text-center">
-                                <div className="p-10 bg-amber-50 rounded-3xl border-2 border-amber-200">
-                                    <p className="text-2xl text-amber-900 font-medium">We'll reach out to your range's official phone number to confirm your identity.</p>
-                                </div>
-                                <button
-                                    onClick={handleCallRequest}
-                                    disabled={submitting}
-                                    className="w-full py-8 bg-emerald-500 hover:bg-emerald-600 text-white text-2xl font-black rounded-2xl shadow-xl transition-all disabled:bg-stone-300"
-                                >
-                                    {submitting ? 'Requesting...' : 'REQUEST CALL NOW'}
-                                </button>
-                            </div>
-                        )}
-
-                        {step === 'success' && (
-                            <div className="space-y-8 py-4">
-                                <div className="text-center">
-                                    <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                        <CheckCircle2 className="w-16 h-16 text-emerald-500" />
+                        {/* Insurance Certificate Upload */}
+                        <div>
+                            <label className="block text-sm font-medium text-stone-700 mb-2">
+                                Certificate of Insurance <span className="text-red-500">*</span>
+                            </label>
+                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-stone-300 border-dashed rounded-lg hover:border-emerald-500 transition-colors">
+                                <div className="space-y-1 text-center">
+                                    <Building2 className="mx-auto h-12 w-12 text-stone-400" />
+                                    <div className="flex text-sm text-stone-600">
+                                        <label
+                                            htmlFor="insurance"
+                                            className="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500 focus-within:outline-none"
+                                        >
+                                            <span>Upload a file</span>
+                                            <input
+                                                id="insurance"
+                                                name="insurance"
+                                                type="file"
+                                                className="sr-only"
+                                                accept=".pdf,.jpg,.jpeg,.png,.txt"
+                                                onChange={(e) => setInsurance(e.target.files?.[0] || null)}
+                                                required
+                                            />
+                                        </label>
+                                        <p className="pl-1">or drag and drop</p>
                                     </div>
-                                    <h2 className="text-4xl font-black text-stone-900 mb-4">Verification Sent!</h2>
-                                    <p className="text-2xl text-stone-600">Our team will review your proof within 24-48 hours. You'll get an email once approved.</p>
+                                    <p className="text-xs text-stone-500">PDF, PNG, JPG up to 10MB</p>
+                                    {insurance && (
+                                        <p className="text-sm text-emerald-600 font-medium mt-2">
+                                            ✓ {insurance.name}
+                                        </p>
+                                    )}
                                 </div>
-
-                                <div className="my-12 h-1 bg-stone-100" />
-
-                                {/* Upsell Section */}
-                                <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-2xl overflow-hidden relative">
-                                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                                        <Zap className="w-32 h-32" />
-                                    </div>
-
-                                    <h3 className="text-3xl font-black mb-6 flex items-center gap-3">
-                                        <Star className="w-8 h-8 text-amber-400 fill-amber-400" />
-                                        While you wait...
-                                    </h3>
-
-                                    <p className="text-xl text-indigo-100 mb-8">Make your range stand out with a <strong>Premium Listing</strong>.</p>
-
-                                    <ul className="space-y-4 mb-10">
-                                        <li className="flex items-center gap-4 text-lg">
-                                            <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
-                                                <Zap className="w-4 h-4" />
-                                            </div>
-                                            #1 Priority Search Placement
-                                        </li>
-                                        <li className="flex items-center gap-4 text-lg">
-                                            <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
-                                                <Camera className="w-4 h-4" />
-                                            </div>
-                                            Full Photo & Video Gallery
-                                        </li>
-                                        <li className="flex items-center gap-4 text-lg">
-                                            <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
-                                                <MessageSquare className="w-4 h-4" />
-                                            </div>
-                                            Direct Lead Messaging
-                                        </li>
-                                    </ul>
-
-                                    <Link
-                                        href="/dashboard/subscribe"
-                                        className="block w-full text-center py-6 bg-white text-indigo-700 text-2xl font-black rounded-2xl hover:bg-stone-50 transition-all shadow-xl"
-                                    >
-                                        UPGRADE NOW
-                                    </Link>
-                                </div>
-
-                                <button
-                                    onClick={() => router.push('/dashboard')}
-                                    className="w-full py-4 text-stone-500 font-bold hover:text-stone-800 transition-colors"
-                                >
-                                    Return to Dashboard
-                                </button>
                             </div>
-                        )}
+                        </div>
 
+                        {/* Error Message */}
                         {error && (
-                            <div className="mt-8 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 font-bold text-center">
-                                {error}
+                            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                                <p className="text-sm text-red-700">{error}</p>
                             </div>
                         )}
-                    </div>
 
-                    <div className="bg-stone-50 p-6 text-center border-t border-stone-100">
-                        <p className="text-stone-500 font-medium">Archery Ranges Canada Official Verification System</p>
-                    </div>
+                        {/* Submit Button */}
+                        <div className="flex gap-4 pt-4">
+                            <button
+                                type="button"
+                                onClick={() => router.push('/dashboard/onboarding')}
+                                className="flex-1 px-6 py-3 border border-stone-300 text-stone-700 font-semibold rounded-lg hover:bg-stone-50 transition-colors"
+                            >
+                                Back
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={submitting}
+                                className="flex-1 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-400 text-white font-semibold rounded-lg transition-colors"
+                            >
+                                {submitting ? 'Submitting...' : 'Submit for Verification'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                {/* Info Box */}
+                <div className="mt-6 p-4 bg-stone-100 rounded-lg border border-stone-200">
+                    <h4 className="font-semibold text-stone-900 mb-2">What happens next?</h4>
+                    <ul className="space-y-1 text-sm text-stone-600">
+                        <li>• Our team will review your documents within 2-3 business days</li>
+                        <li>• You'll receive an email notification once approved</li>
+                        <li>• If approved, you'll get full access to manage your listing</li>
+                        <li>• We may contact you if additional information is needed</li>
+                    </ul>
                 </div>
             </div>
         </div>

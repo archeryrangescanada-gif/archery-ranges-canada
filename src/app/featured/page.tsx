@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { supabaseClient } from '@/lib/auth'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 
 interface Province {
   id: string
@@ -67,41 +69,7 @@ export default function FeaturedPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
-            <img
-              src="/logo.png?v=2"
-              alt="Archery Ranges Canada"
-              className="h-28 w-auto object-contain"
-            />
-          </Link>
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/" className="hover:text-green-100 transition-colors font-medium">
-              Home
-            </Link>
-            <Link href="/blog" className="hover:text-green-100 transition-colors font-medium">
-              Blog
-            </Link>
-            <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
-              Pricing
-            </Link>
-            <div className="border-l border-green-600 pl-6 flex items-center space-x-3">
-              <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium">
-                Sign In
-              </Link>
-              <Link href="/auth/signup" className="bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors">
-                Sign Up
-              </Link>
-            </div>
-          </nav>
-          <button className="md:hidden text-white">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="relative text-white bg-gradient-to-br from-green-600 via-green-700 to-green-800">
@@ -269,48 +237,7 @@ export default function FeaturedPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-12 mt-20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <img
-                src="/logo.png?v=2"
-                alt="Archery Ranges Canada"
-                className="h-20 w-auto object-contain mb-4"
-              />
-              <p className="text-green-100">
-                Your complete directory of archery ranges across Canada
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-green-100">
-                <li><Link href="/" className="hover:text-white">Home</Link></li>
-                <li><Link href="/blog" className="hover:text-white">Blog</Link></li>
-                <li><Link href="/about" className="hover:text-white">About</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Range Owners</h4>
-              <ul className="space-y-2 text-green-100">
-                <li><Link href="/claim" className="hover:text-white">Claim Your Listing</Link></li>
-                <li><Link href="/premium" className="hover:text-white">Premium Features</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-green-100">
-                <li><Link href="/blog" className="hover:text-white">Archery Tips</Link></li>
-                <li><Link href="/blog" className="hover:text-white">Beginner Guides</Link></li>
-                <li><Link href="/blog" className="hover:text-white">Equipment Reviews</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-green-600 pt-8 text-center text-green-100">
-            <p>© 2025 Archery Ranges Canada. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

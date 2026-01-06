@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Check, X, Star, Shield, TrendingUp, Crown, MapPin, Phone, Mail, Globe, Camera, Calendar, MessageSquare, BarChart3, FileText, Users } from 'lucide-react'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 
 type BillingPeriod = 'monthly' | 'yearly'
 
@@ -198,36 +200,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
       {/* Header */}
-      <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
-            <img
-              src="/logo.png?v=2"
-              alt="Archery Ranges Canada"
-              className="h-20 w-auto object-contain"
-            />
-          </Link>
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/" className="hover:text-green-100 transition-colors font-medium">
-              Home
-            </Link>
-            <Link href="/blog" className="hover:text-green-100 transition-colors font-medium">
-              Blog
-            </Link>
-            <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium border-b-2 border-white pb-1">
-              Pricing
-            </Link>
-            <div className="border-l border-green-600 pl-6 flex items-center space-x-3">
-              <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium">
-                Sign In
-              </Link>
-              <Link href="/auth/signup" className="bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors">
-                Sign Up
-              </Link>
-            </div>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="py-16 px-4">
@@ -244,8 +217,8 @@ export default function PricingPage() {
             <button
               onClick={() => setBillingPeriod('monthly')}
               className={`px-6 py-2 rounded-full font-medium transition-all ${billingPeriod === 'monthly'
-                  ? 'bg-green-600 text-white shadow-sm'
-                  : 'text-stone-600 hover:text-stone-800'
+                ? 'bg-green-600 text-white shadow-sm'
+                : 'text-stone-600 hover:text-stone-800'
                 }`}
             >
               Monthly
@@ -253,8 +226,8 @@ export default function PricingPage() {
             <button
               onClick={() => setBillingPeriod('yearly')}
               className={`px-6 py-2 rounded-full font-medium transition-all ${billingPeriod === 'yearly'
-                  ? 'bg-green-600 text-white shadow-sm'
-                  : 'text-stone-600 hover:text-stone-800'
+                ? 'bg-green-600 text-white shadow-sm'
+                : 'text-stone-600 hover:text-stone-800'
                 }`}
             >
               Yearly
@@ -274,8 +247,8 @@ export default function PricingPage() {
               <div
                 key={tier.id}
                 className={`relative bg-white rounded-2xl shadow-lg border-2 transition-all hover:shadow-xl ${tier.highlighted
-                    ? 'border-green-500 ring-4 ring-green-100'
-                    : 'border-stone-200'
+                  ? 'border-green-500 ring-4 ring-green-100'
+                  : 'border-stone-200'
                   }`}
               >
                 {tier.popularLabel && (
@@ -340,10 +313,10 @@ export default function PricingPage() {
                   <Link
                     href={tier.ctaLink}
                     className={`block w-full text-center py-3 px-4 rounded-lg font-semibold transition-colors ${tier.highlighted
-                        ? 'bg-green-600 hover:bg-green-700 text-white'
-                        : tier.monthlyPrice === 0
-                          ? 'bg-stone-100 hover:bg-stone-200 text-stone-700'
-                          : 'bg-stone-800 hover:bg-stone-900 text-white'
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : tier.monthlyPrice === 0
+                        ? 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                        : 'bg-stone-800 hover:bg-stone-900 text-white'
                       }`}
                   >
                     {tier.cta}
@@ -595,47 +568,7 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <img
-                src="/logo.png?v=2"
-                alt="Archery Ranges Canada"
-                className="h-16 w-auto object-contain mb-4"
-              />
-              <p className="text-green-100">
-                Canada's most comprehensive archery range directory
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-green-100">
-                <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
-                <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Range Owners</h4>
-              <ul className="space-y-2 text-green-100">
-                <li><Link href="/auth/signup" className="hover:text-white transition-colors">List Your Range</Link></li>
-                <li><Link href="/claim" className="hover:text-white transition-colors">Claim Listing</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-green-100">
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
-                <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-green-600 pt-8 text-center text-green-100">
-            <p>© 2025 Archery Ranges Canada. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
