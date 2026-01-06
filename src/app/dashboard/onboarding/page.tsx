@@ -15,8 +15,8 @@ interface Range {
   id: string
   name: string
   address: string
-  city?: { name: string }
-  province?: { name: string }
+  cities?: { name: string }
+  provinces?: { name: string }
   facility_type: string
 }
 
@@ -65,6 +65,7 @@ export default function OnboardingPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Range[]>([])
   const [searching, setSearching] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
   const [selectedRange, setSelectedRange] = useState<Range | null>(null)
 
   const [formData, setFormData] = useState<FormData>({
@@ -112,40 +113,31 @@ export default function OnboardingPage() {
     if (!trimmedQuery) return
 
     setSearching(true)
+    setHasSearched(true)
     setError('')
     console.log('[Search] Starting search for:', trimmedQuery)
 
     try {
-      // We search for everything first, then filter or show status
-      const { data, error: searchError } = await supabase
-        .from('ranges')
-        .select(`
-          id, 
-          name, 
-          address, 
-          facility_type,
-          owner_id,
-          city:cities(name),
-          province:provinces(name)
-        `)
-        .ilike('name', `%${trimmedQuery}%`)
-        .limit(20)
+      // Use API route to search (bypasses RLS)
+      const response = await fetch(`/api/ranges/search?q=${encodeURIComponent(trimmedQuery)}`)
+
+      if (!response.ok) {
+        throw new Error('Search request failed')
+      }
+
+      const { ranges, error: searchError } = await response.json()
 
       if (searchError) {
         console.error('[Search] Error:', searchError)
-        throw searchError
+        throw new Error(searchError)
       }
 
-      console.log('[Search] Raw data returned:', data)
+      console.log('[Search] Results returned:', ranges?.length || 0)
 
-      // Filter for unclaimed listings
-      const unclaimed = data?.filter(r => !r.owner_id) || []
-      console.log('[Search] Unclaimed results:', unclaimed.length)
+      setSearchResults(ranges || [])
 
-      setSearchResults(unclaimed as any)
-
-      if (unclaimed.length === 0 && data && data.length > 0) {
-        setError('All matching ranges are already claimed. If you believe this is an error, please contact support.')
+      if (ranges?.length === 0) {
+        setError('No unclaimed ranges found matching your search. Try a different search term or create a new listing.')
       }
 
     } catch (err: any) {
@@ -156,41 +148,6 @@ export default function OnboardingPage() {
     }
   }
 
-  // Submit claim for existing listing
-  const handleClaimSubmit = async () => {
-    if (!selectedRange) return
-
-    setLoading(true)
-    setError('')
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
-
-      // Create a claim request
-      const { error: claimError } = await supabase
-        .from('claims')
-        .insert({
-          range_id: selectedRange.id,
-          user_id: user.id,
-          status: 'pending',
-          submitted_at: new Date().toISOString(),
-        })
-
-      if (claimError) throw claimError
-
-      // Redirect to verification flow
-      router.push(`/dashboard/verify/${selectedRange.id}`)
-    } catch (err: any) {
-      setError(err.message || 'Failed to submit claim')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // Helper function to create a slug from name
   const createSlug = (name: string): string => {
@@ -563,8 +520,8 @@ export default function OnboardingPage() {
                             <p className="font-medium text-stone-800">{range.name}</p>
                             <p className="text-sm text-stone-500">
                               {range.address}
-                              {range.city && `, ${range.city.name}`}
-                              {range.province && `, ${range.province.name}`}
+                              {range.cities && `, ${range.cities.name}`}
+                              {range.provinces && `, ${range.provinces.name}`}
                             </p>
                             <span className="inline-block mt-1 text-xs px-2 py-0.5 bg-stone-100 text-stone-600 rounded">
                               {range.facility_type}
@@ -576,7 +533,7 @@ export default function OnboardingPage() {
                   </div>
                 )}
 
-                {searchResults.length === 0 && searchQuery && !searching && (
+                {searchResults.length === 0 && hasSearched && !searching && (
                   <div className="text-center py-8">
                     <p className="text-stone-500 mb-4">No ranges found matching "{searchQuery}"</p>
                     <button
@@ -600,8 +557,8 @@ export default function OnboardingPage() {
                         <p className="font-medium text-stone-800">{selectedRange.name}</p>
                         <p className="text-sm text-stone-600">
                           {selectedRange.address}
-                          {selectedRange.city && `, ${selectedRange.city.name}`}
-                          {selectedRange.province && `, ${selectedRange.province.name}`}
+                          {selectedRange.cities && `, ${selectedRange.cities.name}`}
+                          {selectedRange.provinces && `, ${selectedRange.provinces.name}`}
                         </p>
                       </div>
                     </div>
@@ -619,13 +576,12 @@ export default function OnboardingPage() {
                   >
                     Choose Different Range
                   </button>
-                  <button
-                    onClick={handleClaimSubmit}
-                    disabled={loading}
-                    className="flex-1 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-stone-400 text-white font-semibold rounded-lg transition-colors"
+                  <Link
+                    href={`/dashboard/verify/${selectedRange.id}`}
+                    className="flex-1 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors text-center"
                   >
-                    {loading ? 'Submitting...' : 'Submit Claim Request'}
-                  </button>
+                    Verify Claim
+                  </Link>
                 </div>
               </>
             )}

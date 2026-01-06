@@ -1,18 +1,21 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle, XCircle, Eye, Clock, FileText, Camera, Phone, Facebook } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface VerificationRequest {
   id: string
   range_id: string
   user_id: string
-  method: 'social' | 'photo' | 'call'
-  proof_image_url?: string
-  verification_code?: string
-  status: 'pending' | 'approved' | 'denied'
+  first_name: string
+  last_name: string
+  gst_number: string
+  business_license_url: string
+  insurance_certificate_url: string
+  status: 'pending' | 'approved' | 'rejected'
   rejection_reason?: string
+  submitted_at: string
   created_at: string
   range?: {
     name: string
@@ -30,10 +33,38 @@ export default function ClaimsPage() {
   const [showModal, setShowModal] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
   const [processing, setProcessing] = useState(false)
+  const [licenseUrl, setLicenseUrl] = useState<string | null>(null)
+  const [insuranceUrl, setInsuranceUrl] = useState<string | null>(null)
 
   useEffect(() => {
     fetchRequests()
   }, [])
+
+  useEffect(() => {
+    if (selectedRequest && showModal) {
+      fetchDocumentUrls()
+    }
+  }, [selectedRequest, showModal])
+
+  const fetchDocumentUrls = async () => {
+    if (!selectedRequest) return
+
+    try {
+      // Generate signed URLs for the documents (valid for 1 hour)
+      const { data: licenseData } = await supabase.storage
+        .from('verification-documents')
+        .createSignedUrl(selectedRequest.business_license_url, 3600)
+
+      const { data: insuranceData } = await supabase.storage
+        .from('verification-documents')
+        .createSignedUrl(selectedRequest.insurance_certificate_url, 3600)
+
+      setLicenseUrl(licenseData?.signedUrl || null)
+      setInsuranceUrl(insuranceData?.signedUrl || null)
+    } catch (err) {
+      console.error('Error fetching document URLs:', err)
+    }
+  }
 
   const fetchRequests = async () => {
     setLoading(true)
@@ -102,7 +133,7 @@ export default function ClaimsPage() {
       const { error } = await supabase
         .from('verification_requests')
         .update({
-          status: 'denied',
+          status: 'rejected',
           rejection_reason: rejectionReason
         })
         .eq('id', selectedRequest.id)
@@ -117,15 +148,6 @@ export default function ClaimsPage() {
       alert('Error: ' + err.message)
     } finally {
       setProcessing(false)
-    }
-  }
-
-  const getMethodIcon = (method: string) => {
-    switch (method) {
-      case 'photo': return <Camera className="w-5 h-5 text-emerald-500" />
-      case 'social': return <Facebook className="w-5 h-5 text-blue-500" />
-      case 'call': return <Phone className="w-5 h-5 text-amber-500" />
-      default: return null
     }
   }
 
@@ -149,8 +171,8 @@ export default function ClaimsPage() {
           <p className="text-4xl font-black text-emerald-600 mt-1">{requests.filter(r => r.status === 'approved').length}</p>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-          <p className="text-sm font-bold text-stone-500 uppercase tracking-wider">Denied</p>
-          <p className="text-4xl font-black text-red-600 mt-1">{requests.filter(r => r.status === 'denied').length}</p>
+          <p className="text-sm font-bold text-stone-500 uppercase tracking-wider">Rejected</p>
+          <p className="text-4xl font-black text-red-600 mt-1">{requests.filter(r => r.status === 'rejected').length}</p>
         </div>
       </div>
 
@@ -159,7 +181,7 @@ export default function ClaimsPage() {
           <thead className="bg-stone-50 border-b border-stone-200">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-bold text-stone-600">Range Name</th>
-              <th className="px-6 py-4 text-left text-sm font-bold text-stone-600">Method</th>
+              <th className="px-6 py-4 text-left text-sm font-bold text-stone-600">Applicant</th>
               <th className="px-6 py-4 text-left text-sm font-bold text-stone-600">Status</th>
               <th className="px-6 py-4 text-left text-sm font-bold text-stone-600">Submitted</th>
               <th className="px-6 py-4 text-right text-sm font-bold text-stone-600">Actions</th>
@@ -170,20 +192,19 @@ export default function ClaimsPage() {
               <tr key={request.id} className="hover:bg-stone-50 transition-colors">
                 <td className="px-6 py-6 font-bold text-stone-800">{request.range?.name || 'Unknown Range'}</td>
                 <td className="px-6 py-6">
-                  <div className="flex items-center gap-2">
-                    {getMethodIcon(request.method)}
-                    <span className="capitalize text-stone-700">{request.method}</span>
+                  <div className="text-stone-700">
+                    {request.first_name} {request.last_name}
                   </div>
                 </td>
                 <td className="px-6 py-6">
                   <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-tight ${request.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
-                      request.status === 'denied' ? 'bg-red-100 text-red-700' :
+                      request.status === 'rejected' ? 'bg-red-100 text-red-700' :
                         'bg-amber-100 text-amber-700'
                     }`}>
                     {request.status}
                   </span>
                 </td>
-                <td className="px-6 py-6 text-sm text-stone-500">{new Date(request.created_at).toLocaleDateString()}</td>
+                <td className="px-6 py-6 text-sm text-stone-500">{new Date(request.submitted_at).toLocaleDateString()}</td>
                 <td className="px-6 py-6 text-right">
                   <button
                     onClick={() => { setSelectedRequest(request); setShowModal(true); }}
@@ -210,36 +231,50 @@ export default function ClaimsPage() {
                   <p className="text-xl font-bold text-stone-900">{selectedRequest.range?.name}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-stone-400 uppercase mb-1">Method</label>
-                  <p className="text-xl font-bold text-stone-900 capitalize">{selectedRequest.method}</p>
+                  <label className="block text-xs font-black text-stone-400 uppercase mb-1">Applicant</label>
+                  <p className="text-xl font-bold text-stone-900">{selectedRequest.first_name} {selectedRequest.last_name}</p>
                 </div>
               </div>
 
-              {selectedRequest.method === 'photo' && selectedRequest.proof_image_url && (
+              <div>
+                <label className="block text-xs font-black text-stone-400 uppercase mb-1">GST Number</label>
+                <p className="text-lg font-mono font-bold text-stone-900">{selectedRequest.gst_number}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-black text-stone-400 uppercase mb-2">Proof Image</label>
-                  <div className="rounded-2xl border-4 border-stone-100 overflow-hidden bg-stone-50 aspect-video flex items-center justify-center">
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/verification-proofs/${selectedRequest.proof_image_url}`}
-                      className="max-h-full object-contain"
-                      alt="Proof"
-                    />
-                  </div>
+                  <label className="block text-xs font-black text-stone-400 uppercase mb-2">Business License</label>
+                  {licenseUrl ? (
+                    <a
+                      href={licenseUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border-2 border-emerald-200 text-emerald-700 font-bold rounded-lg hover:bg-emerald-100 transition-colors"
+                    >
+                      <FileText className="w-5 h-5" />
+                      View Document
+                    </a>
+                  ) : (
+                    <p className="text-sm text-stone-500">Loading...</p>
+                  )}
                 </div>
-              )}
-
-              {selectedRequest.method === 'social' && (
-                <div className="p-4 bg-blue-50 border-2 border-blue-100 rounded-2xl">
-                  <label className="block text-xs font-black text-blue-400 uppercase mb-1">Verification Code Sent</label>
-                  <p className="text-3xl font-mono font-black text-blue-900">{selectedRequest.verification_code || 'N/A'}</p>
+                <div>
+                  <label className="block text-xs font-black text-stone-400 uppercase mb-2">Insurance Certificate</label>
+                  {insuranceUrl ? (
+                    <a
+                      href={insuranceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border-2 border-blue-200 text-blue-700 font-bold rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                      <FileText className="w-5 h-5" />
+                      View Document
+                    </a>
+                  ) : (
+                    <p className="text-sm text-stone-500">Loading...</p>
+                  )}
                 </div>
-              )}
-
-              {selectedRequest.method === 'call' && (
-                <div className="p-4 bg-amber-50 border-2 border-amber-100 rounded-2xl">
-                  <p className="text-lg font-bold text-amber-900">User is waiting for a phone call to verify ownership.</p>
-                </div>
-              )}
+              </div>
 
               {selectedRequest.status === 'pending' && (
                 <div className="pt-6 border-t border-stone-100">
@@ -247,7 +282,7 @@ export default function ClaimsPage() {
                   <textarea
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
-                    className="w-full p-4 border-2 border-stone-100 rounded-2xl focus:border-emerald-500 focus:ring-0 outline-none transition-all"
+                    className="w-full p-4 border-2 border-stone-100 rounded-2xl focus:border-emerald-500 focus:ring-0 outline-none transition-all text-stone-900"
                     placeholder="Tell the user why you're denying their claim..."
                     rows={3}
                   />
