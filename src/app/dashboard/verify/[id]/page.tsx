@@ -142,7 +142,7 @@ export default function VerificationPage() {
                                 Thank you for submitting your verification documents. Our team will review your claim within 2-3 business days.
                             </p>
                             <p className="text-stone-500 mb-8">
-                                You'll receive an email notification once your claim has been approved or if we need any additional information.
+                                You&apos;ll receive an email notification once your claim has been approved or if we need any additional information.
                             </p>
                             <button
                                 onClick={() => router.push('/dashboard')}
@@ -338,8 +338,8 @@ export default function VerificationPage() {
                     <h4 className="font-semibold text-stone-900 mb-2">What happens next?</h4>
                     <ul className="space-y-1 text-sm text-stone-600">
                         <li>• Our team will review your documents within 2-3 business days</li>
-                        <li>• You'll receive an email notification once approved</li>
-                        <li>• If approved, you'll get full access to manage your listing</li>
+                        <li>• You&apos;ll receive an email notification once approved</li>
+                        <li>• If approved, you&apos;ll get full access to manage your listing</li>
                         <li>• We may contact you if additional information is needed</li>
                     </ul>
                 </div>

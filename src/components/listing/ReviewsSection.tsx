@@ -159,7 +159,7 @@ function ReviewForm({ rangeId, rangeName, onClose }: { rangeId: string; rangeNam
     return (
       <div className="mb-6 p-6 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
         <p className="text-emerald-700 font-medium mb-2">Thank you for your review!</p>
-        <p className="text-sm text-emerald-600">Your review will be visible once it's approved.</p>
+        <p className="text-sm text-emerald-600">Your review will be visible once it&apos;s approved.</p>
       </div>
     );
   }

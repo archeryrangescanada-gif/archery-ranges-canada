@@ -32,7 +32,7 @@ const provinceInfo: Record<string, {
   topActivities: string[];
 }> = {
   'ontario': {
-    description: 'Ontario is home to Canada\'s largest archery community with facilities ranging from Olympic-level training centers in Toronto to scenic outdoor courses in Muskoka.',
+    description: 'Ontario is home to Canada&apos;s largest archery community with facilities ranging from Olympic-level training centers in Toronto to scenic outdoor courses in Muskoka.',
     popularCities: ['Toronto', 'Ottawa', 'Hamilton', 'Mississauga', 'London'],
     topActivities: ['3D target shooting', 'Olympic recurve training', 'Bowhunting courses']
   },
@@ -42,12 +42,12 @@ const provinceInfo: Record<string, {
     topActivities: ['Mountain field archery', 'Traditional bow making', 'Wildlife archery courses']
   },
   'alberta': {
-    description: 'Alberta\'s archery scene combines prairie hunting traditions with modern indoor ranges, particularly strong in Calgary and Edmonton.',
+    description: 'Alberta&apos;s archery scene combines prairie hunting traditions with modern indoor ranges, particularly strong in Calgary and Edmonton.',
     popularCities: ['Calgary', 'Edmonton', 'Red Deer', 'Lethbridge'],
     topActivities: ['Elk hunting preparation', 'Compound bow training', '3D shoots']
   },
   'quebec': {
-    description: 'Quebec has a vibrant archery culture with bilingual instruction available at most facilities, from Montreal\'s urban ranges to rural Laurentian courses.',
+    description: 'Quebec has a vibrant archery culture with bilingual instruction available at most facilities, from Montreal&apos;s urban ranges to rural Laurentian courses.',
     popularCities: ['Montreal', 'Quebec City', 'Laval', 'Gatineau'],
     topActivities: ['Traditional archery', 'Youth programs', 'Winter indoor leagues']
   },
@@ -253,7 +253,7 @@ export default async function ProvincePage({ params }: PageProps) {
             <Target className="w-16 h-16 text-stone-300 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-stone-800 mb-2">Coming Soon</h2>
             <p className="text-stone-600 mb-6">
-              We're adding archery ranges in {province.name}. Check back soon!
+              We&apos;re adding archery ranges in {province.name}. Check back soon!
             </p>
             <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors">
               Browse All Provinces
@@ -271,8 +271,8 @@ export default async function ProvincePage({ params }: PageProps) {
               <p>
                 {province.name} offers {totalRanges} archery {totalRanges === 1 ? 'facility' : 'facilities'} across
                 {citiesWithRanges.length} {citiesWithRanges.length === 1 ? 'city' : 'cities'}.
-                Whether you're looking for indoor target practice, outdoor 3D courses, or professional coaching,
-                you'll find options to match your skill level and interests.
+                Whether you&apos;re looking for indoor target practice, outdoor 3D courses, or professional coaching,
+                you&apos;ll find options to match your skill level and interests.
               </p>
 
               {info.topActivities.length > 0 && (

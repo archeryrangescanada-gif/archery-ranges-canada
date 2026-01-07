@@ -68,7 +68,7 @@ export function ContactForm({ rangeId, rangeName }: ContactFormProps) {
             <CheckCircle className="w-8 h-8 text-emerald-500" />
           </div>
           <h3 className="text-xl font-semibold text-stone-800 mb-2">Message Sent!</h3>
-          <p className="text-stone-600">Your inquiry has been sent to {rangeName}. They'll get back to you soon.</p>
+          <p className="text-stone-600">Your inquiry has been sent to {rangeName}. They&apos;ll get back to you soon.</p>
         </div>
       </div>
     );
@@ -173,7 +173,7 @@ export function ContactForm({ rangeId, rangeName }: ContactFormProps) {
             value={formData.message}
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors text-stone-800 placeholder-stone-400 resize-none"
-            placeholder="Tell them what you'd like to know..."
+            placeholder="Tell them what you&apos;d like to know..."
           />
         </div>
 

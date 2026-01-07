@@ -83,7 +83,7 @@ export default function ReportRangeModal({ isOpen, onClose }: ReportRangeModalPr
             <div className="text-center py-8">
               <div className="text-green-500 text-6xl mb-4">✓</div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">Thank You!</h3>
-              <p className="text-gray-600">Your submission has been received. We'll review it soon.</p>
+              <p className="text-gray-600">Your submission has been received. We&apos;ll review it soon.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>

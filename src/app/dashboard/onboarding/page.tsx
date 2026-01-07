@@ -290,7 +290,7 @@ export default function OnboardingPage() {
         <div className="bg-white border-b border-stone-200">
           <div className="max-w-3xl mx-auto px-4 py-6">
             <h1 className="text-2xl font-bold text-stone-800">Welcome to Archery Ranges Canada!</h1>
-            <p className="text-stone-600 mt-1">Let's get your range listed. Choose how you'd like to proceed:</p>
+            <p className="text-stone-600 mt-1">Let&apos;s get your range listed. Choose how you&apos;d like to proceed:</p>
           </div>
         </div>
 
@@ -340,7 +340,7 @@ export default function OnboardingPage() {
               </div>
               <h2 className="text-xl font-semibold text-stone-800 mb-2">Manual Setup</h2>
               <p className="text-stone-600 mb-4">
-                Your range isn't listed yet? Manually enter your details to create a new listing.
+                Your range isn&apos;t listed yet? Manually enter your details to create a new listing.
               </p>
               <span className="inline-flex items-center text-blue-600 font-medium group-hover:gap-2 transition-all">
                 Start manually <ChevronRight className="w-5 h-5" />
@@ -535,7 +535,7 @@ export default function OnboardingPage() {
 
                 {searchResults.length === 0 && hasSearched && !searching && (
                   <div className="text-center py-8">
-                    <p className="text-stone-500 mb-4">No ranges found matching "{searchQuery}"</p>
+                    <p className="text-stone-500 mb-4">No ranges found matching &quot;{searchQuery}&quot;</p>
                     <button
                       onClick={() => setMode('create')}
                       className="text-emerald-600 hover:text-emerald-700 font-medium"

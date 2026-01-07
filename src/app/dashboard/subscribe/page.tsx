@@ -189,7 +189,7 @@ export default function SubscribePage() {
             </div>
 
             <div className="border-t border-stone-200 pt-6">
-              <h3 className="font-semibold text-stone-800 mb-4">What's included:</h3>
+              <h3 className="font-semibold text-stone-800 mb-4">What&apos;s included:</h3>
               <ul className="space-y-3">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-center gap-3 text-stone-600">
@@ -237,7 +237,7 @@ export default function SubscribePage() {
               <div className="text-sm text-emerald-800">
                 <p className="font-medium">Secure Payment</p>
                 <p className="text-emerald-700">
-                  You'll be redirected to Stripe's secure checkout. Your payment details are never stored on our servers.
+                  You&apos;ll be redirected to Stripe&apos;s secure checkout. Your payment details are never stored on our servers.
                 </p>
               </div>
             </div>

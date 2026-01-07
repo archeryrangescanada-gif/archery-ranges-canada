@@ -130,7 +130,7 @@ export default function SubscribeSuccessPage() {
 
         <div className="mt-8 p-4 bg-stone-50 rounded-lg">
           <p className="text-sm text-stone-600">
-            <strong>What's next?</strong> Add photos, update your hours, and complete your listing to attract more customers.
+            <strong>What&apos;s next?</strong> Add photos, update your hours, and complete your listing to attract more customers.
           </p>
         </div>
       </div>

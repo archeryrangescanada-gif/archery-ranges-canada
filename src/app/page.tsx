@@ -625,7 +625,7 @@ export default function Home() {
                       MOST ACCURATE ARCHERY DIRECTORY IN CANADA
                     </h2>
                     <p className="text-xl text-green-200 mb-6">
-                      If we don't have an archery range in your area, please notify us so we can improve your experience
+                      If we don&apos;t have an archery range in your area, please notify us so we can improve your experience
                     </p>
                     <button
                       onClick={() => setShowReportModal(true)}

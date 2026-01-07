@@ -335,7 +335,7 @@ export default function PricingPage() {
             Full Feature Comparison
           </h2>
           <p className="text-stone-600 text-center mb-12">
-            See exactly what's included in each plan
+            See exactly what&apos;s included in each plan
           </p>
 
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-stone-200">
@@ -509,11 +509,11 @@ export default function PricingPage() {
             {[
               {
                 q: 'Can I upgrade or downgrade at any time?',
-                a: 'Yes! You can change your plan at any time. When upgrading, you\'ll be charged the prorated difference. When downgrading, your new rate takes effect at the next billing cycle.',
+                a: 'Yes! You can change your plan at any time. When upgrading, you&apos;ll be charged the prorated difference. When downgrading, your new rate takes effect at the next billing cycle.',
               },
               {
                 q: 'What happens to my listing if I cancel?',
-                a: 'Your listing reverts to the Bronze (free) tier. You\'ll keep your basic listing but lose premium features like clickable contact info, additional photos, and analytics.',
+                a: 'Your listing reverts to the Bronze (free) tier. You&apos;ll keep your basic listing but lose premium features like clickable contact info, additional photos, and analytics.',
               },
               {
                 q: 'Is there a contract or commitment?',
@@ -521,7 +521,7 @@ export default function PricingPage() {
               },
               {
                 q: 'How does the Digital Waiver System work?',
-                a: 'Our Platinum waiver system includes an iPad-friendly kiosk mode, a searchable database of all signed waivers, automatic expiry notifications, and PDF export capability. It\'s designed to replace paper waivers completely.',
+                a: 'Our Platinum waiver system includes an iPad-friendly kiosk mode, a searchable database of all signed waivers, automatic expiry notifications, and PDF export capability. It&apos;s designed to replace paper waivers completely.',
               },
               {
                 q: 'What is the "Home Page Hero" feature?',
@@ -548,7 +548,7 @@ export default function PricingPage() {
             Ready to grow your archery range?
           </h2>
           <p className="text-xl text-stone-600 mb-8">
-            Join hundreds of ranges across Canada. Start free, upgrade when you're ready.
+            Join hundreds of ranges across Canada. Start free, upgrade when you&apos;re ready.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
