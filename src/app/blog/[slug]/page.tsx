@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient, createStaticClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 
@@ -54,11 +55,13 @@ export default async function BlogPostPage({ params }: PageProps) {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
-            <img
+          <Link href="/" className="hover:opacity-90 transition-opacity relative h-20 w-28">
+            <Image
               src="/logo.png?v=2"
               alt="Archery Ranges Canada"
-              className="h-20 w-auto object-contain"
+              fill
+              className="object-contain"
+              priority
             />
           </Link>
           <nav className="hidden md:flex items-center space-x-6">
@@ -98,10 +101,13 @@ export default async function BlogPostPage({ params }: PageProps) {
       <article className="container mx-auto px-4 py-12 max-w-4xl">
         {post.featured_image && (
           <div className="relative h-96 mb-8 rounded-2xl overflow-hidden">
-            <img
+            <Image
               src={post.featured_image}
               alt={post.title}
-              className="w-full h-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 66vw"
+              className="object-cover"
+              priority
             />
           </div>
         )}
@@ -163,10 +169,12 @@ export default async function BlogPostPage({ params }: PageProps) {
                 >
                   {related.featured_image && (
                     <div className="relative h-40 bg-gray-200">
-                      <img
+                      <Image
                         src={related.featured_image}
                         alt={related.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover"
                       />
                     </div>
                   )}

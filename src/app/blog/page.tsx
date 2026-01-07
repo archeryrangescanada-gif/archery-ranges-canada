@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -43,11 +44,13 @@ export default function BlogPage() {
       {/* Header - Same as Home Page */}
       <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
-            <img
+          <Link href="/" className="hover:opacity-90 transition-opacity relative h-28 w-28">
+            <Image
               src="/logo.png?v=2"
               alt="Archery Ranges Canada"
-              className="h-28 w-auto object-contain"
+              fill
+              className="object-contain"
+              priority
             />
           </Link>
           <nav className="hidden md:flex items-center space-x-6">
@@ -121,13 +124,15 @@ export default function BlogPage() {
               >
                 <div className="relative h-48 bg-gray-200">
                   {post.featured_image && (
-                    <img
+                    <Image
                       src={post.featured_image}
                       alt={post.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover"
                     />
                   )}
-                  <span className="absolute top-4 left-4 px-3 py-1 bg-green-600 text-white text-xs font-medium rounded-full">
+                  <span className="absolute top-4 left-4 px-3 py-1 bg-green-600 text-white text-xs font-medium rounded-full z-10">
                     {post.category}
                   </span>
                 </div>
@@ -156,11 +161,14 @@ export default function BlogPage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <img
-                src="/logo.png?v=2"
-                alt="Archery Ranges Canada"
-                className="h-20 w-auto object-contain mb-4"
-              />
+              <div className="relative h-20 w-40 mb-4">
+                <Image
+                  src="/logo.png?v=2"
+                  alt="Archery Ranges Canada"
+                  fill
+                  className="object-contain object-left"
+                />
+              </div>
               <p className="text-green-100">
                 Your complete directory of archery ranges across Canada
               </p>

@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { supabaseClient } from '@/lib/auth'
 
 interface Range {
@@ -67,11 +68,13 @@ export default function ComparePage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
-            <img
+          <Link href="/" className="hover:opacity-90 transition-opacity relative h-20 w-28">
+            <Image
               src="/logo.png?v=2"
               alt="Archery Ranges Canada"
-              className="h-20 w-auto object-contain"
+              fill
+              className="object-contain"
+              priority
             />
           </Link>
           <nav className="hidden md:flex items-center space-x-6">
