@@ -2,10 +2,18 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+    const toggleMenu = useCallback(() => {
+        setIsMenuOpen(prev => !prev)
+    }, [])
+
+    const closeMenu = useCallback(() => {
+        setIsMenuOpen(false)
+    }, [])
 
     return (
         <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
@@ -41,10 +49,17 @@ export default function Header() {
 
                 {/* Mobile menu button */}
                 <button
-                    className="md:hidden text-white p-2"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    type="button"
+                    className="md:hidden text-white p-2 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded-lg active:bg-emerald-900 touch-manipulation"
+                    onClick={toggleMenu}
+                    onTouchEnd={(e) => {
+                        e.preventDefault()
+                        toggleMenu()
+                    }}
+                    aria-label="Toggle menu"
+                    aria-expanded={isMenuOpen}
                 >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {isMenuOpen ? (
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         ) : (
@@ -56,24 +71,24 @@ export default function Header() {
 
             {/* Mobile Navigation */}
             {isMenuOpen && (
-                <div className="md:hidden bg-emerald-800 px-4 py-4 space-y-3">
-                    <Link href="/" className="block hover:text-green-100 transition-colors font-medium">
+                <nav className="md:hidden bg-emerald-800 px-4 py-4 space-y-3" role="navigation">
+                    <Link href="/" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
                         Home
                     </Link>
-                    <Link href="/blog" className="block hover:text-green-100 transition-colors font-medium">
+                    <Link href="/blog" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
                         Blog
                     </Link>
-                    <Link href="/pricing" className="block hover:text-green-100 transition-colors font-medium">
+                    <Link href="/pricing" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
                         Pricing
                     </Link>
                     <hr className="border-green-600" />
-                    <Link href="/auth/login" className="block hover:text-green-100 transition-colors font-medium">
+                    <Link href="/auth/login" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
                         Sign In
                     </Link>
-                    <Link href="/auth/signup" className="block bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors text-center">
+                    <Link href="/auth/signup" onClick={closeMenu} className="block bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors text-center">
                         Sign Up
                     </Link>
-                </div>
+                </nav>
             )}
         </header>
     )
