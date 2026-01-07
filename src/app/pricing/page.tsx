@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Check, X, Star, Shield, TrendingUp, Crown, MapPin, Phone, Mail, Globe, Camera, Calendar, MessageSquare, BarChart3, FileText, Users } from 'lucide-react'
 
 type BillingPeriod = 'monthly' | 'yearly'
@@ -200,11 +201,13 @@ export default function PricingPage() {
       {/* Header */}
       <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
-            <img
+          <Link href="/" className="hover:opacity-90 transition-opacity relative h-20 w-28">
+            <Image
               src="/logo.png?v=2"
               alt="Archery Ranges Canada"
-              className="h-20 w-auto object-contain"
+              fill
+              className="object-contain"
+              priority
             />
           </Link>
           <nav className="hidden md:flex items-center space-x-6">
@@ -289,7 +292,14 @@ export default function PricingPage() {
                 <div className="p-6">
                   {/* Badge & Name */}
                   <div className="text-center mb-4">
-                    <img src={tier.badge} alt={tier.name} className="h-16 w-16 mx-auto object-contain" />
+                    <div className="relative h-16 w-16 mx-auto">
+                      <Image
+                        src={tier.badge}
+                        alt={tier.name}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
                     <h3 className="text-2xl font-bold text-stone-800 mt-2">{tier.name}</h3>
                     <p className="text-green-600 font-medium">{tier.tagline}</p>
                   </div>
@@ -371,25 +381,25 @@ export default function PricingPage() {
               <div className="p-4 font-semibold">Feature</div>
               <div className="p-4 text-center font-semibold">
                 <div className="flex items-center justify-center gap-2">
-                  <img src="/bronze-badge.png" alt="Bronze" className="h-6 w-6 object-contain" />
+                  <Image src="/bronze-badge.png" alt="Bronze" width={24} height={24} className="object-contain" />
                   <span>Bronze</span>
                 </div>
               </div>
               <div className="p-4 text-center font-semibold">
                 <div className="flex items-center justify-center gap-2">
-                  <img src="/silver-badge.png" alt="Silver" className="h-6 w-6 object-contain" />
+                  <Image src="/silver-badge.png" alt="Silver" width={24} height={24} className="object-contain" />
                   <span>Silver</span>
                 </div>
               </div>
               <div className="p-4 text-center font-semibold bg-green-700">
                 <div className="flex items-center justify-center gap-2">
-                  <img src="/gold-badge.png" alt="Gold" className="h-6 w-6 object-contain" />
+                  <Image src="/gold-badge.png" alt="Gold" width={24} height={24} className="object-contain" />
                   <span>Gold</span>
                 </div>
               </div>
               <div className="p-4 text-center font-semibold">
                 <div className="flex items-center justify-center gap-2">
-                  <img src="/platinum-badge.png" alt="Platinum" className="h-6 w-6 object-contain" />
+                  <Image src="/platinum-badge.png" alt="Platinum" width={24} height={24} className="object-contain" />
                   <span>Platinum</span>
                 </div>
               </div>
@@ -436,22 +446,22 @@ export default function PricingPage() {
                             )
                           ) : value === 'bronze-badge' ? (
                             <div className="flex items-center justify-center gap-2">
-                              <img src="/bronze-badge.png" alt="Bronze" className="h-6 w-6 object-contain" />
+                              <Image src="/bronze-badge.png" alt="Bronze" width={24} height={24} className="object-contain" />
                               <span className="text-stone-700 font-medium">Bronze</span>
                             </div>
                           ) : value === 'silver-badge' ? (
                             <div className="flex items-center justify-center gap-2">
-                              <img src="/silver-badge.png" alt="Silver" className="h-6 w-6 object-contain" />
+                              <Image src="/silver-badge.png" alt="Silver" width={24} height={24} className="object-contain" />
                               <span className="text-stone-700 font-medium">Silver</span>
                             </div>
                           ) : value === 'gold-badge' ? (
                             <div className="flex items-center justify-center gap-2">
-                              <img src="/gold-badge.png" alt="Gold" className="h-6 w-6 object-contain" />
+                              <Image src="/gold-badge.png" alt="Gold" width={24} height={24} className="object-contain" />
                               <span className="text-stone-700 font-medium">Gold</span>
                             </div>
                           ) : value === 'platinum-badge' ? (
                             <div className="flex items-center justify-center gap-2">
-                              <img src="/platinum-badge.png" alt="Platinum" className="h-6 w-6 object-contain" />
+                              <Image src="/platinum-badge.png" alt="Platinum" width={24} height={24} className="object-contain" />
                               <span className="text-stone-700 font-medium">Platinum + Verified</span>
                             </div>
                           ) : (
@@ -477,7 +487,7 @@ export default function PricingPage() {
 
             <div className="relative">
               <div className="flex items-center gap-3 mb-4">
-                <img src="/platinum-badge.png" alt="Platinum" className="w-20 h-20 object-contain" />
+                <Image src="/platinum-badge.png" alt="Platinum" width={80} height={80} className="object-contain" />
                 <div>
                   <h2 className="text-3xl font-bold">Platinum Partner Program</h2>
                   <p className="text-amber-400 font-medium">The Ultimate Range Management Solution</p>
@@ -599,11 +609,14 @@ export default function PricingPage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <img
-                src="/logo.png?v=2"
-                alt="Archery Ranges Canada"
-                className="h-16 w-auto object-contain mb-4"
-              />
+              <div className="relative h-16 w-32 mb-4">
+                <Image
+                  src="/logo.png?v=2"
+                  alt="Archery Ranges Canada"
+                  fill
+                  className="object-contain object-left"
+                />
+              </div>
               <p className="text-green-100">
                 Canada's most comprehensive archery range directory
               </p>

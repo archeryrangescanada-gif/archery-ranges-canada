@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { supabaseClient } from '@/lib/auth'
 
@@ -69,11 +70,13 @@ export default function FeaturedPage() {
       {/* Header */}
       <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
-            <img
+          <Link href="/" className="hover:opacity-90 transition-opacity relative h-28 w-28">
+            <Image
               src="/logo.png?v=2"
               alt="Archery Ranges Canada"
-              className="h-28 w-auto object-contain"
+              fill
+              className="object-contain"
+              priority
             />
           </Link>
           <nav className="hidden md:flex items-center space-x-6">
@@ -163,16 +166,15 @@ export default function FeaturedPage() {
                   className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-green-500"
                 >
                   <div className="relative h-48 bg-gradient-to-br from-green-400 to-green-600 overflow-hidden">
-                    <img
+                    <Image
                       src={range.photos && range.photos.length > 0
                         ? range.photos[0]
                         : fallbackImages[index % fallbackImages.length]
                       }
                       alt={range.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      onError={(e) => {
-                        e.currentTarget.src = fallbackImages[index % fallbackImages.length]
-                      }}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute top-4 right-4 flex flex-col gap-2">
                       {range.is_featured && (
@@ -273,11 +275,14 @@ export default function FeaturedPage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <img
-                src="/logo.png?v=2"
-                alt="Archery Ranges Canada"
-                className="h-20 w-auto object-contain mb-4"
-              />
+              <div className="relative h-20 w-40 mb-4">
+                <Image
+                  src="/logo.png?v=2"
+                  alt="Archery Ranges Canada"
+                  fill
+                  className="object-contain object-left"
+                />
+              </div>
               <p className="text-green-100">
                 Your complete directory of archery ranges across Canada
               </p>
