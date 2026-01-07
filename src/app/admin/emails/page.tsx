@@ -11,7 +11,8 @@ interface Business {
   province: string
   email: string
   businessName: string
-  ownerId: string
+  ownerId: string | null
+  source?: 'claimed' | 'listing'
 }
 
 export default function AdminEmailsPage() {
@@ -337,9 +338,21 @@ export default function AdminEmailsPage() {
                     className="mt-1 w-4 h-4 text-green-600 rounded focus:ring-green-500"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">
-                      {business.rangeName}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900 truncate">
+                        {business.rangeName}
+                      </p>
+                      {business.source === 'listing' && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded">
+                          Listing
+                        </span>
+                      )}
+                      {business.source === 'claimed' && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded">
+                          Claimed
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-600 truncate">{business.businessName}</p>
                     <p className="text-xs text-gray-500 truncate">{business.email}</p>
                     {business.city && business.province && (

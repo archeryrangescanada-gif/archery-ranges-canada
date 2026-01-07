@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Get all claimed ranges with owner information
-    const { data: claims, error } = await supabase
+    const { data: claims, error: claimsError } = await supabase
       .from('range_claims')
       .select(`
         id,
@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
           id,
           name,
           city,
-          province
+          province,
+          email
         ),
         profiles (
           id,
@@ -30,24 +31,64 @@ export async function GET(request: NextRequest) {
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
 
-    if (error) throw error
+    if (claimsError) throw claimsError
 
-    // Transform data for email recipients
-    const businesses = claims?.map((claim: any) => ({
-      id: claim.id,
+    // Get all listings with email addresses (not claimed yet)
+    const { data: listings, error: listingsError } = await supabase
+      .from('archery_ranges')
+      .select('id, name, city, province, email, phone_number')
+      .not('email', 'is', null)
+      .neq('email', '')
+      .order('name')
+
+    if (listingsError) throw listingsError
+
+    // Get IDs of already claimed ranges
+    const claimedRangeIds = new Set(claims?.map((c: any) => c.range_id) || [])
+
+    // Transform claimed ranges data
+    const claimedBusinesses = claims?.map((claim: any) => ({
+      id: `claim-${claim.id}`,
       rangeId: claim.range_id,
       rangeName: claim.archery_ranges?.name || 'Unknown Range',
       city: claim.archery_ranges?.city,
       province: claim.archery_ranges?.province,
-      email: claim.profiles?.email,
+      email: claim.profiles?.email || claim.archery_ranges?.email,
       businessName: claim.profiles?.full_name || claim.archery_ranges?.name || 'Business',
       ownerId: claim.profiles?.id,
+      source: 'claimed',
     })) || []
+
+    // Transform listings data (exclude already claimed ranges)
+    const listingBusinesses = listings
+      ?.filter((listing: any) => !claimedRangeIds.has(listing.id))
+      .map((listing: any) => ({
+        id: `listing-${listing.id}`,
+        rangeId: listing.id,
+        rangeName: listing.name || 'Unknown Range',
+        city: listing.city,
+        province: listing.province,
+        email: listing.email,
+        businessName: listing.name || 'Business',
+        ownerId: null,
+        source: 'listing',
+      })) || []
+
+    // Combine both sources and remove duplicates by email
+    const allBusinesses = [...claimedBusinesses, ...listingBusinesses]
+    const uniqueBusinesses = allBusinesses.filter((business, index, self) =>
+      business.email && index === self.findIndex((b) => b.email === business.email)
+    )
 
     return NextResponse.json({
       success: true,
-      businesses,
-      total: businesses.length,
+      businesses: uniqueBusinesses,
+      total: uniqueBusinesses.length,
+      breakdown: {
+        claimed: claimedBusinesses.length,
+        listings: listingBusinesses.length,
+        duplicatesRemoved: allBusinesses.length - uniqueBusinesses.length,
+      },
     })
   } catch (error) {
     console.error('Error fetching businesses:', error)
