@@ -5,15 +5,17 @@ import { createClient } from '@supabase/supabase-js'
 export async function POST(request: Request) {
   // 1. Initialize Stripe INSIDE the function
   if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error('Missing Stripe Secret Key')
+    console.error('Missing Stripe Secret Key')
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
   }
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2025-12-15.clover',
+    apiVersion: '2025-12-15.clover' as any, // Cast to any if version is newer than types
   })
 
   // 2. Initialize Supabase INSIDE the function
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('Missing Supabase Admin Keys')
+    console.error('Missing Supabase Admin Keys')
+     return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
   }
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -21,7 +23,16 @@ export async function POST(request: Request) {
   )
 
   const body = await request.text()
-  const signature = request.headers.get('stripe-signature')!
+  const signature = request.headers.get('stripe-signature')
+
+  if (!signature) {
+    return NextResponse.json({ error: 'No signature' }, { status: 400 })
+  }
+
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      console.error('Missing STRIPE_WEBHOOK_SECRET');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+  }
 
   let event: Stripe.Event
 
@@ -29,7 +40,7 @@ export async function POST(request: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      process.env.STRIPE_WEBHOOK_SECRET
     )
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message)

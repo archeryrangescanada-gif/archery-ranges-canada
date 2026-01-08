@@ -57,6 +57,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Batch limit
+    if (ranges.length > 500) {
+        return NextResponse.json({ error: 'Batch too large (max 500)' }, { status: 413 })
+    }
+
     console.log(`📊 Processing ${ranges.length} range(s)`)
 
     const supabase = await createClient()
@@ -69,11 +74,14 @@ export async function POST(request: NextRequest) {
     for (const range of ranges as RangeImport[]) {
       try {
         // Validate required field
-        if (!range.post_title) {
+        if (!range.post_title || typeof range.post_title !== 'string') {
           results.failed++
-          results.errors.push(`Skipped: Missing post_title`)
+          results.errors.push(`Skipped: Missing or invalid post_title`)
           continue
         }
+
+        // Basic type validation for other fields could be added here
+        // or just ensure they are treated safely in the insert
 
         console.log(`🏹 Creating range: ${range.post_title}`)
 

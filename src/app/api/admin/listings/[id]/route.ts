@@ -22,10 +22,59 @@ export async function PATCH(
     const { id } = params
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
 
-    const body = await request.json()
+    let body;
+    try {
+        body = await request.json()
+    } catch(e) {
+        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
 
-    // Updates object - typically used for is_featured, is_premium, status
-    const updates = { ...body, updated_at: new Date().toISOString() }
+    // Input Validation: Whitelist allowed fields
+    const allowedFields = [
+        'name',
+        'city',
+        'province',
+        'address',
+        'description',
+        'phone',
+        'email',
+        'website',
+        'latitude',
+        'longitude',
+        'post_zip',
+        'post_images',
+        'is_featured',
+        'is_claimed',
+        'facility_type',
+        'range_length_yards',
+        'number_of_lanes',
+        'has_pro_shop',
+        'has_3d_course',
+        'has_field_course',
+        'membership_required',
+        'membership_price_adult',
+        'drop_in_price',
+        'equipment_rental_available',
+        'lessons_available',
+        'accessibility',
+        'parking_available',
+        'bow_types_allowed',
+        'lesson_price_range',
+        'business_hours'
+    ];
+
+    const updates: Record<string, any> = { updated_at: new Date().toISOString() }
+
+    for (const key of Object.keys(body)) {
+        if (allowedFields.includes(key)) {
+            updates[key] = body[key]
+        }
+    }
+
+    // Additional validation can go here (e.g. types)
+    if (updates.name && typeof updates.name !== 'string') {
+        return NextResponse.json({ error: 'Invalid name' }, { status: 400 })
+    }
 
     const { data, error } = await adminSupabase
       .from('ranges')

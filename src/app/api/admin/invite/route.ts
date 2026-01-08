@@ -37,10 +37,26 @@ export async function POST(request: NextRequest) {
         }
 
         // 2. Parse request body
-        const { email, role } = await request.json();
+        let body;
+        try {
+            body = await request.json();
+        } catch(e) {
+            return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+        }
+
+        const { email, role } = body;
 
         if (!email || !role) {
             return NextResponse.json({ error: 'Email and role are required' }, { status: 400 });
+        }
+
+        if (typeof email !== 'string' || typeof role !== 'string') {
+            return NextResponse.json({ error: 'Invalid field types' }, { status: 400 });
+        }
+
+        // Email format validation
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
         }
 
         if (!['super_admin', 'admin_employee'].includes(role)) {
