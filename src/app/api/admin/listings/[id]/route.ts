@@ -1,24 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { getAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
-
-// Service Role Client for Admin Operations
-const adminSupabase = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Service Role Client for Admin Operations
+    const adminSupabase = getAdminClient();
+
     const { id } = params
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
 
@@ -52,6 +43,9 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Service Role Client for Admin Operations
+    const adminSupabase = getAdminClient();
+
     const { id } = params
 
     // Check Auth (Optional for extra security, but layout handles most)
