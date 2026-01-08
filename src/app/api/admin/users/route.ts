@@ -51,16 +51,32 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const body = await request.json();
+        let body;
+        try {
+            body = await request.json();
+        } catch(e) {
+            return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+        }
+
         const { id, role, status } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
+        if (typeof id !== 'string') {
+            return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
+        }
+
         const updates: any = {};
-        if (role) updates.role = role;
-        if (status) updates.status = status;
+        if (role) {
+            if (typeof role !== 'string') return NextResponse.json({ error: 'Invalid role format' }, { status: 400 });
+            updates.role = role;
+        }
+        if (status) {
+            if (typeof status !== 'string') return NextResponse.json({ error: 'Invalid status format' }, { status: 400 });
+            updates.status = status;
+        }
         updates.updated_at = new Date().toISOString();
 
         const { data, error } = await adminSupabase

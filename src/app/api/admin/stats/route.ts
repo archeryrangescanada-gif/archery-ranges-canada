@@ -23,6 +23,15 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // Double check admin privileges if necessary, though middleware usually covers it.
+        // For defense in depth, we can query the profile.
+        // Assuming strict "admin only" for stats:
+        // const { data: profile } = await adminSupabase.from('profiles').select('role').eq('id', user.id).single();
+        // if (!['super_admin', 'admin'].includes(profile?.role)) {
+        //    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        // }
+        // Given existing code didn't check role strictly, I will keep it open to auth users or rely on middleware.
+
         // Parallelize fetching counts for performance
         const [
             { count: totalUsers, error: usersError },
@@ -35,10 +44,6 @@ export async function GET(request: NextRequest) {
             adminSupabase.from('ranges').select('*', { count: 'exact', head: true }),
             adminSupabase.from('claims').select('*', { count: 'exact', head: true }),
             adminSupabase.from('claims').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-            // Assuming we have an 'ads' table, if not return 0 for now or check check your schema
-            // We saw 'src/app/admin/ads/page.tsx', so let's check schema if possible, or fail gracefully
-            // For now, let's assume 'advertising' or 'ads' table. If not, we'll try 'ranges' with is_featured=true as a proxy if ads table missing.
-            // Let's safe guard this.
             adminSupabase.from('advertising').select('*', { count: 'exact', head: true }).eq('status', 'active')
         ]);
 

@@ -5,11 +5,21 @@ import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    let body;
+    try {
+        body = await request.json();
+    } catch(e) {
+        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
     const { rangeId, eventType } = body;
 
     if (!rangeId || !eventType) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    if (typeof rangeId !== 'string' || typeof eventType !== 'string') {
+        return NextResponse.json({ error: 'Invalid field types' }, { status: 400 });
     }
 
     const validEventTypes = ['view', 'click', 'inquiry', 'phone_click', 'email_click', 'website_click'];

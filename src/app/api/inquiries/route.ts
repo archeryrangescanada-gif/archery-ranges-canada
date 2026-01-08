@@ -3,11 +3,29 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    let body;
+    try {
+        body = await request.json();
+    } catch(e) {
+        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
     const { rangeId, name, email, phone, subject, message } = body;
 
     if (!rangeId || !name || !email || !message) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    if (typeof rangeId !== 'string' || typeof name !== 'string' || typeof email !== 'string' || typeof message !== 'string') {
+        return NextResponse.json({ error: 'Invalid field types' }, { status: 400 });
+    }
+
+    // Length validation to prevent DoS
+    if (message.length > 5000) {
+        return NextResponse.json({ error: 'Message too long' }, { status: 400 });
+    }
+    if (name.length > 100 || email.length > 100 || (subject && subject.length > 200)) {
+        return NextResponse.json({ error: 'Input too long' }, { status: 400 });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
