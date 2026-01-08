@@ -8,11 +8,16 @@ export const getAdminClient = () => {
     // Return a mock client if keys are missing (e.g. during build without env vars)
     console.warn('Supabase keys missing in getAdminClient - returning mock');
     // Recursive proxy to mock any method chain
-    const createMock = () => new Proxy(() => Promise.resolve({ data: [], error: null }), {
+    const createMock: any = () => new Proxy(() => Promise.resolve({ data: [], error: null }), {
       get: (target, prop) => {
-        if (prop === 'then') return undefined;
+        if (prop === 'then') {
+          // If awaited, behave like a Promise
+          return (resolve: any) => resolve({ data: [], error: null });
+        }
+        // Otherwise return a function that returns the mock (chainable)
         return createMock();
-      }
+      },
+      apply: () => createMock(),
     });
     return createMock() as any;
   }
