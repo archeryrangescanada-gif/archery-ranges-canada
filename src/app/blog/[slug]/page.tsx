@@ -165,7 +165,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
 export async function generateStaticParams() {
   try {
-    const supabase = await createClient()
+    const supabase = createStaticClient()
 
     const { data: posts } = await supabase
       .from('blog_posts')
@@ -174,7 +174,7 @@ export async function generateStaticParams() {
 
     if (!posts) return []
 
-    return posts.map((post) => ({
+    return posts.map((post: any) => ({
       slug: post.slug,
     }))
   } catch (error) {

@@ -76,12 +76,12 @@ export async function GET(request: NextRequest) {
             const monthIdx = d.getMonth();
             const year = d.getFullYear();
 
-            const listingsCount = rangeDates?.filter(r => {
+            const listingsCount = rangeDates?.filter((r: any) => {
                 const rd = new Date(r.created_at);
                 return rd.getMonth() === monthIdx && rd.getFullYear() === year;
             }).length || 0;
 
-            const claimsCount = claimDates?.filter(c => {
+            const claimsCount = claimDates?.filter((c: any) => {
                 const cd = new Date(c.created_at);
                 return cd.getMonth() === monthIdx && cd.getFullYear() === year;
             }).length || 0;
