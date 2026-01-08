@@ -1,10 +1,21 @@
 import { createClient } from '@/lib/supabase/server';
-import { getAdminClient } from '@/lib/supabase/admin';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+
+// Create a Service Role client to bypass RLS
+const adminSupabase = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    }
+);
 
 export async function GET(request: NextRequest) {
     try {
-        const adminSupabase = getAdminClient();
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -33,7 +44,6 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
     try {
-        const adminSupabase = getAdminClient();
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -75,7 +85,6 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
     try {
-        const adminSupabase = getAdminClient();
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 

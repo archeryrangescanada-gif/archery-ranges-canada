@@ -298,7 +298,7 @@ export async function generateStaticParams() {
       .from('provinces')
       .select('slug')
 
-    return provinces?.map((province: any) => ({
+    return provinces?.map((province) => ({
       province: province.slug,
     })) || []
   } catch (error) {

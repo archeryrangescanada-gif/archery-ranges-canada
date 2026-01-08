@@ -16,8 +16,8 @@ export default function Header() {
     }, [])
 
     return (
-        <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg">
-            <div className="container mx-auto px-4 flex items-center justify-between">
+        <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg relative z-50">
+            <div className="container mx-auto px-4 flex items-center justify-between relative">
                 <Link href="/" className="hover:opacity-90 transition-opacity">
                     <img
                         src="/logo.png?v=2"
@@ -50,7 +50,7 @@ export default function Header() {
                 {/* Mobile menu button */}
                 <button
                     type="button"
-                    className="md:hidden text-white p-2 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded-lg active:bg-emerald-900 touch-manipulation"
+                    className="md:hidden text-white p-3 min-w-[48px] min-h-[48px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded-lg active:bg-emerald-900 touch-manipulation relative z-50"
                     onClick={toggleMenu}
                     onTouchEnd={(e) => {
                         e.preventDefault()
@@ -59,7 +59,7 @@ export default function Header() {
                     aria-label="Toggle menu"
                     aria-expanded={isMenuOpen}
                 >
-                    <svg className="w-6 h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-7 h-7 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {isMenuOpen ? (
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         ) : (
@@ -71,7 +71,7 @@ export default function Header() {
 
             {/* Mobile Navigation */}
             {isMenuOpen && (
-                <nav className="md:hidden bg-emerald-800 px-4 py-4 space-y-3" role="navigation">
+                <nav className="md:hidden bg-emerald-800 px-4 py-4 space-y-3 relative z-40" role="navigation">
                     <Link href="/" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
                         Home
                     </Link>

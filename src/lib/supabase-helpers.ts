@@ -1,10 +1,20 @@
 // src/lib/supabase-admin.ts
-import { getAdminClient } from './supabase/admin'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+// Admin client with service role (bypasses RLS)
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 // Listings Operations
 export const listingsAPI = {
   async getAll(filters?: { status?: string; province?: string; search?: string }) {
-    const supabaseAdmin = getAdminClient()
     let query = supabaseAdmin.from('business_listings').select('*')
     
     if (filters?.status && filters.status !== 'all') {
@@ -21,7 +31,6 @@ export const listingsAPI = {
   },
 
   async getById(id: string) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('business_listings')
       .select('*')
@@ -30,7 +39,6 @@ export const listingsAPI = {
   },
 
   async create(data: any) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('business_listings')
       .insert(data)
@@ -39,7 +47,6 @@ export const listingsAPI = {
   },
 
   async update(id: string, data: any) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('business_listings')
       .update(data)
@@ -49,7 +56,6 @@ export const listingsAPI = {
   },
 
   async delete(id: string) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('business_listings')
       .delete()
@@ -60,7 +66,6 @@ export const listingsAPI = {
 // Claims Operations
 export const claimsAPI = {
   async getAll(status?: string) {
-    const supabaseAdmin = getAdminClient()
     let query = supabaseAdmin
       .from('listing_claims')
       .select(`
@@ -77,7 +82,6 @@ export const claimsAPI = {
   },
 
   async approve(claimId: string, adminId: string) {
-    const supabaseAdmin = getAdminClient()
     const { data: claim, error: claimError } = await supabaseAdmin
       .from('listing_claims')
       .select('*, listing_id, user_id')
@@ -112,7 +116,6 @@ export const claimsAPI = {
   },
 
   async reject(claimId: string, adminId: string, reason: string) {
-    const supabaseAdmin = getAdminClient()
     await supabaseAdmin
       .from('listing_claims')
       .update({
@@ -132,7 +135,6 @@ export const claimsAPI = {
 // Ads Operations
 export const adsAPI = {
   async getAll(filters?: { status?: string }) {
-    const supabaseAdmin = getAdminClient()
     let query = supabaseAdmin
       .from('ads')
       .select(`
@@ -150,7 +152,6 @@ export const adsAPI = {
   },
 
   async create(adData: any, placementIds: string[]) {
-    const supabaseAdmin = getAdminClient()
     // Create ad
     const { data: ad, error: adError } = await supabaseAdmin
       .from('ads')
@@ -177,7 +178,6 @@ export const adsAPI = {
   },
 
   async update(id: string, data: any) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('ads')
       .update(data)
@@ -187,7 +187,6 @@ export const adsAPI = {
   },
 
   async delete(id: string) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('ads')
       .delete()
@@ -195,7 +194,6 @@ export const adsAPI = {
   },
 
   async trackImpression(adId: string, data: any) {
-    const supabaseAdmin = getAdminClient()
     await supabaseAdmin
       .from('ad_impressions')
       .insert({
@@ -208,7 +206,6 @@ export const adsAPI = {
   },
 
   async trackClick(adId: string, data: any) {
-    const supabaseAdmin = getAdminClient()
     await supabaseAdmin
       .from('ad_clicks')
       .insert({
@@ -224,7 +221,6 @@ export const adsAPI = {
 // Announcements Operations
 export const announcementsAPI = {
   async getAll(filters?: { status?: string; category?: string }) {
-    const supabaseAdmin = getAdminClient()
     let query = supabaseAdmin.from('announcements').select('*')
     
     if (filters?.status && filters.status !== 'all') {
@@ -238,7 +234,6 @@ export const announcementsAPI = {
   },
 
   async getActive(province?: string) {
-    const supabaseAdmin = getAdminClient()
     let query = supabaseAdmin
       .from('announcements')
       .select('*')
@@ -257,7 +252,6 @@ export const announcementsAPI = {
   },
 
   async create(data: any) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('announcements')
       .insert(data)
@@ -266,7 +260,6 @@ export const announcementsAPI = {
   },
 
   async update(id: string, data: any) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('announcements')
       .update(data)
@@ -276,7 +269,6 @@ export const announcementsAPI = {
   },
 
   async delete(id: string) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('announcements')
       .delete()
@@ -284,7 +276,6 @@ export const announcementsAPI = {
   },
 
   async trackClick(announcementId: string, userId?: string) {
-    const supabaseAdmin = getAdminClient()
     await supabaseAdmin
       .from('announcement_clicks')
       .insert({
@@ -300,7 +291,6 @@ export const announcementsAPI = {
 // Users Operations
 export const usersAPI = {
   async getAll(filters?: { role?: string; search?: string }) {
-    const supabaseAdmin = getAdminClient()
     let query = supabaseAdmin.from('profiles').select('*')
     
     if (filters?.role && filters.role !== 'all') {
@@ -314,7 +304,6 @@ export const usersAPI = {
   },
 
   async updateRole(userId: string, role: string) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('profiles')
       .update({ role })
@@ -330,7 +319,6 @@ export const analyticsAPI = {
   },
 
   async getAdPerformance(startDate: string, endDate: string) {
-    const supabaseAdmin = getAdminClient()
     const { data: impressions } = await supabaseAdmin
       .from('ad_impressions')
       .select('id')
@@ -354,7 +342,6 @@ export const analyticsAPI = {
   },
 
   async getTopListings(limit: number = 10) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin
       .from('business_listings')
       .select('id, name, views_count, clicks_count')
@@ -366,7 +353,6 @@ export const analyticsAPI = {
 // Storage Operations
 export const storageAPI = {
   async uploadImage(bucket: string, path: string, file: File) {
-    const supabaseAdmin = getAdminClient()
     const { data, error } = await supabaseAdmin.storage
       .from(bucket)
       .upload(path, file, {
@@ -384,7 +370,6 @@ export const storageAPI = {
   },
 
   async deleteImage(bucket: string, path: string) {
-    const supabaseAdmin = getAdminClient()
     return supabaseAdmin.storage
       .from(bucket)
       .remove([path])

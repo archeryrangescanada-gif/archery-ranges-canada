@@ -1,12 +1,21 @@
 import { createClient } from '@/lib/supabase/server';
-import { getAdminClient } from '@/lib/supabase/admin';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+
+// Create a Service Role client to bypass RLS for stats
+const adminSupabase = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    }
+);
 
 export async function GET(request: NextRequest) {
     try {
-        // Create a Service Role client to bypass RLS for stats
-        const adminSupabase = getAdminClient();
-
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -76,12 +85,12 @@ export async function GET(request: NextRequest) {
             const monthIdx = d.getMonth();
             const year = d.getFullYear();
 
-            const listingsCount = rangeDates?.filter((r: any) => {
+            const listingsCount = rangeDates?.filter(r => {
                 const rd = new Date(r.created_at);
                 return rd.getMonth() === monthIdx && rd.getFullYear() === year;
             }).length || 0;
 
-            const claimsCount = claimDates?.filter((c: any) => {
+            const claimsCount = claimDates?.filter(c => {
                 const cd = new Date(c.created_at);
                 return cd.getMonth() === monthIdx && cd.getFullYear() === year;
             }).length || 0;

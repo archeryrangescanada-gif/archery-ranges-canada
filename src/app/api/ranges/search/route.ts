@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@supabase/supabase-js'
+
+// Service Role Client for bypassing RLS
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+)
 
 export async function GET(request: NextRequest) {
   try {
-    // Service Role Client for bypassing RLS
-    const supabase = getAdminClient()
-
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
 
