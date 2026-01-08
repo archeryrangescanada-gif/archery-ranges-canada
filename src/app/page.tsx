@@ -381,9 +381,9 @@ export default function Home() {
                 placeholder="Search by province, city, or range name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-6 py-4 text-lg text-gray-800 rounded-full shadow-2xl focus:outline-none focus:ring-4 focus:ring-green-300"
+                className="w-full px-4 sm:px-6 py-3 sm:py-4 pr-20 sm:pr-32 text-sm sm:text-lg text-gray-800 rounded-full shadow-2xl focus:outline-none focus:ring-4 focus:ring-green-300 placeholder:text-sm sm:placeholder:text-base"
               />
-              <button className="absolute right-2 top-2 bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-full font-semibold transition-colors">
+              <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 text-white px-4 sm:px-8 py-1.5 sm:py-2 rounded-full text-sm sm:text-base font-semibold transition-colors whitespace-nowrap">
                 Search
               </button>
             </div>
