@@ -52,10 +52,6 @@ export default function Header() {
                     type="button"
                     className="md:hidden text-white p-3 min-w-[48px] min-h-[48px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded-lg active:bg-emerald-900 touch-manipulation relative z-50"
                     onClick={toggleMenu}
-                    onTouchEnd={(e) => {
-                        e.preventDefault()
-                        toggleMenu()
-                    }}
                     aria-label="Toggle menu"
                     aria-expanded={isMenuOpen}
                 >
