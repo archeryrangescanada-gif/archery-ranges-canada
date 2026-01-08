@@ -5,11 +5,12 @@ export async function POST(request: Request) {
   try {
     // 1. Initialize Stripe INSIDE the function (Fixes the build crash)
     if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('Missing Stripe Secret Key')
+      console.error('Missing Stripe Secret Key')
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2025-12-15.clover',
+      apiVersion: '2025-12-15.clover' as any,
     })
 
     // 2. Map plan IDs to your ACTUAL Vercel Environment Variables
@@ -20,13 +21,25 @@ export async function POST(request: Request) {
       premium: process.env.STRIPE_PLATNIUM_PRICE_ID || '', // Note: 'PLATNIUM' matches your specific typo in Vercel
     }
 
-    const { planId, rangeId, userId, userEmail } = await request.json()
+    let body;
+    try {
+        body = await request.json()
+    } catch(e) {
+        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
 
-    if (!planId || !rangeId || !userId) {
+    const { planId, rangeId, userId, userEmail } = body
+
+    if (!planId || !rangeId || !userId || !userEmail) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
+    }
+
+    // Type validation
+    if (typeof planId !== 'string' || typeof rangeId !== 'string' || typeof userId !== 'string' || typeof userEmail !== 'string') {
+        return NextResponse.json({ error: 'Invalid field types' }, { status: 400 })
     }
 
     const priceId = PRICE_IDS[planId]
@@ -40,6 +53,9 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
     // Create Stripe Checkout Session
+    // Add 10s timeout logic wrapper if possible, but Stripe SDK is external.
+    // We will rely on Vercel function timeout for now as Stripe calls can be slightly slow but usually reliable.
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],

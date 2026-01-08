@@ -6,28 +6,41 @@ export async function POST(request: Request) {
   try {
     // 1. Initialize Stripe INSIDE the function to prevent build crashes
     if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('Missing Stripe Secret Key')
+      console.error('Missing Stripe Secret Key')
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2025-12-15.clover',
+      apiVersion: '2025-12-15.clover' as any,
     })
 
     // 2. Initialize Supabase INSIDE the function for the same reason
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      throw new Error('Missing Supabase Admin Keys')
+      console.error('Missing Supabase Admin Keys')
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY
     )
 
-    const { sessionId, rangeId } = await request.json()
+    let body;
+    try {
+        body = await request.json()
+    } catch(e) {
+        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    const { sessionId, rangeId } = body
 
     if (!sessionId || !rangeId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
+    }
+
+    if (typeof sessionId !== 'string' || typeof rangeId !== 'string') {
+        return NextResponse.json({ error: 'Invalid field types' }, { status: 400 })
     }
 
     // Retrieve the session from Stripe

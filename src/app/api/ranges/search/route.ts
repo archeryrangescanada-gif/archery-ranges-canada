@@ -22,6 +22,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ranges: [] })
     }
 
+    // Limit query length to prevent excessive processing/DoS
+    if (query.length > 100) {
+        return NextResponse.json({ error: 'Query too long' }, { status: 400 })
+    }
+
     // Get all ranges and filter client-side for better fuzzy matching
     const { data, error } = await supabase
       .from('ranges')
