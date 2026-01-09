@@ -63,6 +63,14 @@ const safeBool = (val: any): boolean => {
   return false
 }
 
+// Helper to title case a string
+const toTitleCase = (str: string) => {
+  return str.replace(
+    /\w\S*/g,
+    (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+  );
+}
+
 export async function POST(request: NextRequest) {
   console.log('📦 Import API called')
 
@@ -78,211 +86,199 @@ export async function POST(request: NextRequest) {
     }
 
     // Batch limit
-    if (ranges.length > 500) {
-        return NextResponse.json({ error: 'Batch too large (max 500)' }, { status: 413 })
+    if (ranges.length > 1000) {
+        return NextResponse.json({ error: 'Batch too large (max 1000)' }, { status: 413 })
     }
 
     console.log(`📊 Processing ${ranges.length} range(s)`)
 
     const supabase = await createClient()
-    const results = {
-      success: 0,
-      failed: 0,
-      errors: [] as string[]
+
+    // 1. Pre-process Cities and Provinces
+    const uniqueCityNames = new Set<string>()
+    const uniqueProvinceNames = new Set<string>()
+
+    ranges.forEach((r: any) => {
+        if (r.post_city && typeof r.post_city === 'string' && r.post_city.trim()) {
+            uniqueCityNames.add(toTitleCase(r.post_city.trim()))
+        }
+        if (r.post_region && typeof r.post_region === 'string' && r.post_region.trim()) {
+            // Normalize province name for lookup
+             const normalized = r.post_region.trim()
+             const valid = VALID_PROVINCES.find(p => p.toLowerCase() === normalized.toLowerCase())
+             if (valid) uniqueProvinceNames.add(valid)
+        }
+    })
+
+    const cityNames = Array.from(uniqueCityNames)
+    const provinceNames = Array.from(uniqueProvinceNames)
+
+    // Maps to store ID mappings
+    const cityMap: Record<string, string> = {}
+    const provinceMap: Record<string, string> = {}
+
+    // 2. Resolve Provinces (Fetch all, map valid ones)
+    // Since the list is small, we can fetch all provinces in DB
+    const { data: allProvinces } = await supabase.from('provinces').select('id, name')
+
+    // Populate existing
+    if (allProvinces) {
+        allProvinces.forEach(p => {
+            provinceMap[p.name] = p.id
+        })
     }
 
-    for (const rawRange of ranges) {
-      // Cast to any first to handle dirty input
-      const range = rawRange as any;
+    // Insert missing provinces
+    const missingProvinces = provinceNames.filter(name => !provinceMap[name])
+    if (missingProvinces.length > 0) {
+        const { data: newProvinces, error: provError } = await supabase
+            .from('provinces')
+            .insert(missingProvinces.map(name => ({
+                name,
+                slug: name.toLowerCase().replace(/\s+/g, '-')
+            })))
+            .select('id, name')
 
-      try {
-        // Validate required field
+        if (provError) {
+            console.error('Error creating provinces:', provError)
+            // Continue, but some ranges might fail
+        } else if (newProvinces) {
+            newProvinces.forEach(p => provinceMap[p.name] = p.id)
+        }
+    }
+
+    // 3. Resolve Cities
+    // Fetch existing cities that match our list
+    let existingCities: any[] = []
+    if (cityNames.length > 0) {
+        // Supabase 'in' filter for names
+        // Note: This is case-sensitive. We rely on toTitleCase normalization.
+        const { data } = await supabase
+            .from('cities')
+            .select('id, name')
+            .in('name', cityNames)
+
+        if (data) existingCities = data
+    }
+
+    existingCities.forEach((c: any) => {
+        cityMap[c.name] = c.id
+    })
+
+    // Insert missing cities
+    const missingCities = cityNames.filter(name => !cityMap[name])
+    if (missingCities.length > 0) {
+        // Insert in batches of 100 just in case
+        const CITY_BATCH_SIZE = 100
+        for (let i = 0; i < missingCities.length; i += CITY_BATCH_SIZE) {
+            const batch = missingCities.slice(i, i + CITY_BATCH_SIZE)
+            const { data: newCities, error: cityError } = await supabase
+                .from('cities')
+                .insert(batch.map(name => ({ name })))
+                .select('id, name')
+
+            if (cityError) {
+                console.error('Error creating cities:', cityError)
+            } else if (newCities) {
+                newCities.forEach(c => cityMap[c.name] = c.id)
+            }
+        }
+    }
+
+    // 4. Prepare Range Inserts
+    const rangesToInsert: any[] = []
+    const failedRanges: string[] = []
+
+    for (const rawRange of ranges) {
+        const range = rawRange as any
+
+        // Basic validation
         if (!range.post_title || typeof range.post_title !== 'string') {
-          results.failed++
-          results.errors.push(`Skipped: Missing or invalid post_title`)
-          continue
+            failedRanges.push(`Skipped: Missing title`)
+            continue
         }
 
-        // Clean numeric fields
-        const latitude = safeNumber(range.post_latitude)
-        const longitude = safeNumber(range.post_longitude)
-        const rangeLength = safeNumber(range.range_length_yards)
-        const lanes = safeNumber(range.number_of_lanes)
-        const membershipPrice = safeNumber(range.membership_price_adult)
-        const dropInPrice = safeNumber(range.drop_in_price)
+        // Resolve dependencies
+        let cityId = null
+        if (range.post_city) {
+            const cityName = toTitleCase(range.post_city.trim())
+            cityId = cityMap[cityName] || null
+        }
 
-        // Clean boolean fields
-        const hasProShop = safeBool(range.has_pro_shop)
-        const has3d = safeBool(range.has_3d_course)
-        const hasField = safeBool(range.has_field_course)
-        const membershipReq = safeBool(range.membership_required)
-        const rental = safeBool(range.equipment_rental_available)
-        const lessons = safeBool(range.lessons_available)
-        const accessibility = safeBool(range.accessibility)
-        const parking = safeBool(range.parking_available)
+        let provinceId = null
+        if (range.post_region) {
+            const normalized = range.post_region.trim()
+            const valid = VALID_PROVINCES.find(p => p.toLowerCase() === normalized.toLowerCase())
+            if (valid) provinceId = provinceMap[valid] || null
+        }
 
-        console.log(`🏹 Creating range: ${range.post_title}`)
-
-        // Generate slug from name
         const slug = range.post_title
           .toLowerCase()
           .trim()
-          .replace(/[^\w\s-]/g, '') // Remove special characters
-          .replace(/\s+/g, '-') // Replace spaces with hyphens
-          .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
 
-        // Find or create city
-        let cityId: string | null = null
-        if (range.post_city && typeof range.post_city === 'string' && range.post_city.trim()) {
-          const cityName = range.post_city.trim()
-          const { data: existingCity } = await supabase
-            .from('cities')
-            .select('id')
-            .ilike('name', cityName)
-            .single()
-
-          if (existingCity) {
-            cityId = existingCity.id
-          } else {
-            const { data: newCity, error: cityError } = await supabase
-              .from('cities')
-              .insert({ name: cityName })
-              .select('id')
-              .single()
-
-            if (!cityError && newCity) {
-              cityId = newCity.id
-              console.log(`  ✅ Created new city: ${cityName}`)
-            }
-          }
-        }
-
-        // Find or create province (ONLY if it's a valid Canadian province)
-        let provinceId: string | null = null
-        if (range.post_region && typeof range.post_region === 'string' && range.post_region.trim()) {
-          const provinceName = range.post_region.trim()
-
-          // Check if it's a valid province
-          const isValidProvince = VALID_PROVINCES.some(
-            validProv => validProv.toLowerCase() === provinceName.toLowerCase()
-          )
-
-          if (isValidProvince) {
-            const { data: existingProvince } = await supabase
-              .from('provinces')
-              .select('id')
-              .ilike('name', provinceName)
-              .single()
-
-            if (existingProvince) {
-              provinceId = existingProvince.id
-            } else {
-              // Use the properly capitalized name from VALID_PROVINCES
-              const correctName = VALID_PROVINCES.find(
-                p => p.toLowerCase() === provinceName.toLowerCase()
-              )!
-
-              const { data: newProvince, error: provinceError } = await supabase
-                .from('provinces')
-                .insert({
-                  name: correctName,
-                  slug: correctName.toLowerCase().replace(/\s+/g, '-')
-                })
-                .select('id')
-                .single()
-
-              if (!provinceError && newProvince) {
-                provinceId = newProvince.id
-                console.log(`  ✅ Created new province: ${correctName}`)
-              }
-            }
-          } else {
-            console.log(`  ⚠️  Skipping invalid province: "${provinceName}" (not a Canadian province)`)
-          }
-        }
-
-        // Create the range with ALL fields from the new schema
-        const { data: newRange, error: rangeError } = await supabase
-          .from('ranges')
-          .insert({
-            // Core fields
+        const newRange = {
             name: range.post_title.trim(),
             slug: slug,
             city_id: cityId,
             province_id: provinceId,
-
-            // Address fields
             address: typeof range.post_address === 'string' ? range.post_address : '',
             postal_code: typeof range.post_zip === 'string' ? range.post_zip : null,
-            latitude: latitude,
-            longitude: longitude,
-
-            // Contact fields
+            latitude: safeNumber(range.post_latitude),
+            longitude: safeNumber(range.post_longitude),
             phone_number: typeof range.phone === 'string' ? range.phone : null,
             email: typeof range.email === 'string' ? range.email : null,
             website: typeof range.website === 'string' ? range.website : null,
-
-            // Content fields
             description: typeof range.post_content === 'string' ? range.post_content : null,
             tags: typeof range.post_tags === 'string' ? range.post_tags : null,
             business_hours: typeof range.business_hours === 'string' ? range.business_hours : null,
-
-            // Range specifications
-            range_length_yards: rangeLength,
-            number_of_lanes: lanes,
+            range_length_yards: safeNumber(range.range_length_yards),
+            number_of_lanes: safeNumber(range.number_of_lanes),
             facility_type: typeof range.facility_type === 'string' ? range.facility_type : null,
-
-            // Features (booleans)
-            has_pro_shop: hasProShop,
-            has_3d_course: has3d,
-            has_field_course: hasField,
-            equipment_rental_available: rental,
-            lessons_available: lessons,
-            accessibility: accessibility,
-            parking_available: parking,
-
-            // Membership & Pricing
-            membership_required: membershipReq,
-            membership_price_adult: membershipPrice,
-            drop_in_price: dropInPrice,
+            has_pro_shop: safeBool(range.has_pro_shop),
+            has_3d_course: safeBool(range.has_3d_course),
+            has_field_course: safeBool(range.has_field_course),
+            equipment_rental_available: safeBool(range.equipment_rental_available),
+            lessons_available: safeBool(range.lessons_available),
+            accessibility: safeBool(range.accessibility),
+            parking_available: safeBool(range.parking_available),
+            membership_required: safeBool(range.membership_required),
+            membership_price_adult: safeNumber(range.membership_price_adult),
+            drop_in_price: safeNumber(range.drop_in_price),
             lesson_price_range: typeof range.lesson_price_range === 'string' ? range.lesson_price_range : null,
-
-            // Additional info
             bow_types_allowed: typeof range.bow_types_allowed === 'string' ? range.bow_types_allowed : null,
-
-            // System fields
             is_featured: false
-          })
-          .select()
-          .single()
-
-        if (rangeError) {
-          console.error(`❌ Error creating range ${range.post_title}:`, rangeError)
-          results.failed++
-          results.errors.push(`${range.post_title}: ${rangeError.message}`)
-        } else {
-          console.log(`✅ Created range: ${range.post_title} (ID: ${newRange.id})`)
-          results.success++
-
-          // Handle images if provided
-          if (range.post_images && Array.isArray(range.post_images) && range.post_images.length > 0) {
-            console.log(`  📸 Range has ${range.post_images.length} images (not yet implemented)`)
-            // TODO: Implement image upload/storage logic
-          }
         }
-      } catch (itemError: any) {
-        console.error(`❌ Error processing range:`, itemError)
-        results.failed++
-        results.errors.push(`${range.post_title || 'Unknown'}: ${itemError.message}`)
-      }
+
+        rangesToInsert.push(newRange)
     }
 
-    console.log(`📊 Import complete: ${results.success} success, ${results.failed} failed`)
+    // 5. Batch Insert Ranges
+    let successCount = 0
+    let failureCount = failedRanges.length // Start with pre-validation failures
+    const BATCH_SIZE = 100
+
+    for (let i = 0; i < rangesToInsert.length; i += BATCH_SIZE) {
+        const batch = rangesToInsert.slice(i, i + BATCH_SIZE)
+        const { error } = await supabase.from('ranges').insert(batch)
+
+        if (error) {
+            console.error(`Error inserting batch ${i}:`, error)
+            failureCount += batch.length
+            failedRanges.push(`Batch ${i/BATCH_SIZE + 1} failed: ${error.message}`)
+        } else {
+            successCount += batch.length
+        }
+    }
+
+    console.log(`📊 Import complete: ${successCount} success, ${failureCount} failed`)
 
     return NextResponse.json({
-      success: results.success,
-      failed: results.failed,
-      errors: results.errors
+      success: successCount,
+      failed: failureCount,
+      errors: failedRanges
     })
 
   } catch (error: any) {

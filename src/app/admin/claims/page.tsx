@@ -3,6 +3,15 @@
 import { useEffect, useState } from 'react'
 import { FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { PostgrestError } from '@supabase/supabase-js'
+
+interface Range {
+  name: string
+}
+
+interface User {
+  email: string
+}
 
 interface VerificationRequest {
   id: string
@@ -14,15 +23,11 @@ interface VerificationRequest {
   business_license_url: string
   insurance_certificate_url: string
   status: 'pending' | 'approved' | 'rejected'
-  rejection_reason?: string
+  rejection_reason: string | null
   submitted_at: string
   created_at: string
-  range?: {
-    name: string
-  }
-  user?: {
-    email: string
-  }
+  range: Range | null // Changed from optional to null union to match likely Supabase response
+  user: User | null
 }
 
 export default function ClaimsPage() {
@@ -69,18 +74,28 @@ export default function ClaimsPage() {
   const fetchRequests = async () => {
     setLoading(true)
     try {
-      // In a real app, we'd use a join or handle the user data properly. 
-      // For now, we fetch requests and try to get range names.
       const { data, error } = await supabase
         .from('verification_requests')
         .select(`
           *,
-          range:ranges(name)
+          range:ranges(name),
+          user:users(email)
         `)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setRequests(data as any || [])
+
+      // Transform and cast the data to match our interface
+      // Supabase returns relations as objects or arrays depending on the schema, usually object for 1:1/N:1
+      const typedData = (data || []).map((item: any) => ({
+        ...item,
+        // Ensure range is an object or null
+        range: Array.isArray(item.range) ? item.range[0] : item.range,
+        // Ensure user is an object or null (though we didn't strictly select users table in the original code, I added it to the select above to match the interface)
+        user: Array.isArray(item.user) ? item.user[0] : item.user
+      })) as VerificationRequest[]
+
+      setRequests(typedData)
     } catch (err) {
       console.error('Error fetching requests:', err)
     } finally {
@@ -129,8 +144,9 @@ export default function ClaimsPage() {
       alert('Claim approved successfully! Confirmation email sent.')
       fetchRequests()
       setShowModal(false)
-    } catch (err: any) {
-      alert('Error: ' + err.message)
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        alert('Error: ' + message)
     } finally {
       setProcessing(false)
     }
@@ -173,8 +189,9 @@ export default function ClaimsPage() {
       fetchRequests()
       setShowModal(false)
       setRejectionReason('')
-    } catch (err: any) {
-      alert('Error: ' + err.message)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      alert('Error: ' + message)
     } finally {
       setProcessing(false)
     }
@@ -257,7 +274,7 @@ export default function ClaimsPage() {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-black text-stone-400 uppercase mb-1">Range</label>
-                  <p className="text-xl font-bold text-stone-900">{selectedRequest.range?.name}</p>
+                  <p className="text-xl font-bold text-stone-900">{selectedRequest.range?.name || 'Unknown Range'}</p>
                 </div>
                 <div>
                   <label className="block text-xs font-black text-stone-400 uppercase mb-1">Applicant</label>
