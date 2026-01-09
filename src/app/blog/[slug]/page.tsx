@@ -38,10 +38,15 @@ export default async function BlogPostPage({ params }: PageProps) {
   if (!post) notFound()
 
   // Increment view count
-  await supabase
-    .from('blog_posts')
-    .update({ view_count: (post.view_count || 0) + 1 })
-    .eq('id', post.id)
+  // Note: Writing to DB in a GET request (rendering) is technically a side effect
+  try {
+      await supabase
+        .from('blog_posts')
+        .update({ view_count: (post.view_count || 0) + 1 })
+        .eq('id', post.id)
+  } catch(e) {
+      // Ignore update errors
+  }
 
   // Get related posts
   const { data: relatedPosts } = await supabase
@@ -165,7 +170,8 @@ export default async function BlogPostPage({ params }: PageProps) {
 
 export async function generateStaticParams() {
   try {
-    const supabase = await createClient()
+    // Use createStaticClient to avoid 'cookies() was called outside a request scope' error
+    const supabase = createStaticClient()
 
     const { data: posts } = await supabase
       .from('blog_posts')

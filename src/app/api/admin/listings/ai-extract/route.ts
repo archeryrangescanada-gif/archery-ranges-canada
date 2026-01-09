@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import * as cheerio from 'cheerio'
+import { lookup } from 'node:dns/promises'
 
 // TypeScript interface matching the exact database schema
 interface ArcheryRangeData {
@@ -36,6 +37,51 @@ interface ArcheryRangeData {
   parking_available: boolean
 }
 
+function isPrivateIP(ip: string): boolean {
+  // IPv4 Checks
+  const parts = ip.split('.').map(Number);
+  if (parts.length === 4) {
+    // 0.0.0.0/8
+    if (parts[0] === 0) return true;
+    // 10.0.0.0/8
+    if (parts[0] === 10) return true;
+    // 127.0.0.0/8
+    if (parts[0] === 127) return true;
+    // 169.254.0.0/16
+    if (parts[0] === 169 && parts[1] === 254) return true;
+    // 172.16.0.0/12
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    // 192.168.0.0/16
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    // 100.64.0.0/10 (CGNAT) - Optional but good practice
+    if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return true;
+
+    return false;
+  }
+
+  // IPv6 Checks
+  // ::1/128 (Loopback)
+  if (ip === '::1' || ip === '0:0:0:0:0:0:0:1') return true;
+  // ::/128 (Unspecified)
+  if (ip === '::' || ip === '0:0:0:0:0:0:0:0') return true;
+  // fc00::/7 (Unique Local)
+  // Check if starts with fc or fd (case insensitive)
+  const ipLower = ip.toLowerCase();
+  if (ipLower.startsWith('fc') || ipLower.startsWith('fd')) return true;
+  // fe80::/10 (Link Local)
+  if (ipLower.startsWith('fe80:')) return true;
+
+  // Handle IPv4-mapped IPv6 (::ffff:192.168.1.1)
+  if (ipLower.startsWith('::ffff:')) {
+      const ipv4Part = ip.split(':').pop();
+      if (ipv4Part && ipv4Part.includes('.')) {
+          return isPrivateIP(ipv4Part);
+      }
+  }
+
+  return false;
+}
+
 export async function POST(request: NextRequest) {
   try {
     if (!process.env.GEMINI_API_KEY) {
@@ -58,49 +104,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
-    // ✅ VALIDATE URL
+    // ✅ VALIDATE URL format
     let urlObj: URL
     try {
       urlObj = new URL(url)
     } catch {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 })
-    }
-
-    // ✅ BLOCK INTERNAL/PRIVATE IPs
-    const hostname = urlObj.hostname.toLowerCase()
-    const blockedHosts = [
-      'localhost',
-      '127.0.0.1',
-      '0.0.0.0',
-      '::1',
-    ]
-
-    // Block localhost and private IP ranges
-    if (
-      blockedHosts.includes(hostname) ||
-      hostname.startsWith('192.168.') ||
-      hostname.startsWith('10.') ||
-      hostname.startsWith('172.16.') ||
-      hostname.startsWith('172.17.') ||
-      hostname.startsWith('172.18.') ||
-      hostname.startsWith('172.19.') ||
-      hostname.startsWith('172.20.') ||
-      hostname.startsWith('172.21.') ||
-      hostname.startsWith('172.22.') ||
-      hostname.startsWith('172.23.') ||
-      hostname.startsWith('172.24.') ||
-      hostname.startsWith('172.25.') ||
-      hostname.startsWith('172.26.') ||
-      hostname.startsWith('172.27.') ||
-      hostname.startsWith('172.28.') ||
-      hostname.startsWith('172.29.') ||
-      hostname.startsWith('172.30.') ||
-      hostname.startsWith('172.31.')
-    ) {
-      return NextResponse.json(
-        { error: 'Cannot fetch from internal/private networks' },
-        { status: 400 }
-      )
     }
 
     // ✅ ONLY ALLOW HTTP/HTTPS
@@ -109,6 +118,41 @@ export async function POST(request: NextRequest) {
         { error: 'Only HTTP/HTTPS URLs are allowed' },
         { status: 400 }
       )
+    }
+
+    // ✅ RESOLVE HOSTNAME AND CHECK FOR PRIVATE IPs (SSRF Protection)
+    try {
+        const { address } = await lookup(urlObj.hostname);
+        if (isPrivateIP(address)) {
+            console.warn(`SSRF Attempt blocked: ${url} resolved to ${address}`);
+            return NextResponse.json(
+                { error: 'Cannot fetch from internal/private networks' },
+                { status: 400 }
+            );
+        }
+    } catch (dnsError) {
+        // If DNS lookup fails, it might be an invalid domain or network issue.
+        // We generally fail safe.
+        console.error(`DNS lookup failed for ${urlObj.hostname}:`, dnsError);
+        return NextResponse.json(
+            { error: 'Failed to resolve hostname' },
+            { status: 400 }
+        );
+    }
+
+    // Also block common localhost strings just in case DNS check is bypassed/mocked
+    const hostname = urlObj.hostname.toLowerCase()
+    const blockedHosts = [
+      'localhost',
+      '127.0.0.1',
+      '0.0.0.0',
+      '::1',
+    ]
+    if (blockedHosts.includes(hostname)) {
+         return NextResponse.json(
+            { error: 'Cannot fetch from localhost' },
+            { status: 400 }
+        );
     }
 
     console.log(`🚀 START: Fetching HTML from: ${url}`)
@@ -158,9 +202,10 @@ export async function POST(request: NextRequest) {
 
     // ✅ STREAM WITH SIZE LIMIT
     const reader = webResponse.body?.getReader()
+    let html = '';
+
     if (!reader) {
-      // Fallback for no reader support (e.g. some mocks), though usually fetch has it.
-      // We will try text() but double check length.
+      // Fallback for no reader support
       const text = await webResponse.text()
       if (text.length > MAX_SIZE) {
         return NextResponse.json(
@@ -168,9 +213,7 @@ export async function POST(request: NextRequest) {
             { status: 413 }
           )
       }
-      // Re-wrap in simple object for downstream code to use
-      // or just continue. The code below expects 'html' string.
-      var html = text;
+      html = text;
     } else {
         const chunks: Uint8Array[] = []
         let totalSize = 0
@@ -195,11 +238,10 @@ export async function POST(request: NextRequest) {
         } finally {
             reader.releaseLock()
         }
-        var html = new TextDecoder().decode(Buffer.concat(chunks))
+        html = new TextDecoder().decode(Buffer.concat(chunks))
     }
 
     console.log(`✅ HTML DOWNLOADED: ${html.length} characters`)
-    console.log(`   First 200 chars: ${html.substring(0, 200)}...`)
 
     // Use cheerio to extract clean text content
     const $ = cheerio.load(html)
@@ -218,7 +260,6 @@ export async function POST(request: NextRequest) {
     if (cleanText.length === 0) {
       console.error('⚠️  WARNING: Scraper returned 0 characters - page may be blocked or empty')
     }
-    console.log(`   First 300 chars of text: ${cleanText.substring(0, 300)}...`)
 
     // Initialize Gemini AI
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
