@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { EmailService } from '@/lib/email/service'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseClient } from '@/lib/supabase/safe-client'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    // Use safe client wrapper
+    const supabase = getSupabaseClient()
 
     let body;
     try {
@@ -45,8 +46,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Verification request not found' }, { status: 404 })
     }
 
-    // Check if user and email exist
-    if (!verificationRequest.user || !verificationRequest.user.email) {
+    const user = Array.isArray(verificationRequest.user) ? verificationRequest.user[0] : verificationRequest.user;
+    const range = Array.isArray(verificationRequest.range) ? verificationRequest.range[0] : verificationRequest.range;
+
+    if (!user || !user.email) {
         clearTimeout(timeoutId)
         return NextResponse.json({ error: 'User email not found associated with this request' }, { status: 400 })
     }
@@ -54,9 +57,9 @@ export async function POST(request: NextRequest) {
     try {
         // Send rejection email
         const result = await EmailService.sendVerificationRejectedEmail({
-          to: verificationRequest.user.email,
-          businessName: verificationRequest.user.full_name || verificationRequest.range.name,
-          rangeName: verificationRequest.range.name,
+          to: user.email,
+          businessName: user.full_name || range.name,
+          rangeName: range.name,
           reason,
         })
 
@@ -73,8 +76,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
     }
 
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+        return NextResponse.json({ error: 'Request timeout' }, { status: 504 })
+    }
     console.error('Error sending verification rejected email:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const message = error.message === 'Failed to create Supabase client' ? 'Configuration error' : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

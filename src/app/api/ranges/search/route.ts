@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    // Reverted to use standard createClient which respects RLS (or lack thereof for public tables)
-    // If the ranges table is public readable, this works. If it requires auth, it will return error or empty.
-    // For a public search API, we should use the anon client, NOT the service role client.
+    // 1. Rate Limiting
+    const ip = getClientIp()
+    const { success, remaining, reset } = await rateLimit(ip, 30, 60000) // 30 req/min
+
+    if (!success) {
+        return NextResponse.json(
+            { error: 'Too many requests' },
+            {
+                status: 429,
+                headers: {
+                    'X-RateLimit-Limit': '30',
+                    'X-RateLimit-Remaining': '0',
+                    'X-RateLimit-Reset': reset.toString()
+                }
+            }
+        )
+    }
+
     const supabase = await createClient()
 
     const { searchParams } = new URL(request.url)
@@ -21,18 +37,24 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Query too long' }, { status: 400 })
     }
 
+    const searchTerm = `%${query.trim()}%`
+
+    // Perform server-side filtering
+    // Note: Cross-table OR is limited without RPC, so we select a batch and filter.
     const { data, error } = await supabase
       .from('ranges')
       .select(`
         id,
         name,
         address,
+        slug,
         facility_type,
         owner_id,
-        cities!inner(name),
-        provinces!inner(name)
+        city:cities!inner(name),
+        province:provinces!inner(name)
       `)
-      .limit(200)
+      .or(`name.ilike.${searchTerm},address.ilike.${searchTerm}`)
+      .limit(50)
 
     if (error) {
       console.error('[Search API] Error:', error)
@@ -42,25 +64,31 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Filter for unclaimed listings and fuzzy search
-    const searchTerm = query.trim().toLowerCase().replace(/\s+/g, '')
+    // Secondary client-side filter for strict relation matching (City/Province)
+    const cleanTerm = query.trim().toLowerCase().replace(/\s+/g, '')
 
-    const filtered = data?.filter((r: any) => {
+    const filtered = (data || []).filter((r: any) => {
       if (r.owner_id) return false // Skip claimed ranges
 
-      // Remove spaces from name and address for fuzzy matching
       const nameLower = (r.name || '').toLowerCase().replace(/\s+/g, '')
       const addressLower = (r.address || '').toLowerCase().replace(/\s+/g, '')
-      const cityName = (r.cities?.name || '').toLowerCase().replace(/\s+/g, '')
-      const provinceName = (r.provinces?.name || '').toLowerCase().replace(/\s+/g, '')
+      const cityName = (r.city?.name || '').toLowerCase().replace(/\s+/g, '')
+      const provinceName = (r.province?.name || '').toLowerCase().replace(/\s+/g, '')
 
-      return nameLower.includes(searchTerm) ||
-             addressLower.includes(searchTerm) ||
-             cityName.includes(searchTerm) ||
-             provinceName.includes(searchTerm)
-    }) || []
+      return nameLower.includes(cleanTerm) ||
+             addressLower.includes(cleanTerm) ||
+             cityName.includes(cleanTerm) ||
+             provinceName.includes(cleanTerm)
+    })
 
-    return NextResponse.json({ ranges: filtered.slice(0, 20) })
+    return NextResponse.json({ ranges: filtered.slice(0, 20) }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        'X-RateLimit-Limit': '30',
+        'X-RateLimit-Remaining': remaining.toString(),
+        'X-RateLimit-Reset': reset.toString()
+      }
+    })
 
   } catch (error: any) {
     console.error('[Search API] Exception:', error)
