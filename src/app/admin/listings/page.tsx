@@ -103,12 +103,16 @@ export default function ListingsPage() {
   const fetchListings = async () => {
     setLoading(true)
     try {
+      // Correctly type the query response
       let query = supabase
         .from('ranges')
         .select(`
           id,
           name,
           is_featured,
+          is_premium,
+          claimed:is_claimed,
+          status,
           created_at,
           city_id,
           province_id,
@@ -121,17 +125,20 @@ export default function ListingsPage() {
 
       if (error) throw error
 
-      let formattedData = (data as any[]).map(item => ({
-        ...item,
-        city: item.city?.name || 'Unknown',
-        province: item.province?.name || 'Unknown',
-        // IDs are already at top level if selected, or we ensure they map correctly
+      const formattedData: Listing[] = (data || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        // Safely handle nested objects
+        city: item.city ? { name: item.city.name } : null,
+        province: item.province ? { name: item.province.name } : null,
         city_id: item.city_id,
         province_id: item.province_id,
         status: item.status || 'active',
         is_premium: item.is_premium || false,
+        is_featured: item.is_featured || false,
         claimed: item.claimed || false,
-        views_count: 0
+        views_count: 0, // Not currently fetched in this view
+        created_at: item.created_at
       }))
 
       setListings(formattedData)
@@ -147,9 +154,10 @@ export default function ListingsPage() {
     // Search
     if (searchQuery) {
       const lowerQ = searchQuery.toLowerCase()
+      const cityName = l.city?.name?.toLowerCase() || ''
       const matchesSearch =
         l.name.toLowerCase().includes(lowerQ) ||
-        (l.city as any).toLowerCase().includes(lowerQ)
+        cityName.includes(lowerQ)
       if (!matchesSearch) return false
     }
 
@@ -157,7 +165,10 @@ export default function ListingsPage() {
     if (statusFilter !== 'all' && l.status !== statusFilter) return false
 
     // Province Filter
-    if (provinceFilter !== 'all' && (l.province as any) !== provinceFilter) return false
+    if (provinceFilter !== 'all') {
+      const provName = l.province?.name || ''
+      if (provName !== provinceFilter) return false
+    }
 
     return true
   })
@@ -318,13 +329,13 @@ export default function ListingsPage() {
     const provinceMap = new Map<string, { id: string, name: string, count: number, cities: Map<string, { id: string, name: string, count: number }> }>()
 
     listings.forEach(l => {
-      if (!l.province_id || !l.province) return
-      const pName = typeof l.province === 'string' ? l.province : (l.province as any).name || (l.province as any)
+      if (!l.province_id) return
+      const pName = l.province?.name || 'Unknown'
 
       if (!provinceMap.has(l.province_id)) {
         provinceMap.set(l.province_id, {
           id: l.province_id,
-          name: String(pName),
+          name: pName,
           count: 0,
           cities: new Map()
         })
@@ -334,9 +345,9 @@ export default function ListingsPage() {
       prov.count++
 
       if (l.city_id) {
-        const cName = typeof l.city === 'string' ? l.city : (l.city as any).name || (l.city as any)
+        const cName = l.city?.name || 'Unknown'
         if (!prov.cities.has(l.city_id)) {
-          prov.cities.set(l.city_id, { id: l.city_id, name: String(cName), count: 0 })
+          prov.cities.set(l.city_id, { id: l.city_id, name: cName, count: 0 })
         }
         prov.cities.get(l.city_id)!.count++
       }
@@ -529,8 +540,8 @@ export default function ListingsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{listing.city as any}</div>
-                    <div className="text-sm text-gray-500">{listing.province as any}</div>
+                    <div className="text-sm text-gray-900">{listing.city?.name || 'Unknown'}</div>
+                    <div className="text-sm text-gray-500">{listing.province?.name || 'Unknown'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
