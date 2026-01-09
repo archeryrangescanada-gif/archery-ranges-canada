@@ -1,20 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '@/lib/supabase/safe-client';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic'
-
-// Create a Service Role client to bypass RLS for stats
-const adminSupabase = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-);
 
 export async function GET(request: NextRequest) {
     try {
@@ -25,14 +13,8 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Double check admin privileges if necessary, though middleware usually covers it.
-        // For defense in depth, we can query the profile.
-        // Assuming strict "admin only" for stats:
-        // const { data: profile } = await adminSupabase.from('profiles').select('role').eq('id', user.id).single();
-        // if (!['super_admin', 'admin'].includes(profile?.role)) {
-        //    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-        // }
-        // Given existing code didn't check role strictly, I will keep it open to auth users or rely on middleware.
+        // Use safe client
+        const adminSupabase = getSupabaseClient();
 
         // Parallelize fetching counts for performance
         const [
@@ -124,8 +106,11 @@ export async function GET(request: NextRequest) {
             chartData // Include the real chart data
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Stats Server error:', error);
+        if (error.message === 'Failed to create Supabase client') {
+             return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
+        }
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

@@ -1,19 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createServerClient } from '@/lib/supabase/server';
+import { getSupabaseClient } from '@/lib/supabase/safe-client';
 
-// Initialize Supabase Admin client (requires service role key)
-// We use a separate client here because we need administrative privileges to invite users
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-);
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
     try {
@@ -64,6 +53,9 @@ export async function POST(request: NextRequest) {
         }
 
         // 3. Send Invite via Supabase Admin API
+        // Use safe client inside handler to prevent build-time errors
+        const supabaseAdmin = getSupabaseClient();
+
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
 
         if (inviteError) {
@@ -94,8 +86,12 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ success: true, user: inviteData.user });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Invite API error:', error);
+        // Handle safe client config error specifically
+        if (error.message === 'Failed to create Supabase client') {
+             return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
+        }
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

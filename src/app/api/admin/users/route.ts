@@ -1,18 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '@/lib/supabase/safe-client';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Create a Service Role client to bypass RLS
-const adminSupabase = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    }
-);
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
     try {
@@ -22,6 +12,9 @@ export async function GET(request: NextRequest) {
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+
+        // Use safe client
+        const adminSupabase = getSupabaseClient();
 
         // Fetch all users using admin client to bypass RLS
         const { data: users, error } = await adminSupabase
@@ -36,8 +29,11 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({ users });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Server error:', error);
+        if (error.message === 'Failed to create Supabase client') {
+             return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
+        }
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
@@ -87,6 +83,9 @@ export async function PATCH(request: NextRequest) {
         if (status) updates.status = status;
         updates.updated_at = new Date().toISOString();
 
+        // Use safe client
+        const adminSupabase = getSupabaseClient();
+
         const { data, error } = await adminSupabase
             .from('profiles')
             .update(updates)
@@ -101,8 +100,11 @@ export async function PATCH(request: NextRequest) {
 
         return NextResponse.json({ success: true, user: data });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Server error:', error);
+        if (error.message === 'Failed to create Supabase client') {
+             return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
+        }
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
@@ -123,6 +125,9 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
+        // Use safe client
+        const adminSupabase = getSupabaseClient();
+
         // Delete from profiles using admin client
         const { error } = await adminSupabase
             .from('profiles')
@@ -136,8 +141,11 @@ export async function DELETE(request: NextRequest) {
 
         return NextResponse.json({ success: true });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Server error:', error);
+        if (error.message === 'Failed to create Supabase client') {
+             return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
+        }
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
