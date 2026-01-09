@@ -64,19 +64,27 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
 
-        if (typeof id !== 'string') {
-            return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
+        // ✅ VALIDATE role enum
+        const validRoles = ['user', 'admin', 'owner', 'super_admin', 'admin_employee'] // Added logic ones as well
+        if (role && !validRoles.includes(role)) {
+            return NextResponse.json(
+                { error: `Invalid role. Must be one of: ${validRoles.join(', ')}` },
+                { status: 400 }
+            )
+        }
+
+        // ✅ VALIDATE status enum
+        const validStatuses = ['active', 'inactive', 'suspended', 'invited']
+        if (status && !validStatuses.includes(status)) {
+            return NextResponse.json(
+                { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+                { status: 400 }
+            )
         }
 
         const updates: any = {};
-        if (role) {
-            if (typeof role !== 'string') return NextResponse.json({ error: 'Invalid role format' }, { status: 400 });
-            updates.role = role;
-        }
-        if (status) {
-            if (typeof status !== 'string') return NextResponse.json({ error: 'Invalid status format' }, { status: 400 });
-            updates.status = status;
-        }
+        if (role) updates.role = role;
+        if (status) updates.status = status;
         updates.updated_at = new Date().toISOString();
 
         const { data, error } = await adminSupabase

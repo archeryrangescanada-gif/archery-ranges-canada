@@ -36,126 +36,166 @@ interface ArcheryRangeData {
   parking_available: boolean
 }
 
-// Allowed domains for SSRF protection
-// You can add more trusted domains here if needed, or implement a more sophisticated check
-// For now, we allow general web scraping but we might want to restrict if we are only targeting specific sites.
-// However, the prompt asks to "Validate URL is a real domain".
-// The prompt example used `allowedDomains`. But for a general scraping tool, we might not want to restrict to just "example.com".
-// The critical part is preventing access to localhost or internal IPs.
-
-function isSafeUrl(url: string): boolean {
-  try {
-    const parsedUrl = new URL(url);
-    const hostname = parsedUrl.hostname;
-
-    // Block local and private IP addresses
-    if (
-      hostname === 'localhost' ||
-      hostname === '127.0.0.1' ||
-      hostname === '::1' ||
-      hostname.startsWith('192.168.') ||
-      hostname.startsWith('10.') ||
-      (hostname.startsWith('172.') && parseInt(hostname.split('.')[1]) >= 16 && parseInt(hostname.split('.')[1]) <= 31)
-    ) {
-      return false;
-    }
-
-    // Only allow http and https
-    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
-      return false;
-    }
-
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-
 export async function POST(request: NextRequest) {
-  console.log(`🔍 Checking Key: ${process.env.GEMINI_API_KEY ? 'Key Exists' : 'MISSING'}`)
-
   try {
-    // Validate API key exists
     if (!process.env.GEMINI_API_KEY) {
-      console.error('❌ GEMINI_API_KEY is not defined in environment variables')
       return NextResponse.json(
         { error: 'Server configuration error: GEMINI_API_KEY not found' },
         { status: 500 }
       )
     }
 
-    // Parse request body
-    let body;
+    let body
     try {
-        body = await request.json();
-    } catch (e) {
-        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
     const { url } = body
 
     if (!url || typeof url !== 'string') {
-      return NextResponse.json({ error: 'URL is required and must be a string' }, { status: 400 })
+      return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
-    // SSRF Protection
-    if (!isSafeUrl(url)) {
-        return NextResponse.json({ error: 'Invalid or forbidden URL' }, { status: 400 })
+    // ✅ VALIDATE URL
+    let urlObj: URL
+    try {
+      urlObj = new URL(url)
+    } catch {
+      return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 })
+    }
+
+    // ✅ BLOCK INTERNAL/PRIVATE IPs
+    const hostname = urlObj.hostname.toLowerCase()
+    const blockedHosts = [
+      'localhost',
+      '127.0.0.1',
+      '0.0.0.0',
+      '::1',
+    ]
+
+    // Block localhost and private IP ranges
+    if (
+      blockedHosts.includes(hostname) ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('172.16.') ||
+      hostname.startsWith('172.17.') ||
+      hostname.startsWith('172.18.') ||
+      hostname.startsWith('172.19.') ||
+      hostname.startsWith('172.20.') ||
+      hostname.startsWith('172.21.') ||
+      hostname.startsWith('172.22.') ||
+      hostname.startsWith('172.23.') ||
+      hostname.startsWith('172.24.') ||
+      hostname.startsWith('172.25.') ||
+      hostname.startsWith('172.26.') ||
+      hostname.startsWith('172.27.') ||
+      hostname.startsWith('172.28.') ||
+      hostname.startsWith('172.29.') ||
+      hostname.startsWith('172.30.') ||
+      hostname.startsWith('172.31.')
+    ) {
+      return NextResponse.json(
+        { error: 'Cannot fetch from internal/private networks' },
+        { status: 400 }
+      )
+    }
+
+    // ✅ ONLY ALLOW HTTP/HTTPS
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      return NextResponse.json(
+        { error: 'Only HTTP/HTTPS URLs are allowed' },
+        { status: 400 }
+      )
     }
 
     console.log(`🚀 START: Fetching HTML from: ${url}`)
 
-    // Fetch and scrape the webpage content with timeout and size limit
+    // ✅ ADD TIMEOUT with AbortController
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
 
-    let html = '';
-
+    let webResponse: Response
     try {
-        const webResponse = await fetch(url, { signal: controller.signal })
-        if (!webResponse.ok) {
-            throw new Error(`Failed to fetch URL: ${webResponse.status} ${webResponse.statusText}`)
-        }
-
-        // Size Limit Check (Content-Length header)
-        const contentLength = webResponse.headers.get('content-length')
-        if (contentLength && parseInt(contentLength) > 5_000_000) { // 5MB limit
-             return NextResponse.json({ error: 'Page too large (max 5MB)' }, { status: 413 })
-        }
-
-        // Stream with size limit
-        const reader = webResponse.body?.getReader()
-        if (!reader) {
-             html = await webResponse.text(); // Fallback if no reader
-        } else {
-            const chunks: Uint8Array[] = []
-            let totalSize = 0
-            const MAX_SIZE = 5_000_000
-
-            while (true) {
-                const { done, value } = await reader.read()
-                if (done) break
-
-                if (value) {
-                    totalSize += value.length
-                    if (totalSize > MAX_SIZE) {
-                        reader.cancel()
-                         return NextResponse.json({ error: 'Page too large (max 5MB)' }, { status: 413 })
-                    }
-                    chunks.push(value)
-                }
-            }
-             html = new TextDecoder().decode(Buffer.concat(chunks))
-        }
-
+      webResponse = await fetch(url, {
+        signal: controller.signal,
+        redirect: 'follow',
+        headers: {
+          'User-Agent': 'ArcheryRangesCanada-Bot/1.0',
+        },
+      })
+      clearTimeout(timeoutId)
     } catch (error: any) {
-         if (error.name === 'AbortError') {
-            return NextResponse.json({ error: 'Request timeout' }, { status: 504 })
-         }
-         throw error;
-    } finally {
-        clearTimeout(timeoutId)
+      clearTimeout(timeoutId)
+      if (error.name === 'AbortError') {
+        return NextResponse.json(
+          { error: 'Request timeout - page took too long to respond' },
+          { status: 504 }
+        )
+      }
+      throw error
+    }
+
+    if (!webResponse.ok) {
+      return NextResponse.json(
+        { error: `Failed to fetch URL: ${webResponse.status} ${webResponse.statusText}` },
+        { status: 400 }
+      )
+    }
+
+    // ✅ CHECK CONTENT LENGTH
+    const contentLength = webResponse.headers.get('content-length')
+    const MAX_SIZE = 5_000_000 // 5MB
+
+    if (contentLength && parseInt(contentLength) > MAX_SIZE) {
+      return NextResponse.json(
+        { error: 'Page too large (max 5MB)' },
+        { status: 413 }
+      )
+    }
+
+    // ✅ STREAM WITH SIZE LIMIT
+    const reader = webResponse.body?.getReader()
+    if (!reader) {
+      // Fallback for no reader support (e.g. some mocks), though usually fetch has it.
+      // We will try text() but double check length.
+      const text = await webResponse.text()
+      if (text.length > MAX_SIZE) {
+        return NextResponse.json(
+            { error: 'Page too large (max 5MB)' },
+            { status: 413 }
+          )
+      }
+      // Re-wrap in simple object for downstream code to use
+      // or just continue. The code below expects 'html' string.
+      var html = text;
+    } else {
+        const chunks: Uint8Array[] = []
+        let totalSize = 0
+
+        try {
+        while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            if (value) {
+                totalSize += value.length
+                if (totalSize > MAX_SIZE) {
+                    reader.cancel()
+                    return NextResponse.json(
+                        { error: 'Page too large (max 5MB)' },
+                        { status: 413 }
+                    )
+                }
+                chunks.push(value)
+            }
+        }
+        } finally {
+            reader.releaseLock()
+        }
+        var html = new TextDecoder().decode(Buffer.concat(chunks))
     }
 
     console.log(`✅ HTML DOWNLOADED: ${html.length} characters`)
@@ -184,7 +224,7 @@ export async function POST(request: NextRequest) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     console.log('✅ GoogleGenerativeAI initialized')
 
-    // Use Gemini 2.5 Flash (confirmed working via debug script)
+    // Use Gemini 2.5 Flash
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
     console.log('✅ Model created: gemini-2.5-flash')
 
@@ -241,25 +281,11 @@ Website Text Content:
 ${cleanText.substring(0, 15000)}`
 
     console.log('🤖 SENDING TO GEMINI...')
-    console.log(`   Prompt length: ${prompt.length} characters`)
-    console.log(`   Model: gemini-2.5-flash`)
 
-    // Call Gemini AI with error handling
+    // Call Gemini AI
     let result
     try {
-      // Add timeout for Gemini call as well
-      const aiController = new AbortController()
-      const aiTimeoutId = setTimeout(() => aiController.abort(), 15000) // 15s timeout for AI
-
-      // Google Generative AI SDK doesn't support signal directly in current version usually,
-      // but we can wrap it or hope for the best.
-      // Actually, we can't easily timeout the SDK call without a wrapper,
-      // but the fetch timeout above handles the scraping part which is the most risky for SSRF/DoS.
-      // We will leave the AI call as is for now, but handle potential errors.
-
       result = await model.generateContent(prompt)
-      clearTimeout(aiTimeoutId)
-
     } catch (aiError: any) {
       console.error('❌ Gemini API Error:', aiError)
       return NextResponse.json(
@@ -273,42 +299,31 @@ ${cleanText.substring(0, 15000)}`
 
     const responseText = result.response.text().trim()
     console.log('📦 GEMINI RESPONSE RECEIVED')
-    console.log(`   Response length: ${responseText.length} characters`)
-    console.log(`   First 500 chars: ${responseText.substring(0, 500)}...`)
-    console.log(`   Last 200 chars: ...${responseText.substring(responseText.length - 200)}`)
 
-    // Safe JSON parsing with multiple fallback strategies
+    // Safe JSON parsing
     let extractedData: ArcheryRangeData
-
-    console.log('🔍 PARSING JSON...')
     try {
       // Strategy 1: Direct JSON parse
       extractedData = JSON.parse(responseText)
-      console.log('✅ Parsed JSON directly (Strategy 1)')
     } catch (e1) {
-      console.log('⚠️  Strategy 1 failed, trying Strategy 2 (markdown blocks)...')
       try {
         // Strategy 2: Extract from markdown code blocks
         const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/)
         if (jsonMatch) {
           extractedData = JSON.parse(jsonMatch[1])
-          console.log('✅ Parsed JSON from markdown block (Strategy 2)')
         } else {
-          console.log('⚠️  Strategy 2 failed, trying Strategy 3 (brace extraction)...')
           // Strategy 3: Find first { to last }
           const firstBrace = responseText.indexOf('{')
           const lastBrace = responseText.lastIndexOf('}')
           if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
             const jsonStr = responseText.substring(firstBrace, lastBrace + 1)
             extractedData = JSON.parse(jsonStr)
-            console.log('✅ Parsed JSON by extracting braces (Strategy 3)')
           } else {
             throw new Error('No valid JSON found in response')
           }
         }
       } catch (e2) {
         console.error('❌ ALL PARSING STRATEGIES FAILED')
-        console.error('Raw response:', responseText)
         return NextResponse.json(
           {
             error: 'Failed to parse AI response as JSON',
@@ -319,70 +334,22 @@ ${cleanText.substring(0, 15000)}`
       }
     }
 
-    console.log('📦 GEMINI RAW JSON:')
-    console.log(JSON.stringify(extractedData, null, 2))
-
     // Validate required fields
-    console.log('🔍 VALIDATING REQUIRED FIELDS...')
     if (!extractedData.post_title) {
-      console.error('❌ VALIDATION FAILED: post_title is missing')
       return NextResponse.json(
         { error: 'AI extraction failed: post_title is required but was not found' },
         { status: 500 }
       )
     }
-    console.log(`✅ Validation passed: post_title = "${extractedData.post_title}"`)
 
-    // Ensure all required fields have proper defaults
-    const sanitizedData: ArcheryRangeData = {
-      post_title: extractedData.post_title || 'Unknown Range',
-      post_address: extractedData.post_address || '',
-      post_city: extractedData.post_city || '',
-      post_region: extractedData.post_region || '',
-      post_country: extractedData.post_country || 'Canada',
-      post_zip: extractedData.post_zip || '',
-      post_latitude: extractedData.post_latitude || null,
-      post_longitude: extractedData.post_longitude || null,
-      phone: extractedData.phone || '',
-      email: extractedData.email || '',
-      website: extractedData.website || url,
-      post_content: extractedData.post_content || '',
-      post_tags: extractedData.post_tags || '',
-      business_hours: extractedData.business_hours || '',
-      post_images: Array.isArray(extractedData.post_images) ? extractedData.post_images : [],
-      range_length_yards: Number(extractedData.range_length_yards) || 0,
-      number_of_lanes: Number(extractedData.number_of_lanes) || 0,
-      facility_type: extractedData.facility_type || 'Indoor',
-      has_pro_shop: Boolean(extractedData.has_pro_shop),
-      has_3d_course: Boolean(extractedData.has_3d_course),
-      has_field_course: Boolean(extractedData.has_field_course),
-      membership_required: Boolean(extractedData.membership_required),
-      membership_price_adult: Number(extractedData.membership_price_adult) || 0,
-      drop_in_price: Number(extractedData.drop_in_price) || 0,
-      equipment_rental_available: Boolean(extractedData.equipment_rental_available),
-      lessons_available: Boolean(extractedData.lessons_available),
-      lesson_price_range: extractedData.lesson_price_range || '',
-      bow_types_allowed: extractedData.bow_types_allowed || '',
-      accessibility: Boolean(extractedData.accessibility),
-      parking_available: Boolean(extractedData.parking_available)
-    }
-
-    console.log('✅ DATA SANITIZED AND READY TO SEND TO FRONTEND')
-    console.log('📤 FINAL PAYLOAD BEING RETURNED:')
-    console.log(JSON.stringify(sanitizedData, null, 2))
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-
-    return NextResponse.json({ success: true, data: sanitizedData })
+    return NextResponse.json({ success: true, data: extractedData })
 
   } catch (error: any) {
     console.error('❌ AI Extract Error:', error)
-    console.error('Error stack:', error.stack)
-
     return NextResponse.json(
       {
         error: error.message || 'Failed to extract data',
         details: error.toString(),
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       { status: 500 }
     )
