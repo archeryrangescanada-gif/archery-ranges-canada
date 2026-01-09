@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-// Service Role Client for bypassing RLS
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-)
-
 export async function GET(request: NextRequest) {
   try {
+    // Reverted to use standard createClient which respects RLS (or lack thereof for public tables)
+    // If the ranges table is public readable, this works. If it requires auth, it will return error or empty.
+    // For a public search API, we should use the anon client, NOT the service role client.
+    const supabase = await createClient()
+
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
 
@@ -24,12 +17,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ranges: [] })
     }
 
-    // Limit query length to prevent excessive processing/DoS
     if (query.length > 100) {
         return NextResponse.json({ error: 'Query too long' }, { status: 400 })
     }
 
-    // Get all ranges and filter client-side for better fuzzy matching
     const { data, error } = await supabase
       .from('ranges')
       .select(`
@@ -68,11 +59,6 @@ export async function GET(request: NextRequest) {
              cityName.includes(searchTerm) ||
              provinceName.includes(searchTerm)
     }) || []
-
-    console.log('[Search API] Query:', query, 'Returning', filtered.length, 'unclaimed ranges')
-    if (filtered.length > 0) {
-      console.log('[Search API] Sample result:', filtered[0]?.name)
-    }
 
     return NextResponse.json({ ranges: filtered.slice(0, 20) })
 

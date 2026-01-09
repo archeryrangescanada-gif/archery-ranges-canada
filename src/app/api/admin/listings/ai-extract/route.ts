@@ -121,6 +121,10 @@ export async function POST(request: NextRequest) {
     }
 
     // ✅ RESOLVE HOSTNAME AND CHECK FOR PRIVATE IPs (SSRF Protection)
+    // NOTE: This implementation validates the DNS resolution but still uses the original hostname for the fetch.
+    // This is vulnerable to DNS Rebinding attacks. However, full mitigation requires low-level socket control
+    // or 'fetch' libraries that support IP pinning, which are complex to integrate with Next.js/Node fetch in this environment.
+    // Given the constraints, we perform the check and add a strict timeout.
     try {
         const { address } = await lookup(urlObj.hostname);
         if (isPrivateIP(address)) {
