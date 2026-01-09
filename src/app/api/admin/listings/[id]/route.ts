@@ -1,18 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { getSupabaseClient } from '@/lib/supabase/safe-client'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Service Role Client for Admin Operations
-const adminSupabase = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+export const dynamic = 'force-dynamic'
 
 export async function PATCH(
   request: NextRequest,
@@ -99,6 +88,9 @@ export async function PATCH(
     // Add timestamp
     updates.updated_at = new Date().toISOString()
 
+    // Service Role Client for Admin Operations
+    const adminSupabase = getSupabaseClient()
+
     const { data, error } = await adminSupabase
       .from('ranges')
       .update(updates)
@@ -115,6 +107,9 @@ export async function PATCH(
 
   } catch (error: any) {
     console.error('❌ Update API Error:', error)
+    if (error.message === 'Failed to create Supabase client') {
+        return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
@@ -132,6 +127,9 @@ export async function DELETE(
         { status: 400 }
       )
     }
+
+    // Service Role Client for Admin Operations
+    const adminSupabase = getSupabaseClient()
 
     // Use Service Role to ensure delete works even if RLS is strict
     const { error } = await adminSupabase
@@ -151,6 +149,9 @@ export async function DELETE(
 
   } catch (error: any) {
     console.error('❌ Delete API Error:', error)
+    if (error.message === 'Failed to create Supabase client') {
+        return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
+    }
     return NextResponse.json(
       {
         error: error.message || 'Failed to delete listing',
