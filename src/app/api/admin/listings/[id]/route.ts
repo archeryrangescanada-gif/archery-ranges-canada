@@ -1,5 +1,6 @@
 import { getSupabaseClient } from '@/lib/supabase/safe-client'
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -99,14 +100,14 @@ export async function PATCH(
       .single()
 
     if (error) {
-      console.error(`❌ Error updating listing ${id}:`, error)
+      logger.error(`❌ Error updating listing ${id}:`, error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, data })
 
   } catch (error: any) {
-    console.error('❌ Update API Error:', error)
+    logger.error('❌ Update API Error:', error)
     if (error.message === 'Failed to create Supabase client') {
         return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
     }
@@ -138,7 +139,7 @@ export async function DELETE(
       .eq('id', id)
 
     if (error) {
-      console.error(`❌ Error deleting listing ${id}:`, error)
+      logger.error(`❌ Error deleting listing ${id}:`, error)
       return NextResponse.json(
         { error: error.message || 'Failed to delete listing' },
         { status: 500 }
@@ -148,7 +149,7 @@ export async function DELETE(
     return NextResponse.json({ success: true })
 
   } catch (error: any) {
-    console.error('❌ Delete API Error:', error)
+    logger.error('❌ Delete API Error:', error)
     if (error.message === 'Failed to create Supabase client') {
         return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
     }

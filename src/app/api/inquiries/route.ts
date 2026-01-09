@@ -1,8 +1,27 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. Rate Limiting
+    const ip = getClientIp()
+    const { success, remaining, reset } = await rateLimit(ip, 5, 3600000) // 5 req/hour per IP for inquiries
+
+    if (!success) {
+        return NextResponse.json(
+            { error: 'Too many inquiries. Please try again later.' },
+            {
+                status: 429,
+                headers: {
+                    'X-RateLimit-Limit': '5',
+                    'X-RateLimit-Remaining': '0',
+                    'X-RateLimit-Reset': reset.toString()
+                }
+            }
+        )
+    }
+
     let body;
     try {
         body = await request.json();
@@ -66,7 +85,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, id: data.id });
+    return NextResponse.json({ success: true, id: data.id }, {
+      headers: {
+        'X-RateLimit-Limit': '5',
+        'X-RateLimit-Remaining': remaining.toString(),
+        'X-RateLimit-Reset': reset.toString()
+      }
+    });
   } catch (error) {
     console.error('Inquiry API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

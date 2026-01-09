@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import * as cheerio from 'cheerio'
 import { lookup } from 'node:dns/promises'
+import { logger } from '@/lib/logger'
 
 // TypeScript interface matching the exact database schema
 interface ArcheryRangeData {
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
     try {
         const { address } = await lookup(urlObj.hostname);
         if (isPrivateIP(address)) {
-            console.warn(`SSRF Attempt blocked: ${url} resolved to ${address}`);
+            logger.warn(`SSRF Attempt blocked: ${url} resolved to ${address}`);
             return NextResponse.json(
                 { error: 'Cannot fetch from internal/private networks' },
                 { status: 400 }
@@ -137,7 +138,7 @@ export async function POST(request: NextRequest) {
     } catch (dnsError) {
         // If DNS lookup fails, it might be an invalid domain or network issue.
         // We generally fail safe.
-        console.error(`DNS lookup failed for ${urlObj.hostname}:`, dnsError);
+        logger.error(`DNS lookup failed for ${urlObj.hostname}:`, dnsError);
         return NextResponse.json(
             { error: 'Failed to resolve hostname' },
             { status: 400 }
@@ -159,7 +160,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    console.log(`🚀 START: Fetching HTML from: ${url}`)
+    logger.info(`🚀 START: Fetching HTML from: ${url}`)
 
     // ✅ ADD TIMEOUT with AbortController
     const controller = new AbortController()
@@ -245,7 +246,7 @@ export async function POST(request: NextRequest) {
         html = new TextDecoder().decode(Buffer.concat(chunks))
     }
 
-    console.log(`✅ HTML DOWNLOADED: ${html.length} characters`)
+    logger.info(`✅ HTML DOWNLOADED: ${html.length} characters`)
 
     // Use cheerio to extract clean text content
     const $ = cheerio.load(html)
@@ -260,18 +261,18 @@ export async function POST(request: NextRequest) {
       .replace(/\n+/g, '\n') // Replace multiple newlines with single newline
       .trim()
 
-    console.log(`✅ SCRAPED: Found ${cleanText.length} characters of clean text`)
+    logger.info(`✅ SCRAPED: Found ${cleanText.length} characters of clean text`)
     if (cleanText.length === 0) {
-      console.error('⚠️  WARNING: Scraper returned 0 characters - page may be blocked or empty')
+      logger.warn('⚠️  WARNING: Scraper returned 0 characters - page may be blocked or empty')
     }
 
     // Initialize Gemini AI
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    console.log('✅ GoogleGenerativeAI initialized')
+    logger.info('✅ GoogleGenerativeAI initialized')
 
     // Use Gemini 2.5 Flash
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
-    console.log('✅ Model created: gemini-2.5-flash')
+    logger.info('✅ Model created: gemini-2.5-flash')
 
     const prompt = `Extract archery range business information from this webpage HTML and return ONLY valid JSON (no markdown, no code blocks, no explanation).
 
@@ -325,14 +326,14 @@ Extraction Rules:
 Website Text Content:
 ${cleanText.substring(0, 15000)}`
 
-    console.log('🤖 SENDING TO GEMINI...')
+    logger.info('🤖 SENDING TO GEMINI...')
 
     // Call Gemini AI
     let result
     try {
       result = await model.generateContent(prompt)
     } catch (aiError: any) {
-      console.error('❌ Gemini API Error:', aiError)
+      logger.error('❌ Gemini API Error:', aiError)
       return NextResponse.json(
         {
           error: `Gemini API Error: ${aiError.message || 'Unknown error'}`,
@@ -343,7 +344,7 @@ ${cleanText.substring(0, 15000)}`
     }
 
     const responseText = result.response.text().trim()
-    console.log('📦 GEMINI RESPONSE RECEIVED')
+    logger.info('📦 GEMINI RESPONSE RECEIVED')
 
     // Safe JSON parsing
     let extractedData: ArcheryRangeData
@@ -368,7 +369,7 @@ ${cleanText.substring(0, 15000)}`
           }
         }
       } catch (e2) {
-        console.error('❌ ALL PARSING STRATEGIES FAILED')
+        logger.error('❌ ALL PARSING STRATEGIES FAILED')
         return NextResponse.json(
           {
             error: 'Failed to parse AI response as JSON',
@@ -390,7 +391,7 @@ ${cleanText.substring(0, 15000)}`
     return NextResponse.json({ success: true, data: extractedData })
 
   } catch (error: any) {
-    console.error('❌ AI Extract Error:', error)
+    logger.error('❌ AI Extract Error:', error)
     return NextResponse.json(
       {
         error: error.message || 'Failed to extract data',

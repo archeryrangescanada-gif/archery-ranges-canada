@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,7 +75,7 @@ const toTitleCase = (str: string) => {
 }
 
 export async function POST(request: NextRequest) {
-  console.log('📦 Import API called')
+  logger.info('📦 Import API called')
 
   try {
     const body = await request.json()
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Batch too large (max 1000)' }, { status: 413 })
     }
 
-    console.log(`📊 Processing ${ranges.length} range(s)`)
+    logger.info(`📊 Processing ${ranges.length} range(s)`)
 
     const supabase = await createClient()
 
@@ -142,7 +143,7 @@ export async function POST(request: NextRequest) {
             .select('id, name')
 
         if (provError) {
-            console.error('Error creating provinces:', provError)
+            logger.error('Error creating provinces:', provError)
             // Continue, but some ranges might fail
         } else if (newProvinces) {
             newProvinces.forEach(p => provinceMap[p.name] = p.id)
@@ -180,7 +181,7 @@ export async function POST(request: NextRequest) {
                 .select('id, name')
 
             if (cityError) {
-                console.error('Error creating cities:', cityError)
+                logger.error('Error creating cities:', cityError)
             } else if (newCities) {
                 newCities.forEach(c => cityMap[c.name] = c.id)
             }
@@ -267,7 +268,7 @@ export async function POST(request: NextRequest) {
         const { error } = await supabase.from('ranges').insert(batch)
 
         if (error) {
-            console.error(`Error inserting batch ${i}:`, error)
+            logger.error(`Error inserting batch ${i}:`, error)
             failureCount += batch.length
             failedRanges.push(`Batch ${i/BATCH_SIZE + 1} failed: ${error.message}`)
         } else {
@@ -275,7 +276,7 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    console.log(`📊 Import complete: ${successCount} success, ${failureCount} failed`)
+    logger.info(`📊 Import complete: ${successCount} success, ${failureCount} failed`)
 
     return NextResponse.json({
       success: successCount,
@@ -284,7 +285,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('❌ Import API Error:', error)
+    logger.error('❌ Import API Error:', error)
     return NextResponse.json(
       {
         error: error.message || 'Import failed',
