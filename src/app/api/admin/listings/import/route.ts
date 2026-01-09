@@ -43,6 +43,26 @@ const VALID_PROVINCES = [
   'Saskatchewan', 'Yukon'
 ]
 
+// Helper to ensure number or null
+const safeNumber = (val: any): number | null => {
+  if (typeof val === 'number' && !isNaN(val)) return val
+  if (typeof val === 'string' && val.trim() !== '') {
+    const num = parseFloat(val)
+    return isNaN(num) ? null : num
+  }
+  return null
+}
+
+// Helper to ensure boolean
+const safeBool = (val: any): boolean => {
+  if (typeof val === 'boolean') return val
+  if (typeof val === 'string') {
+    const lower = val.toLowerCase().trim()
+    return lower === 'true' || lower === 'yes' || lower === '1'
+  }
+  return false
+}
+
 export async function POST(request: NextRequest) {
   console.log('📦 Import API called')
 
@@ -71,7 +91,10 @@ export async function POST(request: NextRequest) {
       errors: [] as string[]
     }
 
-    for (const range of ranges as RangeImport[]) {
+    for (const rawRange of ranges) {
+      // Cast to any first to handle dirty input
+      const range = rawRange as any;
+
       try {
         // Validate required field
         if (!range.post_title || typeof range.post_title !== 'string') {
@@ -80,8 +103,23 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        // Basic type validation for other fields could be added here
-        // or just ensure they are treated safely in the insert
+        // Clean numeric fields
+        const latitude = safeNumber(range.post_latitude)
+        const longitude = safeNumber(range.post_longitude)
+        const rangeLength = safeNumber(range.range_length_yards)
+        const lanes = safeNumber(range.number_of_lanes)
+        const membershipPrice = safeNumber(range.membership_price_adult)
+        const dropInPrice = safeNumber(range.drop_in_price)
+
+        // Clean boolean fields
+        const hasProShop = safeBool(range.has_pro_shop)
+        const has3d = safeBool(range.has_3d_course)
+        const hasField = safeBool(range.has_field_course)
+        const membershipReq = safeBool(range.membership_required)
+        const rental = safeBool(range.equipment_rental_available)
+        const lessons = safeBool(range.lessons_available)
+        const accessibility = safeBool(range.accessibility)
+        const parking = safeBool(range.parking_available)
 
         console.log(`🏹 Creating range: ${range.post_title}`)
 
@@ -95,11 +133,12 @@ export async function POST(request: NextRequest) {
 
         // Find or create city
         let cityId: string | null = null
-        if (range.post_city && range.post_city.trim()) {
+        if (range.post_city && typeof range.post_city === 'string' && range.post_city.trim()) {
+          const cityName = range.post_city.trim()
           const { data: existingCity } = await supabase
             .from('cities')
             .select('id')
-            .ilike('name', range.post_city.trim())
+            .ilike('name', cityName)
             .single()
 
           if (existingCity) {
@@ -107,20 +146,20 @@ export async function POST(request: NextRequest) {
           } else {
             const { data: newCity, error: cityError } = await supabase
               .from('cities')
-              .insert({ name: range.post_city.trim() })
+              .insert({ name: cityName })
               .select('id')
               .single()
 
             if (!cityError && newCity) {
               cityId = newCity.id
-              console.log(`  ✅ Created new city: ${range.post_city}`)
+              console.log(`  ✅ Created new city: ${cityName}`)
             }
           }
         }
 
         // Find or create province (ONLY if it's a valid Canadian province)
         let provinceId: string | null = null
-        if (range.post_region && range.post_region.trim()) {
+        if (range.post_region && typeof range.post_region === 'string' && range.post_region.trim()) {
           const provinceName = range.post_region.trim()
 
           // Check if it's a valid province
@@ -173,43 +212,43 @@ export async function POST(request: NextRequest) {
             province_id: provinceId,
 
             // Address fields
-            address: range.post_address || '',
-            postal_code: range.post_zip || null,
-            latitude: range.post_latitude || null,
-            longitude: range.post_longitude || null,
+            address: typeof range.post_address === 'string' ? range.post_address : '',
+            postal_code: typeof range.post_zip === 'string' ? range.post_zip : null,
+            latitude: latitude,
+            longitude: longitude,
 
             // Contact fields
-            phone_number: range.phone || null,
-            email: range.email || null,
-            website: range.website || null,
+            phone_number: typeof range.phone === 'string' ? range.phone : null,
+            email: typeof range.email === 'string' ? range.email : null,
+            website: typeof range.website === 'string' ? range.website : null,
 
             // Content fields
-            description: range.post_content || null,
-            tags: range.post_tags || null,
-            business_hours: range.business_hours || null,
+            description: typeof range.post_content === 'string' ? range.post_content : null,
+            tags: typeof range.post_tags === 'string' ? range.post_tags : null,
+            business_hours: typeof range.business_hours === 'string' ? range.business_hours : null,
 
             // Range specifications
-            range_length_yards: range.range_length_yards || null,
-            number_of_lanes: range.number_of_lanes || null,
-            facility_type: range.facility_type || null,
+            range_length_yards: rangeLength,
+            number_of_lanes: lanes,
+            facility_type: typeof range.facility_type === 'string' ? range.facility_type : null,
 
             // Features (booleans)
-            has_pro_shop: range.has_pro_shop || false,
-            has_3d_course: range.has_3d_course || false,
-            has_field_course: range.has_field_course || false,
-            equipment_rental_available: range.equipment_rental_available || false,
-            lessons_available: range.lessons_available || false,
-            accessibility: range.accessibility || false,
-            parking_available: range.parking_available || false,
+            has_pro_shop: hasProShop,
+            has_3d_course: has3d,
+            has_field_course: hasField,
+            equipment_rental_available: rental,
+            lessons_available: lessons,
+            accessibility: accessibility,
+            parking_available: parking,
 
             // Membership & Pricing
-            membership_required: range.membership_required || false,
-            membership_price_adult: range.membership_price_adult || null,
-            drop_in_price: range.drop_in_price || null,
-            lesson_price_range: range.lesson_price_range || null,
+            membership_required: membershipReq,
+            membership_price_adult: membershipPrice,
+            drop_in_price: dropInPrice,
+            lesson_price_range: typeof range.lesson_price_range === 'string' ? range.lesson_price_range : null,
 
             // Additional info
-            bow_types_allowed: range.bow_types_allowed || null,
+            bow_types_allowed: typeof range.bow_types_allowed === 'string' ? range.bow_types_allowed : null,
 
             // System fields
             is_featured: false

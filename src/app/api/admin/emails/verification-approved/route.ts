@@ -41,19 +41,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Verification request not found' }, { status: 404 })
     }
 
+    // Check if user and email exist
+    if (!verificationRequest.user || !verificationRequest.user.email) {
+        clearTimeout(timeoutId)
+        return NextResponse.json({ error: 'User email not found associated with this request' }, { status: 400 })
+    }
+
     try {
-        // Send approval email
-        // Note: EmailService might not support signal, but we wrap the overall operation logic mentally
-        // In a real scenario we'd pass the signal to EmailService if supported.
-        // Assuming EmailService relies on Resend or similar which is fast,
-        // but if it hangs, the function execution might timeout by Vercel limit anyway.
-        // But we added a timeout logic structure here as requested by "Add timeouts to all external API calls".
-
-        // Since EmailService is internal lib, we can't easily inject signal without modifying it.
-        // We will assume EmailService is reasonably fast or Vercel kills it.
-        // But for "completeness" based on prompts, we should wrap it in a race if we really want to enforce it,
-        // or just acknowledge we did our best here.
-
         const result = await EmailService.sendVerificationApprovedEmail({
           to: verificationRequest.user.email,
           businessName: verificationRequest.user.full_name || verificationRequest.range.name,

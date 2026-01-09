@@ -45,6 +45,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Verification request not found' }, { status: 404 })
     }
 
+    // Check if user and email exist
+    if (!verificationRequest.user || !verificationRequest.user.email) {
+        clearTimeout(timeoutId)
+        return NextResponse.json({ error: 'User email not found associated with this request' }, { status: 400 })
+    }
+
     try {
         // Send rejection email
         const result = await EmailService.sendVerificationRejectedEmail({
