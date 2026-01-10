@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { getSupabaseClient } from '@/lib/supabase/safe-client';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
 
         if (inviteError) {
-            console.error('Error inviting user:', inviteError);
+            logger.error('Error inviting user:', inviteError);
             return NextResponse.json({ error: inviteError.message }, { status: 500 });
         }
 
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
                 });
 
             if (profileError) {
-                console.error('Error updating profile:', profileError);
+                logger.error('Error updating profile:', profileError);
                 // We generally shouldn't fail the whole request if just the profile update fails, 
                 // but for consistency we should warn or try to recover.
                 // For now, return success but log the error.
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, user: inviteData.user });
 
     } catch (error: any) {
-        console.error('Invite API error:', error);
+        logger.error('Invite API error:', error);
         // Handle safe client config error specifically
         if (error.message === 'Failed to create Supabase client') {
              return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });

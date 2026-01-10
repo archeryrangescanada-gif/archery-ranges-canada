@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: Request) {
   // 1. Initialize Stripe INSIDE the function
   if (!process.env.STRIPE_SECRET_KEY) {
-    console.error('Missing Stripe Secret Key')
+    logger.error('Missing Stripe Secret Key')
     return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
   }
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
 
   // 2. Initialize Supabase INSIDE the function
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('Missing Supabase Admin Keys')
+    logger.error('Missing Supabase Admin Keys')
      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
   }
   const supabaseAdmin = createClient(
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
   }
 
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
-      console.error('Missing STRIPE_WEBHOOK_SECRET');
+      logger.error('Missing STRIPE_WEBHOOK_SECRET');
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
   }
 
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
       process.env.STRIPE_WEBHOOK_SECRET
     )
   } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message)
+    logger.error('Webhook signature verification failed:', err.message)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -104,8 +105,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ received: true })
-  } catch (error) {
-    console.error('Webhook handler error:', error)
+  } catch (error: any) {
+    logger.error('Webhook handler error:', error)
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 }

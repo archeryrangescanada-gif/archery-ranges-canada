@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { getSupabaseClient } from '@/lib/supabase/safe-client';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic'
 
@@ -41,8 +42,8 @@ export async function GET(request: NextRequest) {
             finalActiveAds = activeAds;
         }
 
-        if (usersError) console.error('Error fetching users count:', usersError);
-        if (listingsError) console.error('Error fetching listings count:', listingsError);
+        if (usersError) logger.error('Error fetching users count:', usersError);
+        if (listingsError) logger.error('Error fetching listings count:', listingsError);
 
 
         // Fetch Recent Activity (e.g., last 5 new users or listings)
@@ -107,7 +108,7 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error: any) {
-        console.error('Stats Server error:', error);
+        logger.error('Stats Server error:', error);
         if (error.message === 'Failed to create Supabase client') {
              return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
         }

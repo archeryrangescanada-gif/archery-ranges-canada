@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { getSupabaseClient } from '@/lib/supabase/safe-client';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,14 +24,14 @@ export async function GET(request: NextRequest) {
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error('Database error:', error);
+            logger.error('Database error:', error);
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({ users });
 
     } catch (error: any) {
-        console.error('Server error:', error);
+        logger.error('Server error:', error);
         if (error.message === 'Failed to create Supabase client') {
              return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
         }
@@ -94,14 +95,14 @@ export async function PATCH(request: NextRequest) {
             .single();
 
         if (error) {
-            console.error('Database error:', error);
+            logger.error('Database error:', error);
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({ success: true, user: data });
 
     } catch (error: any) {
-        console.error('Server error:', error);
+        logger.error('Server error:', error);
         if (error.message === 'Failed to create Supabase client') {
              return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
         }
@@ -135,14 +136,14 @@ export async function DELETE(request: NextRequest) {
             .eq('id', id);
 
         if (error) {
-            console.error('Database error:', error);
+            logger.error('Database error:', error);
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({ success: true });
 
     } catch (error: any) {
-        console.error('Server error:', error);
+        logger.error('Server error:', error);
         if (error.message === 'Failed to create Supabase client') {
              return NextResponse.json({ error: 'Configuration error: Missing admin keys' }, { status: 500 });
         }

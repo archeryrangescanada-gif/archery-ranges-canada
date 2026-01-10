@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { EmailService } from '@/lib/email/service'
 import { getSupabaseClient } from '@/lib/supabase/safe-client'
+import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, data: result.data })
     } catch (emailError) {
         clearTimeout(timeoutId)
-        console.error('Email sending failed:', emailError)
+        logger.error('Email sending failed:', emailError)
         return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
     }
 
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
     if (error.name === 'AbortError') {
         return NextResponse.json({ error: 'Request timeout' }, { status: 504 })
     }
-    console.error('Error sending verification rejected email:', error)
+    logger.error('Error sending verification rejected email:', error)
     const message = error.message === 'Failed to create Supabase client' ? 'Configuration error' : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 })
   }

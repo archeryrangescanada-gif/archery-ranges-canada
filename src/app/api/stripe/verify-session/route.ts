@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: Request) {
   try {
     // 1. Initialize Stripe INSIDE the function to prevent build crashes
     if (!process.env.STRIPE_SECRET_KEY) {
-      console.error('Missing Stripe Secret Key')
+      logger.error('Missing Stripe Secret Key')
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
 
     // 2. Initialize Supabase INSIDE the function for the same reason
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('Missing Supabase Admin Keys')
+      logger.error('Missing Supabase Admin Keys')
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
     }
     const supabaseAdmin = createClient(
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
       .eq('id', rangeId)
 
     if (updateError) {
-      console.error('Database update error:', updateError)
+      logger.error('Database update error:', updateError)
       return NextResponse.json(
         { error: 'Failed to update subscription status' },
         { status: 500 }
@@ -78,7 +79,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error('Verify session error:', error)
+    logger.error('Verify session error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to verify session' },
       { status: 500 }

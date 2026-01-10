@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
       .limit(50)
 
     if (error) {
-      console.error('[Search API] Error:', error)
+      logger.error('[Search API] Error:', error)
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
@@ -91,7 +92,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('[Search API] Exception:', error)
+    logger.error('[Search API] Exception:', error)
     return NextResponse.json(
       { error: error.message || 'Search failed' },
       { status: 500 }

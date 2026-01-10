@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Error creating inquiry:', error);
+      logger.error('Error creating inquiry:', error);
       return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
     }
 
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Inquiry API error:', error);
+    logger.error('Inquiry API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
