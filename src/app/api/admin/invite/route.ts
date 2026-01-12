@@ -2,18 +2,23 @@ import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 
-// Initialize Supabase Admin client (requires service role key)
-// We use a separate client here because we need administrative privileges to invite users
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
+// Helper function to create admin client
+function getSupabaseAdmin() {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error('Missing Supabase environment variables')
     }
-);
+
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        }
+    )
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -48,6 +53,7 @@ export async function POST(request: NextRequest) {
         }
 
         // 3. Send Invite via Supabase Admin API
+        const supabaseAdmin = getSupabaseAdmin()
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email);
 
         if (inviteError) {
@@ -70,7 +76,7 @@ export async function POST(request: NextRequest) {
 
             if (profileError) {
                 console.error('Error updating profile:', profileError);
-                // We generally shouldn't fail the whole request if just the profile update fails, 
+                // We generally shouldn't fail the whole request if just the profile update fails,
                 // but for consistency we should warn or try to recover.
                 // For now, return success but log the error.
             }
