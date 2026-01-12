@@ -1,0 +1,316 @@
+[dotenv@17.2.3] injecting env (13) from .env.local -- tip: ⚙️  enable debug logging with { debug: true }
+Found 21 potentially corrupted ranges:
+[
+  {
+    "id": "9c7f79e3-80d0-474b-ba60-f426bb7ac4f9",
+    "name": "Bancroft Archery Club",
+    "phone_number": "613-332-0667",
+    "email": "admin@bancroftfishandgame.com",
+    "website": "bancroftfishandgame.com",
+    "post_tags": [
+      "archery",
+      "3D archery",
+      "outdoor archery",
+      "Bancroft",
+      "fish and game"
+    ]
+  },
+  {
+    "id": "5b85925a-4c8c-4352-9428-92783ae4039c",
+    "name": "Archery Canada Centre of Excellence - Cambridge 2022",
+    "phone_number": "Located at Moyer's Landing in **Cambridge**, the **Archery Canada Centre of Excellence** is the national training hub for **Olympic Recurve** archery in Canada. This elite facility features a world-class 70-meter **outdoor target range**, designed specifically to prepare national team athletes for international competition, including the World Championships and Olympic Games.\r\n\r\nWhile primarily a high-performance training center, its presence in Cambridge underscores the region's importance to the sport. The center provides a centralized professional environment for Canada's top archers and coaches. For serious competitors and those following the sport's highest levels, this facility represents the pinnacle of **target archery** infrastructure in the country, bringing Olympic-level standards to the local community.",
+    "email": "archery, Olympic recurve, training centre, Cambridge",
+    "website": null,
+    "post_tags": []
+  },
+  {
+    "id": "9ee03017-d45a-4817-80f3-77fe835c72c8",
+    "name": "Erie Trackers",
+    "phone_number": "(905) 834-9218",
+    "email": "erietrackeroutfitters@cogeco.net",
+    "website": "erie-tracker-outfitters.com",
+    "post_tags": [
+      "Port Colborne",
+      "Niagara",
+      "indoor archery",
+      "pro shop",
+      "bow tuning",
+      "hunting"
+    ]
+  },
+  {
+    "id": "7df088de-e251-4ea4-a8f0-cbf1b71a8400",
+    "name": "Windsor Archery Range",
+    "phone_number": null,
+    "email": null,
+    "website": "https://www.recreationliveshere.com/facilities/facility/details/Archery-Range-44",
+    "post_tags": [
+      "public range",
+      "outdoor",
+      "archery",
+      "3D targets"
+    ]
+  },
+  {
+    "id": "8ea31cf4-aff9-4c20-9ff2-95741b06ca65",
+    "name": "Durham Archers",
+    "phone_number": "(905) 427-0948",
+    "email": "Via website",
+    "website": "durhamarchers.com",
+    "post_tags": [
+      "Whitby",
+      "Durham",
+      "Oshawa",
+      "Ajax",
+      "outdoor",
+      "3D"
+    ]
+  },
+  {
+    "id": "91081b82-1419-4e84-96e4-7ae141525bca",
+    "name": "Amherstburg Target Sports",
+    "phone_number": "519-736-2557",
+    "email": null,
+    "website": "http://amherstburgtargetsports.com",
+    "post_tags": [
+      "rod and gun club",
+      "archery",
+      "trap shooting",
+      "members only",
+      "Amherstburg"
+    ]
+  },
+  {
+    "id": "595371b6-9949-43a2-ba8d-c8b707361bc7",
+    "name": "Ottawa Archers",
+    "phone_number": null,
+    "email": "[email protected]",
+    "website": "http://www.ottawa-archers.com",
+    "post_tags": [
+      "**Ottawa Archers** in the **Richmond** area offers one of the most comprehensive outdoor shooting experiences in the **Ottawa** region. Open 365 days a year from dawn to dusk",
+      "this self-serve facility is a dream for dedicated archers looking for maximum flexibility. The range includes a varied **15-lane 3D course**",
+      "target butts up to 50 meters",
+      "and a specialized **FITA field** with distances extending to a significant 70 meters.\n\nThe club is notable for its inclusive equipment rules",
+      "allowing **crossbows** on practice butts and the 3D course. Located with convenient access via the Twin Elms Rugby Club",
+      "it provides a quiet",
+      "natural setting for archers of all ages. Whether you're training for professional competition at 70m or just looking for a weekend walk through the 3D lanes",
+      "Ottawa Archers provides the space and facilities to master your craft."
+    ]
+  },
+  {
+    "id": "9e0517b3-38f8-4bf9-abcc-86b27832c599",
+    "name": "Lambton Sportsman's Club",
+    "phone_number": null,
+    "email": null,
+    "website": "https://www.lambtonsportsman.com/",
+    "post_tags": [
+      "shooting range",
+      "Lambton",
+      "St. Clair",
+      "archery",
+      "private club",
+      "rifle range",
+      "outdoor archery"
+    ]
+  },
+  {
+    "id": "d30b47d5-90bf-4318-a1ba-5bee6048d2b2",
+    "name": "AMA Sportsmen Club",
+    "phone_number": "519-736-5706",
+    "email": "info@amasportsmen.com",
+    "website": "www.amasportsmen.com",
+    "post_tags": [
+      "archery",
+      "traditional archery",
+      "3D archery",
+      "indoor archery",
+      "outdoor archery",
+      "Ontario"
+    ]
+  },
+  {
+    "id": "d10846bc-83ff-464c-8973-b4d2764e53a0",
+    "name": "Thunder Bay Fish and Game Association",
+    "phone_number": "807-767-7021",
+    "email": null,
+    "website": "https://thunderbayfishandgame.com/",
+    "post_tags": [
+      "fish and game association",
+      "Thunder Bay",
+      "24/7 access",
+      "archery range",
+      "crossbow friendly",
+      "shooting range",
+      "Northern Ontario"
+    ]
+  },
+  {
+    "id": "9f65c91a-aadd-4a48-a50a-6cdb51385fff",
+    "name": "Petawawa Archery Club",
+    "phone_number": "613-687-8212",
+    "email": null,
+    "website": "https://cfmws.ca/petawawa/archery-club",
+    "post_tags": [
+      "The **Petawawa Archery Club**",
+      "a part of **Canadian Forces Morale and Welfare Services (CFMWS)**",
+      "is a top-tier facility serving the military community and the general public. This club offers amazing variety with a **30-yard indoor range** for winter use and three specialized outdoor ranges",
+      "including a **14-target 3D course**",
+      "a dedicated **FITA target range**",
+      "and a practice range for distances up to 60 yards.\n\nThe club is particularly well-regarded for its education programs",
+      "offering structured **8-week beginner courses** twice a year and providing affordable equipment rentals. With year-round availability and regularly hosted 3D tournaments",
+      "it's a perfect destination for both competitive target archers and bowhunters in the **Petawawa** and **Pembroke** areas. Its commitment to safety and skill development makes it the premier archery resource in the Renfrew County region."
+    ]
+  },
+  {
+    "id": "83f9b9fc-c8b2-4878-97cb-980583908947",
+    "name": "Sigma Archery",
+    "phone_number": "905-324-6816",
+    "email": "ksmith@sigma-archery.ca",
+    "website": "www.sigma-archery.ca",
+    "post_tags": [
+      "archery",
+      "outdoor archery",
+      "Niagara",
+      "target archery",
+      "lessons"
+    ]
+  },
+  {
+    "id": "637acc91-2130-4d52-b348-f23fb7badeca",
+    "name": "Sudbury Game and Fish Protective Association",
+    "phone_number": "705-690-7464",
+    "email": "contact@sudburygameandfish.org",
+    "website": "https://sudburygameandfish.wordpress.com/",
+    "post_tags": [
+      "conservation club",
+      "Sudbury",
+      "Northern Ontario",
+      "archery range",
+      "OFAH",
+      "lakefront recreation",
+      "wildlife restoration"
+    ]
+  },
+  {
+    "id": "af004ad4-75cf-463c-a225-6ccfb2464e6c",
+    "name": "Lambton Bowhunters Association Inc.",
+    "phone_number": "519-542-2617",
+    "email": "grousemansav@hotmail.com",
+    "website": "https://sites.google.com/site/lambtonbowhunters",
+    "post_tags": [
+      "Founded in 1979",
+      "the **Lambton Bowhunters Association** in **Sarnia** is a dedicated 40-acre oasis for archers of all styles. This club is uniquely tailored for bowhunters",
+      "featuring a specialized **tower for broadhead pit stand shooting practice** along with traditional target lanes up to 40 yards. Whether you shoot traditional",
+      "compound",
+      "or crossbow",
+      "the inclusive environment and challenging wooded terrain provide the perfect setting to sharpen your skills.\n\nThe association places a heavy emphasis on community and education",
+      "offering year-round instruction through their outdoor range and an **indoor winter partnership at River City Vineyard**. With low membership fees designed to support families and monthly meetings featuring expert speakers",
+      "it is a highly accessible and social club. For anyone in the Sarnia-Lambton area seeking a dedicated",
+      "bowhunter-focused club with a strong instructional foundation",
+      "this association remains a top local choice."
+    ]
+  },
+  {
+    "id": "461a988e-b5fe-475a-b113-42307b62402b",
+    "name": "Hart House Archery Club",
+    "phone_number": null,
+    "email": "inquiries@harthouse.ca",
+    "website": "https://harthouse.ca/clubs/archery-club",
+    "post_tags": [
+      "university archery",
+      "Hart House",
+      "University of Toronto",
+      "indoor archery",
+      "archery lessons",
+      "downtown Toronto"
+    ]
+  },
+  {
+    "id": "7f7ee4e8-1078-4363-ba32-a1ac616abbc9",
+    "name": "Hamilton Archery Centre",
+    "phone_number": "905-979-4811",
+    "email": "hamiltonarcherycentre@gmail.com",
+    "website": "https://www.hamiltonarcherycentre.com",
+    "post_tags": [
+      "indoor archery",
+      "lessons",
+      "youth programs",
+      "equipment rental",
+      "no membership required"
+    ]
+  },
+  {
+    "id": "7386a0b0-8057-434d-beb5-10bcde531ae9",
+    "name": "Delhi Archery Club",
+    "phone_number": "519-900-3861",
+    "email": null,
+    "website": "www.belgianhall.ca/clubs/archery/delhi-archery-club",
+    "post_tags": [
+      "archery",
+      "Pop 'n' Jay",
+      "Belgian archery",
+      "indoor archery",
+      "Ontario"
+    ]
+  },
+  {
+    "id": "85051eb6-115b-4c0e-9186-42b03a2517e8",
+    "name": "Niagara Falls Archery Club",
+    "phone_number": "(905) 325-0522",
+    "email": "Via mailbox at range",
+    "website": "Instagram @niagara_falls_archery_club",
+    "post_tags": [
+      "Niagara Falls",
+      "outdoor",
+      "seasonal",
+      "community",
+      "OAA"
+    ]
+  },
+  {
+    "id": "2d219943-545e-447a-91ac-4fb92af625ac",
+    "name": "Oxford Fish and Game Protection Association",
+    "phone_number": "519-537-3037",
+    "email": null,
+    "website": "https://oxfordfishandgame.ca/",
+    "post_tags": [
+      "fish and game club",
+      "Woodstock",
+      "archery range",
+      "Rinehart targets",
+      "youth archery",
+      "3D archery",
+      "multi-discipline"
+    ]
+  },
+  {
+    "id": "4de57178-8de6-464b-bad5-9f2dc34edddb",
+    "name": "Sydenham Sportsmen's Association",
+    "phone_number": "519-376-7177",
+    "email": "info@sydenhamsportsmen.com",
+    "website": "https://www.sydenhamsportsmen.com",
+    "post_tags": [
+      "The **Sydenham Sportsmen's Association** in **Georgian Bluffs** is a pillar of both conservation and shooting sports",
+      "serving the region since 1947. This multi-discipline club offers an impressive array of activities",
+      "including a dedicated **outdoor archery range**. What makes this club truly special is its deep commitment to the environment—operating two fish hatcheries and managing extensive wildlife habitat projects alongside its shooting programs.\n\nAs a members-only facility",
+      "Sydenham focuses on safety and high-quality recreational opportunities. From target archery to sporting clays and high-power rifle ranges",
+      "it provides a comprehensive experience on its well-maintained property. If you are a sportsman who values both marksmanship and active environmental stewardship",
+      "this association offers a unique and fulfilling community to join in the Grey-Bruce area."
+    ]
+  },
+  {
+    "id": "68d6f320-5b69-42c4-80cb-0607c3c2f577",
+    "name": "Easthill Outdoors",
+    "phone_number": "(905) 983-5550",
+    "email": "info@easthilloutdoors.com, archery@easthilloutdoors.com",
+    "website": "easthilloutdoors.com",
+    "post_tags": [
+      "Orono",
+      "Durham",
+      "indoor archery",
+      "pro shop",
+      "lessons",
+      "24-hour access"
+    ]
+  }
+]

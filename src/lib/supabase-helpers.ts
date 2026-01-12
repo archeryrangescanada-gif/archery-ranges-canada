@@ -1,4 +1,5 @@
 // src/lib/supabase-admin.ts
+import 'server-only'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -16,7 +17,7 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 export const listingsAPI = {
   async getAll(filters?: { status?: string; province?: string; search?: string }) {
     let query = supabaseAdmin.from('business_listings').select('*')
-    
+
     if (filters?.status && filters.status !== 'all') {
       query = query.eq('status', filters.status)
     }
@@ -26,7 +27,7 @@ export const listingsAPI = {
     if (filters?.search) {
       query = query.ilike('name', `%${filters.search}%`)
     }
-    
+
     return query.order('created_at', { ascending: false })
   },
 
@@ -73,11 +74,11 @@ export const claimsAPI = {
         listing:business_listings(name),
         user:profiles(full_name, email, phone)
       `)
-    
+
     if (status && status !== 'all') {
       query = query.eq('status', status)
     }
-    
+
     return query.order('created_at', { ascending: false })
   },
 
@@ -111,7 +112,7 @@ export const claimsAPI = {
       .eq('id', claim.listing_id)
 
     // TODO: Send approval email
-    
+
     return { success: true }
   },
 
@@ -127,7 +128,7 @@ export const claimsAPI = {
       .eq('id', claimId)
 
     // TODO: Send rejection email
-    
+
     return { success: true }
   }
 }
@@ -143,11 +144,11 @@ export const adsAPI = {
           placement:ad_placements(name, display_name)
         )
       `)
-    
+
     if (filters?.status && filters.status !== 'all') {
       query = query.eq('status', filters.status)
     }
-    
+
     return query.order('created_at', { ascending: false })
   },
 
@@ -222,14 +223,14 @@ export const adsAPI = {
 export const announcementsAPI = {
   async getAll(filters?: { status?: string; category?: string }) {
     let query = supabaseAdmin.from('announcements').select('*')
-    
+
     if (filters?.status && filters.status !== 'all') {
       query = query.eq('status', filters.status)
     }
     if (filters?.category && filters.category !== 'all') {
       query = query.eq('category', filters.category)
     }
-    
+
     return query.order('priority', { ascending: false }).order('created_at', { ascending: false })
   },
 
@@ -240,11 +241,11 @@ export const announcementsAPI = {
       .eq('status', 'published')
       .lte('publish_date', new Date().toISOString())
       .or(`expire_date.is.null,expire_date.gte.${new Date().toISOString()}`)
-    
+
     if (province) {
       query = query.or(`province.is.null,province.eq.${province}`)
     }
-    
+
     return query
       .order('is_pinned', { ascending: false })
       .order('priority', { ascending: false })
@@ -292,14 +293,14 @@ export const announcementsAPI = {
 export const usersAPI = {
   async getAll(filters?: { role?: string; search?: string }) {
     let query = supabaseAdmin.from('profiles').select('*')
-    
+
     if (filters?.role && filters.role !== 'all') {
       query = query.eq('role', filters.role)
     }
     if (filters?.search) {
       query = query.or(`full_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
     }
-    
+
     return query.order('created_at', { ascending: false })
   },
 

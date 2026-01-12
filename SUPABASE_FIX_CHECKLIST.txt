@@ -1,0 +1,40 @@
+═══════════════════════════════════════════════════════
+  SUPABASE REDIRECT FIX - QUICK CHECKLIST
+═══════════════════════════════════════════════════════
+
+□ STEP 1: SUPABASE DASHBOARD
+  ├─ Go to: https://supabase.com/dashboard
+  ├─ Select project: eiarfecnutloupdyapkx
+  ├─ Click: Authentication → URL Configuration
+  ├─ Update Site URL to: https://archeryrangescanada.ca
+  └─ Add Redirect URLs:
+      ├─ https://archeryrangescanada.ca/auth/callback
+      ├─ https://archeryrangescanada.ca/auth/login
+      ├─ https://archeryrangescanada.ca/dashboard
+      ├─ https://*.vercel.app/auth/callback
+      └─ Click SAVE
+
+□ STEP 2: VERCEL ENVIRONMENT VARIABLES
+  ├─ Go to: https://vercel.com/dashboard
+  ├─ Select project: archery-ranges-canada
+  ├─ Click: Settings → Environment Variables
+  └─ Update these (select all environments):
+      ├─ NEXT_PUBLIC_SITE_URL=https://archeryrangescanada.ca
+      ├─ NEXT_PUBLIC_BASE_URL=https://archeryrangescanada.ca
+      └─ NEXT_PUBLIC_APP_URL=https://archeryrangescanada.ca
+
+□ STEP 3: REDEPLOY
+  ├─ Go to: Vercel Deployments tab
+  ├─ Click latest deployment → ••• → Redeploy
+  └─ Wait 2-3 minutes
+
+□ STEP 4: TEST
+  ├─ Visit: https://archeryrangescanada.ca
+  ├─ Try login/signup flow
+  └─ Verify no localhost:3000 appears in URL
+
+═══════════════════════════════════════════════════════
+  ✅ DONE! Site should work correctly now.
+═══════════════════════════════════════════════════════
+
+For detailed instructions: See FIX_SUPABASE_REDIRECTS.md

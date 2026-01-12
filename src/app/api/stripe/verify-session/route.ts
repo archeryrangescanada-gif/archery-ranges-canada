@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(request: Request) {
   try {
@@ -12,14 +12,8 @@ export async function POST(request: Request) {
       apiVersion: '2025-12-15.clover',
     })
 
-    // 2. Initialize Supabase INSIDE the function for the same reason
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      throw new Error('Missing Supabase Admin Keys')
-    }
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
+    // 2. Initialize Supabase using the secure admin client
+    const supabaseAdmin = getSupabaseAdmin()
 
     const { sessionId, rangeId } = await request.json()
 

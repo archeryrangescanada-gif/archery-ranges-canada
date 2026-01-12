@@ -1,0 +1,19 @@
+CERTIFICATE OF INSURANCE
+========================
+
+Policy Holder: Easthill Outdoors Demo
+Policy Number: INS-2024-67890
+Effective Date: January 1, 2024
+Expiry Date: December 31, 2024
+
+Coverage Type: General Liability Insurance
+Coverage Amount: $2,000,000 CAD
+
+Insured Business: Archery Range Operations
+Business Address: 4131 Highway 35/115, Orono, ON
+
+This is a DEMO document for testing purposes only.
+Not valid for actual insurance coverage.
+
+Insurance Provider: Demo Insurance Company
+Agent: Jane Demo

@@ -1,0 +1,1355 @@
+[dotenv@17.2.3] injecting env (13) from .env.local -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+Found 79 ranges with minor issues:
+{
+  "missing_https": [
+    {
+      "id": "c758e19e-4a9b-45af-aca5-b029753baec8",
+      "name": "Brockville District Fish and Game Club",
+      "phone_number": "613-342-3570",
+      "email": "information@bdfgc.ca",
+      "website": "bdfgc.ca",
+      "post_tags": [
+        "archery",
+        "outdoor archery",
+        "Brockville",
+        "shooting sports"
+      ]
+    },
+    {
+      "id": "e9ed1ee1-4d1d-42f2-9ae5-04d5e9091a83",
+      "name": "Peel Archery Club",
+      "phone_number": null,
+      "email": "info@peelarchery.ca",
+      "website": "peelarchery.ca",
+      "post_tags": [
+        "archery",
+        "indoor archery",
+        "70m range",
+        "Olympic training",
+        "Brampton"
+      ]
+    },
+    {
+      "id": "9c7f79e3-80d0-474b-ba60-f426bb7ac4f9",
+      "name": "Bancroft Archery Club",
+      "phone_number": "613-332-0667",
+      "email": "admin@bancroftfishandgame.com",
+      "website": "bancroftfishandgame.com",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "outdoor archery",
+        "Bancroft",
+        "fish and game"
+      ]
+    },
+    {
+      "id": "11caef63-8fe2-471c-a04d-f870ed0ac7eb",
+      "name": "Chesley Community Archery Club",
+      "phone_number": "289-700-9906",
+      "email": "andy.brandsma@gmail.com",
+      "website": "chesleycommunityarcheryclub.ca",
+      "post_tags": [
+        "archery",
+        "community club",
+        "Chesley"
+      ]
+    },
+    {
+      "id": "7efbead1-c8e8-4e64-b3ae-8ca6973bcd2d",
+      "name": "Stittsville Shooting Ranges",
+      "phone_number": "613-836-3871",
+      "email": "info@stittsvilleshootingranges.com",
+      "website": "stittsvilleshootingranges.com",
+      "post_tags": [
+        "archery",
+        "outdoor archery",
+        "shooting range",
+        "Stittsville"
+      ]
+    },
+    {
+      "id": "ba769df4-fe1a-48a2-a7b1-dba26ca1a2d9",
+      "name": "The Archery Place",
+      "phone_number": "(705) 752-5853",
+      "email": "archeryplace@bell.net",
+      "website": "thearcheryplace.com",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "indoor archery",
+        "pro shop",
+        "Corbeil"
+      ]
+    },
+    {
+      "id": "d3a59fe4-d430-43f7-9044-fc7b53dc4a49",
+      "name": "Dryden Archery Club",
+      "phone_number": "(807) 216-9102",
+      "email": null,
+      "website": "www.drydendistrictconservationclub.ca",
+      "post_tags": [
+        "archery",
+        "youth archery",
+        "traditional archery",
+        "OFAH",
+        "conservation club",
+        "Ontario"
+      ]
+    },
+    {
+      "id": "96ca8660-8131-48c0-bd33-f0d3fe0519d9",
+      "name": "Trailsmen Rod & Gun Club",
+      "phone_number": "(705) 897-6556",
+      "email": "trailsmen@outlook.com",
+      "website": "www.trailsmen.org",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "gun club",
+        "conservation",
+        "OFAH",
+        "Val Therese"
+      ]
+    },
+    {
+      "id": "aea988f7-8b78-4476-b3bb-9f4fb5b549c8",
+      "name": "A.I.M - Archers In Muskoka",
+      "phone_number": "705-224-9246",
+      "email": "archersinmuskoka@hotmail.com",
+      "website": "www.facebook.com/groups/archersinmuskoka",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "outdoor archery",
+        "Muskoka archery",
+        "Dwight archery"
+      ]
+    },
+    {
+      "id": "30b404fe-194e-4575-ad84-01af2edaf160",
+      "name": "Dover Rod & Gun Club",
+      "phone_number": "(519) 351-6102",
+      "email": "doverrodandgunclub@gmail.com",
+      "website": "doverrodandgunclub.com",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "indoor archery",
+        "outdoor archery",
+        "Grande Pointe"
+      ]
+    },
+    {
+      "id": "f0bbc66c-88dd-4212-b9aa-649eb4dafaa6",
+      "name": "Ten Point Archery",
+      "phone_number": "(705) 222-0010",
+      "email": "info@tenpointarchery.ca",
+      "website": "tenpointarchery.ca",
+      "post_tags": [
+        "archery",
+        "indoor archery",
+        "pro shop",
+        "Chelmsford"
+      ]
+    },
+    {
+      "id": "f736cee5-81bd-42c9-871b-1e22dcd55dfe",
+      "name": "The Archers of Caledon",
+      "phone_number": "905-838-0761",
+      "email": "info@archersofcaledon.org",
+      "website": "archersofcaledon.org",
+      "post_tags": [
+        "archery",
+        "traditional archery",
+        "3D archery",
+        "indoor archery",
+        "outdoor archery",
+        "Caledon"
+      ]
+    },
+    {
+      "id": "668fe430-be47-49b3-ad61-8e9ae9cf1233",
+      "name": "Brant Rod & Gun Club",
+      "phone_number": "519-752-2053",
+      "email": "clubhouse@brgc.ca",
+      "website": "brgc.ca",
+      "post_tags": [
+        "archery",
+        "traditional archery",
+        "outdoor archery",
+        "Brantford"
+      ]
+    },
+    {
+      "id": "8df3e238-b0aa-424d-9bfb-78c39f2c31c7",
+      "name": "Delhi Belgian Archery Club",
+      "phone_number": "519-582-2460",
+      "email": "delhibelgianarcheryclub@gmail.com",
+      "website": "www.belgianhall.ca/clubs/archery",
+      "post_tags": [
+        "archery",
+        "Pop 'n' Jay",
+        "Belgian archery",
+        "indoor archery",
+        "Ontario"
+      ]
+    },
+    {
+      "id": "9ee03017-d45a-4817-80f3-77fe835c72c8",
+      "name": "Erie Trackers",
+      "phone_number": "(905) 834-9218",
+      "email": "erietrackeroutfitters@cogeco.net",
+      "website": "erie-tracker-outfitters.com",
+      "post_tags": [
+        "Port Colborne",
+        "Niagara",
+        "indoor archery",
+        "pro shop",
+        "bow tuning",
+        "hunting"
+      ]
+    },
+    {
+      "id": "1b4fdd19-bde3-4f4b-abb7-3c8a518ff2d3",
+      "name": "Southern Canadian Archery Club",
+      "phone_number": null,
+      "email": null,
+      "website": "www.southerncanadianclassic.com",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "Essex County archery",
+        "tournament archery"
+      ]
+    },
+    {
+      "id": "8ea31cf4-aff9-4c20-9ff2-95741b06ca65",
+      "name": "Durham Archers",
+      "phone_number": "(905) 427-0948",
+      "email": "Via website",
+      "website": "durhamarchers.com",
+      "post_tags": [
+        "Whitby",
+        "Durham",
+        "Oshawa",
+        "Ajax",
+        "outdoor",
+        "3D"
+      ]
+    },
+    {
+      "id": "5d010778-89d4-400a-9751-1fe14ecfe5b7",
+      "name": "Lively Archery Club",
+      "phone_number": "(705) 692-5224",
+      "email": "Via phone",
+      "website": "Contact via phone",
+      "post_tags": [
+        "Lively",
+        "Sudbury",
+        "indoor",
+        "winter program"
+      ]
+    },
+    {
+      "id": "6a5d53f2-1d28-491a-90c1-1ce6fc57d74a",
+      "name": "Maple Leaf Marksmen Inc.",
+      "phone_number": "(905) 646-1381",
+      "email": "Via website",
+      "website": "vaxxine.com/mlm",
+      "post_tags": [
+        "St. Catharines",
+        "Louth",
+        "indoor",
+        "outdoor",
+        "archery",
+        "shooting sports"
+      ]
+    },
+    {
+      "id": "30a0afdf-1aed-49f4-a024-8923058355d0",
+      "name": "North Bay Bowhunters and Archers",
+      "phone_number": "(705) 472-8121",
+      "email": "Via website",
+      "website": "northbaybowhuntersandarchers.webs.com",
+      "post_tags": [
+        "North Bay",
+        "indoor",
+        "outdoor",
+        "3D",
+        "bowhunting",
+        "volunteer"
+      ]
+    },
+    {
+      "id": "181da87c-ea41-468e-b646-ee50bd299d64",
+      "name": "York County Bowmen",
+      "phone_number": "Via website",
+      "email": "joinus@yorkcountybowmen.com",
+      "website": "yorkcountybowmen.com",
+      "post_tags": [
+        "Newmarket",
+        "York Region",
+        "indoor",
+        "outdoor",
+        "3D",
+        "field",
+        "FITA",
+        "leagues"
+      ]
+    },
+    {
+      "id": "7f18e349-d24a-4e4e-a152-ba3d3bad8215",
+      "name": "Timmins Bow and Archery Club",
+      "phone_number": "(705) 360-3445",
+      "email": "Via phone",
+      "website": "Contact via phone",
+      "post_tags": [
+        "Timmins",
+        "indoor",
+        "outdoor",
+        "target",
+        "3D"
+      ]
+    },
+    {
+      "id": "5eee37a4-22d7-4ebb-a173-54231257f807",
+      "name": "South Nation Archery Club",
+      "phone_number": "(613) 989-2943",
+      "email": "info@southnationarchery.com",
+      "website": "www.southnationarchery.com",
+      "post_tags": [
+        "archery",
+        "target archery",
+        "IFAA",
+        "competitive archery",
+        "pro shop",
+        "lessons",
+        "tournaments",
+        "Ontario"
+      ]
+    },
+    {
+      "id": "8b6c59dc-8a00-4767-9314-94040d0ffe44",
+      "name": "Base Borden Rod and Gun Club",
+      "phone_number": "705-424-1200",
+      "email": "BBRGC@forces.gc.ca",
+      "website": "bordenrodandgun.com",
+      "post_tags": [
+        "archery",
+        "military",
+        "indoor range",
+        "outdoor range",
+        "3D course",
+        "Borden"
+      ]
+    },
+    {
+      "id": "f8f4bde0-09a3-4f83-83ec-9ddc8bdd38af",
+      "name": "Parry Sound Anglers and Hunters",
+      "phone_number": "(705) 389-2026",
+      "email": "Via website",
+      "website": "psah.org",
+      "post_tags": [
+        "Parry Sound",
+        "indoor",
+        "outdoor",
+        "archery",
+        "shooting sports"
+      ]
+    },
+    {
+      "id": "39e722bd-a6ca-4766-b9bd-ff7ea1ff1977",
+      "name": "Ontario Centre for Classical Sport",
+      "phone_number": "905-820-5151",
+      "email": null,
+      "website": "classicalsport.com",
+      "post_tags": [
+        "archery",
+        "fencing",
+        "indoor",
+        "lessons",
+        "camps",
+        "youth programs",
+        "olympic archery"
+      ]
+    },
+    {
+      "id": "09489291-b5a2-4e62-93b5-b3a6c2fbbc29",
+      "name": "Bridgeport Rod & Gun Club",
+      "phone_number": "(519) 648-2633",
+      "email": "membership@brgclub.com",
+      "website": "brgclub.com",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "outdoor archery",
+        "Breslau"
+      ]
+    },
+    {
+      "id": "98253b28-f45c-4113-ac8f-cbecc153f35a",
+      "name": "Collingwood Archery Club",
+      "phone_number": "705-445-1976",
+      "email": "president@rodandgunclub.ca",
+      "website": "collingwoodrodandgunclub.com",
+      "post_tags": [
+        "archery",
+        "rod and gun",
+        "Collingwood"
+      ]
+    },
+    {
+      "id": "5934c840-51c2-4d57-b807-331f59a88be1",
+      "name": "Canadian Sportsmens Club",
+      "phone_number": "905-871-6658",
+      "email": "nathan.lightheart@hotmail.com",
+      "website": "canadiansportsmansclubforterie.weebly.com",
+      "post_tags": [
+        "archery",
+        "Fort Erie archery",
+        "shooting sports",
+        "sportsmans club"
+      ]
+    },
+    {
+      "id": "6a6b1d28-6181-4494-bfed-8104a9a1dea3",
+      "name": "Sault North Archery Club",
+      "phone_number": "705-253-4658",
+      "email": "[email protected]",
+      "website": "Facebook page",
+      "post_tags": [
+        "archery",
+        "Sault Ste Marie",
+        "Northern Ontario"
+      ]
+    },
+    {
+      "id": "d30b47d5-90bf-4318-a1ba-5bee6048d2b2",
+      "name": "AMA Sportsmen Club",
+      "phone_number": "519-736-5706",
+      "email": "info@amasportsmen.com",
+      "website": "www.amasportsmen.com",
+      "post_tags": [
+        "archery",
+        "traditional archery",
+        "3D archery",
+        "indoor archery",
+        "outdoor archery",
+        "Ontario"
+      ]
+    },
+    {
+      "id": "4ca60528-020b-4126-88b7-b12937fa0708",
+      "name": "Wilderness Bowhunters and Archers Association",
+      "phone_number": "(705) 752-3170",
+      "email": "ray.sabourin@ontera.net",
+      "website": "Contact via phone",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "indoor archery",
+        "outdoor archery",
+        "bowhunting",
+        "traditional archery",
+        "Ontario"
+      ]
+    },
+    {
+      "id": "d6977a3f-2270-4a98-85ef-7f80dc6a7372",
+      "name": "Burlington Rifle and Revolver Club",
+      "phone_number": "905-333-5494",
+      "email": "brrc.archery@gmail.com",
+      "website": "rangeburlington.ca",
+      "post_tags": [
+        "archery",
+        "outdoor archery",
+        "Burlington",
+        "shooting sports"
+      ]
+    },
+    {
+      "id": "f6746fb6-7231-4780-9bc3-c4b952c7f47a",
+      "name": "Elmira District Rod & Gun",
+      "phone_number": "519-669-2047",
+      "email": "archertoms@bell.net",
+      "website": "www.elmirarodandgun.org",
+      "post_tags": [
+        "archery",
+        "Elmira archery",
+        "rod and gun club",
+        "shooting sports"
+      ]
+    },
+    {
+      "id": "b7f3b171-a39d-405b-bc91-2d35be99d820",
+      "name": "Galt Sportsmen's Club",
+      "phone_number": "(519) 621-4104",
+      "email": "moreinfo@galtsportsmensclub.com",
+      "website": "galtsportsmensclub.com",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "shooting sports",
+        "Cambridge"
+      ]
+    },
+    {
+      "id": "83f9b9fc-c8b2-4878-97cb-980583908947",
+      "name": "Sigma Archery",
+      "phone_number": "905-324-6816",
+      "email": "ksmith@sigma-archery.ca",
+      "website": "www.sigma-archery.ca",
+      "post_tags": [
+        "archery",
+        "outdoor archery",
+        "Niagara",
+        "target archery",
+        "lessons"
+      ]
+    },
+    {
+      "id": "4b1077f9-21b3-459c-bb91-e386be2b658f",
+      "name": "Niagara Regional Sportsmen",
+      "phone_number": "(905) 327-3337",
+      "email": "Via phone",
+      "website": "Contact via phone",
+      "post_tags": [
+        "St. Anns",
+        "Niagara",
+        "outdoor",
+        "members only",
+        "private"
+      ]
+    },
+    {
+      "id": "fc241fa4-be83-4642-84d2-d07cae412ec6",
+      "name": "Oshawa Clay and Target Club",
+      "phone_number": "905-985-7763",
+      "email": "info@oshawaclayandtargetclub.com",
+      "website": "oshawaclayandtargetclub.com",
+      "post_tags": [
+        "archery",
+        "shooting club",
+        "trap",
+        "skeet",
+        "Oshawa"
+      ]
+    },
+    {
+      "id": "b6dbc9d0-45b5-43f7-ae2e-d48fc8322db7",
+      "name": "Golden Horseshoe Mounted Archery",
+      "phone_number": null,
+      "email": "mountedarcherycanada@gmail.com",
+      "website": "www.facebook.com/GHMountedArchery",
+      "post_tags": [
+        "mounted archery",
+        "horseback archery",
+        "CFMA",
+        "Grimsby",
+        "equestrian archery"
+      ]
+    },
+    {
+      "id": "d15a6df0-07ed-4597-9a8e-72534d7de97a",
+      "name": "Royal City Bowmen",
+      "phone_number": "519-803-6604",
+      "email": "royalcitybowmen@gmail.com",
+      "website": "www.royalcitybowmen.com",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "Guelph",
+        "traditional archery",
+        "compound bow",
+        "crossbow"
+      ]
+    },
+    {
+      "id": "35917add-091c-4a5a-a3e1-ad017ec23b4a",
+      "name": "St. Catharines Bowmen Archery Club",
+      "phone_number": "(905) 937-9074",
+      "email": "Via phone",
+      "website": "Contact via phone",
+      "post_tags": [
+        "St. Catharines",
+        "Niagara",
+        "indoor archery"
+      ]
+    },
+    {
+      "id": "f54d6a83-a755-4c3c-8237-174b24910e08",
+      "name": "Archers Arena",
+      "phone_number": "(647) 992-7362",
+      "email": "Info@archersarena.com",
+      "website": "archersarena.com",
+      "post_tags": [
+        "North York",
+        "Toronto",
+        "GTA",
+        "indoor archery",
+        "combat archery",
+        "entertainment",
+        "parties"
+      ]
+    },
+    {
+      "id": "f745386d-9840-4638-bb22-0eb04c8923f6",
+      "name": "Temiskaming Bullseye Club",
+      "phone_number": "(705) 647-4275",
+      "email": "Via website",
+      "website": "tembullseye.ca",
+      "post_tags": [
+        "New Liskeard",
+        "Temiskaming",
+        "indoor",
+        "outdoor",
+        "archery"
+      ]
+    },
+    {
+      "id": "46a4374a-c100-46b8-bd1d-11a9d7173a86",
+      "name": "Thessalon and Area Rod and Gun Club",
+      "phone_number": "(705) 356-7517",
+      "email": "Via website",
+      "website": "thessalongunclub.com",
+      "post_tags": [
+        "Thessalon",
+        "Algoma",
+        "outdoor",
+        "target",
+        "3D",
+        "shooting sports"
+      ]
+    },
+    {
+      "id": "e8cc6b37-c893-4bbf-8530-54fe03ba1b0d",
+      "name": "Wolf's Den Sports",
+      "phone_number": "705-424-4867",
+      "email": "info@wolfsdensports.com",
+      "website": "wolfsdensports.com",
+      "post_tags": [
+        "archery",
+        "3D archery",
+        "outdoor archery",
+        "pro shop",
+        "Utopia"
+      ]
+    },
+    {
+      "id": "83161297-9fde-4e9d-bfc7-5561d87d139e",
+      "name": "Rifles and Reels Game & Fish Club",
+      "phone_number": null,
+      "email": null,
+      "website": "www.riflesandreels.ca",
+      "post_tags": [
+        "archery",
+        "gun club",
+        "Garson",
+        "shooting sports",
+        "3D archery",
+        "Ontario"
+      ]
+    },
+    {
+      "id": "bc340927-c8a6-4b16-add5-22e93aacb68d",
+      "name": "Barefoot Bushcraft",
+      "phone_number": "+1 (866) 248-1362",
+      "email": "wolf@barefootbushcraft.com",
+      "website": "barefootbushcraft.com",
+      "post_tags": [
+        "Fonthill",
+        "Niagara",
+        "outdoor archery",
+        "education",
+        "bushcraft",
+        "camps"
+      ]
+    },
+    {
+      "id": "7386a0b0-8057-434d-beb5-10bcde531ae9",
+      "name": "Delhi Archery Club",
+      "phone_number": "519-900-3861",
+      "email": null,
+      "website": "www.belgianhall.ca/clubs/archery/delhi-archery-club",
+      "post_tags": [
+        "archery",
+        "Pop 'n' Jay",
+        "Belgian archery",
+        "indoor archery",
+        "Ontario"
+      ]
+    },
+    {
+      "id": "83bb9315-5909-434d-a6db-4eca8aec67ad",
+      "name": "Georgina Archery Club",
+      "phone_number": "905-476-4301",
+      "email": "eleisure@georgina.ca",
+      "website": "www.georgina.ca/roc",
+      "post_tags": [
+        "archery",
+        "Georgina archery",
+        "community programs",
+        "recreation archery"
+      ]
+    },
+    {
+      "id": "85051eb6-115b-4c0e-9186-42b03a2517e8",
+      "name": "Niagara Falls Archery Club",
+      "phone_number": "(905) 325-0522",
+      "email": "Via mailbox at range",
+      "website": "Instagram @niagara_falls_archery_club",
+      "post_tags": [
+        "Niagara Falls",
+        "outdoor",
+        "seasonal",
+        "community",
+        "OAA"
+      ]
+    },
+    {
+      "id": "c18a4230-0135-4693-be37-8397a180d427",
+      "name": "Algoma Rod and Gun Club",
+      "phone_number": "(705) 945-6410",
+      "email": "Via phone",
+      "website": "Contact via phone",
+      "post_tags": [
+        "Hilton Beach",
+        "Sault Ste. Marie",
+        "Algoma",
+        "indoor",
+        "outdoor",
+        "3D"
+      ]
+    },
+    {
+      "id": "a54edbe3-18b3-4051-8ba2-115df688d6d2",
+      "name": "Lower Trent Valley Fish and Game Club",
+      "phone_number": "(613) 398-8946",
+      "email": "Via website",
+      "website": "ltvfg.ca",
+      "post_tags": [
+        "Frankford",
+        "Quinte",
+        "indoor archery",
+        "outdoor archery",
+        "3D",
+        "members only"
+      ]
+    },
+    {
+      "id": "68d6f320-5b69-42c4-80cb-0607c3c2f577",
+      "name": "Easthill Outdoors",
+      "phone_number": "(905) 983-5550",
+      "email": "info@easthilloutdoors.com, archery@easthilloutdoors.com",
+      "website": "easthilloutdoors.com",
+      "post_tags": [
+        "Orono",
+        "Durham",
+        "indoor archery",
+        "pro shop",
+        "lessons",
+        "24-hour access"
+      ]
+    }
+  ],
+  "placeholders": [
+    {
+      "id": "8ea31cf4-aff9-4c20-9ff2-95741b06ca65",
+      "name": "Durham Archers",
+      "phone_number": "(905) 427-0948",
+      "email": "Via website",
+      "website": "durhamarchers.com",
+      "post_tags": [
+        "Whitby",
+        "Durham",
+        "Oshawa",
+        "Ajax",
+        "outdoor",
+        "3D"
+      ]
+    },
+    {
+      "id": "6a5d53f2-1d28-491a-90c1-1ce6fc57d74a",
+      "name": "Maple Leaf Marksmen Inc.",
+      "phone_number": "(905) 646-1381",
+      "email": "Via website",
+      "website": "vaxxine.com/mlm",
+      "post_tags": [
+        "St. Catharines",
+        "Louth",
+        "indoor",
+        "outdoor",
+        "archery",
+        "shooting sports"
+      ]
+    },
+    {
+      "id": "30a0afdf-1aed-49f4-a024-8923058355d0",
+      "name": "North Bay Bowhunters and Archers",
+      "phone_number": "(705) 472-8121",
+      "email": "Via website",
+      "website": "northbaybowhuntersandarchers.webs.com",
+      "post_tags": [
+        "North Bay",
+        "indoor",
+        "outdoor",
+        "3D",
+        "bowhunting",
+        "volunteer"
+      ]
+    },
+    {
+      "id": "f8f4bde0-09a3-4f83-83ec-9ddc8bdd38af",
+      "name": "Parry Sound Anglers and Hunters",
+      "phone_number": "(705) 389-2026",
+      "email": "Via website",
+      "website": "psah.org",
+      "post_tags": [
+        "Parry Sound",
+        "indoor",
+        "outdoor",
+        "archery",
+        "shooting sports"
+      ]
+    },
+    {
+      "id": "f745386d-9840-4638-bb22-0eb04c8923f6",
+      "name": "Temiskaming Bullseye Club",
+      "phone_number": "(705) 647-4275",
+      "email": "Via website",
+      "website": "tembullseye.ca",
+      "post_tags": [
+        "New Liskeard",
+        "Temiskaming",
+        "indoor",
+        "outdoor",
+        "archery"
+      ]
+    },
+    {
+      "id": "46a4374a-c100-46b8-bd1d-11a9d7173a86",
+      "name": "Thessalon and Area Rod and Gun Club",
+      "phone_number": "(705) 356-7517",
+      "email": "Via website",
+      "website": "thessalongunclub.com",
+      "post_tags": [
+        "Thessalon",
+        "Algoma",
+        "outdoor",
+        "target",
+        "3D",
+        "shooting sports"
+      ]
+    },
+    {
+      "id": "85051eb6-115b-4c0e-9186-42b03a2517e8",
+      "name": "Niagara Falls Archery Club",
+      "phone_number": "(905) 325-0522",
+      "email": "Via mailbox at range",
+      "website": "Instagram @niagara_falls_archery_club",
+      "post_tags": [
+        "Niagara Falls",
+        "outdoor",
+        "seasonal",
+        "community",
+        "OAA"
+      ]
+    },
+    {
+      "id": "a54edbe3-18b3-4051-8ba2-115df688d6d2",
+      "name": "Lower Trent Valley Fish and Game Club",
+      "phone_number": "(613) 398-8946",
+      "email": "Via website",
+      "website": "ltvfg.ca",
+      "post_tags": [
+        "Frankford",
+        "Quinte",
+        "indoor archery",
+        "outdoor archery",
+        "3D",
+        "members only"
+      ]
+    }
+  ],
+  "multi_email": [
+    {
+      "id": "68d6f320-5b69-42c4-80cb-0607c3c2f577",
+      "name": "Easthill Outdoors",
+      "phone_number": "(905) 983-5550",
+      "email": "info@easthilloutdoors.com, archery@easthilloutdoors.com",
+      "website": "easthilloutdoors.com",
+      "post_tags": [
+        "Orono",
+        "Durham",
+        "indoor archery",
+        "pro shop",
+        "lessons",
+        "24-hour access"
+      ]
+    }
+  ],
+  "tag_corruption": [
+    {
+      "id": "50fc2380-3b4b-4dd2-8d3b-7707b3e5f990",
+      "name": "Peterborough Archers",
+      "phone_number": "705-977-1691",
+      "email": null,
+      "website": "https://peterborougharchers.ca",
+      "post_tags": [
+        "**Peterborough Archers** is a specialized",
+        "tournament-focused organization established in 2016. Unlike traditional member-based clubs",
+        "this group focuses entirely on tournament management and high-level athlete development. Based out of the **Peterborough Fish and Game Club**",
+        "they organize a wide range of **indoor",
+        "outdoor",
+        "field",
+        "and 3D tournaments**",
+        "providing elite-level competition opportunities for archers across Ontario.\n\nOperating under the standards of **World Archery**",
+        "Peterborough Archers is a critical resource for competitive shooters looking to test their skills in official championships. If you are an archer with competitive ambitions",
+        "following their event calendar is essential. They provide professional training experiences and well-organized shoots that draw talent from all over the province",
+        "making them a central pillar of the competitive archery scene in **Peterborough**."
+      ]
+    },
+    {
+      "id": "c1914290-7089-4ece-a5a5-92475d6bdf93",
+      "name": "Parkline Archery Club",
+      "phone_number": "613-584-9673",
+      "email": null,
+      "website": null,
+      "post_tags": [
+        "**Parkline Archery Club** is a vital community hub for archery enthusiasts in **Deep River** and the surrounding **Ottawa Valley**. This versatile facility provides both indoor and outdoor shooting options",
+        "ensuring that archers can practice year-round regardless of the weather. The club is particularly known for its engaging **3D targets**",
+        "which offer a realistic and challenging experience for both recreational shooters and those preparing for bowhunting.\n\nAs a community-oriented organization",
+        "Parkline emphasizes a welcoming atmosphere for all skill levels. Whether you are a local resident looking for a new hobby or an experienced archer in the region",
+        "the club's well-maintained facilities and focus on the sport make it a standout destination in the region."
+      ]
+    },
+    {
+      "id": "b8a35be3-074a-4903-b7ba-f73fb4bd2459",
+      "name": "Red Lake Archery",
+      "phone_number": "807-728-2507",
+      "email": "redlakearchery@gmail.com",
+      "website": "https://www.redlakearchery.ca",
+      "post_tags": [
+        "**Red Lake Archery** in **Madsen** is a full-service pro shop and community hub that has quickly become a vital resource for Northwestern Ontario archers. Established in 2022 by Ashley Gagne",
+        "it features a professional tech shop offering precision bow tuning and custom arrow building. The facility goes beyond retail",
+        "offering comprehensive instruction from an **Archery Canada certified instructor** for all skill levels and ages.\n\nThe onsite **R.L.A. Club** hosts regular community events",
+        "including **3D archery shoots** and youth programs that focus on building focus and self-discipline. With a warm",
+        "'customers-are-family' atmosphere and fair pricing on top-tier name brands",
+        "it provides big-city expertise in a community-oriented setting. If you're in the Red Lake region and need world-class gear service or professional instruction",
+        "Red Lake Archery is the premier destination."
+      ]
+    },
+    {
+      "id": "31df8a1d-2512-418c-b3f7-be2801fe1505",
+      "name": "Eastern Ontario Shooting Club",
+      "phone_number": "613-247-1805",
+      "email": null,
+      "website": "https://eosc.ca",
+      "post_tags": [
+        "The **Eastern Ontario Shooting Club (EOSC)** in **Limoges** is a premier multi-discipline facility serving the **Ottawa** area and **Eastern Ontario**. While famous for its firearms ranges",
+        "the club also features a dedicated **outdoor archery range**. This variety makes it an excellent choice for sportsmen who enjoy multiple disciplines",
+        "providing a professional and safe environment for all types of shooting.\n\nThe club's expansive grounds and membership structure offer a comprehensive outdoor experience. For archers who also have an interest in rimfire",
+        "black powder",
+        "or 5-stand shooting",
+        "EOSC provides a one-stop-shop for marksmanship training. Its commitment to safety and community makes it a highly-regarded institution in the regional shooting sports scene."
+      ]
+    },
+    {
+      "id": "6a5d53f2-1d28-491a-90c1-1ce6fc57d74a",
+      "name": "Maple Leaf Marksmen Inc.",
+      "phone_number": "(905) 646-1381",
+      "email": "Via website",
+      "website": "vaxxine.com/mlm",
+      "post_tags": [
+        "St. Catharines",
+        "Louth",
+        "indoor",
+        "outdoor",
+        "archery",
+        "shooting sports"
+      ]
+    },
+    {
+      "id": "bae87d52-ff08-4771-ba7e-88c79309e25d",
+      "name": "Lanark County Bowhunters Organization",
+      "phone_number": "613-259-0266",
+      "email": null,
+      "website": null,
+      "post_tags": [
+        "The **Lanark County Bowhunters Organization (LCBO)** is a dedicated community club serving the **Lanark** and **Eastern Ontario** regions. Operating primarily during the summer months",
+        "the club provides a gathering place for archers to practice before the fall hunting season begins. It is an ideal environment for bowhunters looking to tune their equipment and sharpen their skills in a social",
+        "outdoor setting.\n\nWelcoming members of all skill levels",
+        "from novices to veterans",
+        "the LCBO fosters a strong sense of camaraderie among local sportsmen. For those in the Lanark area looking for a low-pressure",
+        "community-driven club that specializes in bowhunting and traditional skills",
+        "this organization provides an essential and friendly local resource."
+      ]
+    },
+    {
+      "id": "75f17a77-4766-4857-be22-336060c9b69d",
+      "name": "Kanata Archery Club",
+      "phone_number": null,
+      "email": "leeder1203@rogers.com",
+      "website": "https://kanataarcheryclub.com",
+      "post_tags": [
+        "**Kanata Archery Club**",
+        "located near **Carp** in West Ottawa",
+        "is a historic volunteer-run club founded in 1985. Operating seasonally from May to October",
+        "the club offers an exceptional outdoor experience featuring target butts from 10 to 50 yards and a diverse **15-target 3D course** set in varied natural terrain. This combination makes it suitable for both precision target practice and realistic bowhunting simulation.\n\nThe club places a strong emphasis on education",
+        "providing **NCCP certified coaching** for everyone age 12 and up. Their popular two-week 'Archery for Beginners' course is a highly recommended entry point for new enthusiasts. With dawn-to-dusk access seven days a week for members",
+        "Kanata Archery Club is a premier destination for those seeking a dedicated",
+        "inclusive",
+        "and professionally guided outdoor archery community."
+      ]
+    },
+    {
+      "id": "93e1350a-42f7-4a6f-a19c-6371510e0384",
+      "name": "Ottawa Kyudo Association",
+      "phone_number": "343-999-5587",
+      "email": null,
+      "website": "https://ottawa.kyudo.ca",
+      "post_tags": [
+        "The **Ottawa Kyudo Association** offers a unique opportunity to practice **Kyudo**",
+        "the traditional Japanese 'Way of the Bow'. This is not typical target archery; it is a discipline focusing heavily on meditation",
+        "standardized form (kata)",
+        "and spiritual development using the iconic asymmetrical Japanese longbow. Led by highly-ranked instructors",
+        "the association provides a structured environment for those looking for a more zen-like",
+        "traditional martial arts experience.\n\nPractices are held at the **OJKA** and **RA Centre** in **Ottawa**",
+        "fostering a community dedicated to the growth of IKYF-style Kyudo in Ontario. If you are looking for an archery practice that prioritizes mindfulness and historical tradition over modern competitive points-scoring",
+        "the Ottawa Kyudo Association is the only place in the region where you can immerse yourself in this ancient and beautiful art form."
+      ]
+    },
+    {
+      "id": "9207584d-c1de-4e7d-9ecb-8aca243b5d5a",
+      "name": "St. Joseph Island Hunters & Anglers Association",
+      "phone_number": "705-971-5040",
+      "email": null,
+      "website": "https://sjiha.ca",
+      "post_tags": [
+        "The **St. Joseph Island Hunters & Anglers Association** in **Richards Landing** is a premier conservation-focused club based out of a newly renovated",
+        "state-of-the-art facility. The lower level of the Conservation Centre houses an **indoor archery range** that comes alive every Friday evening",
+        "welcoming archers of all skill levels. With specialized groups for youth",
+        "men",
+        "and women",
+        "it provides a warm and social environment for island residents to practice their aim.\n\nThe association is much more than just a range; it is a community leader in wildlife management",
+        "hosting signature events like the Wild Turkey Hunt Contest and an annual Outdoor and Gun Show. From **hiking trails** to **tomahawk throwing**",
+        "the club's 49-acre property offers a diverse range of outdoor activities. For anyone on **St. Joseph Island** seeking an active",
+        "family-friendly organization with a focus on environmental stewardship and year-round archery",
+        "this association is a central part of island life."
+      ]
+    },
+    {
+      "id": "06ce1e7d-5b5d-43ce-b2db-25aebe1a3fb5",
+      "name": "RA Centre Archery Club",
+      "phone_number": "613-733-5100 ext 360",
+      "email": null,
+      "website": "https://www.racentre.com/archery.html",
+      "post_tags": [
+        "Located within the iconic **RA Centre** in **Ottawa**",
+        "the **RA Centre Archery Club** offers a premier indoor shooting experience. This club is ideal for intermediate and advanced archers who have their own gear and want a professional",
+        "well-maintained indoor lane. With a secure keybox access system",
+        "members enjoy great flexibility in their practice times at one of the city's most established recreation hubs.\n\nFor those just starting",
+        "the club provides 'Try Archery' sessions and comprehensive **8-week beginner courses** that cover everything from safety to Olympic recurve techniques. While lane bookings themselves are unsupervised",
+        "the club's emphasis on safety through mandatory orientation ensures a safe and welcoming environment for everyone. It's a perfect central location for year-round indoor archery practice in the heart of Ottawa."
+      ]
+    },
+    {
+      "id": "5f34cea6-caaf-4e48-8bc2-42f4a27933dc",
+      "name": "Grand Archery",
+      "phone_number": "416-576-3978",
+      "email": "grand.archery.toronto@gmail.com",
+      "website": "https://www.grandarchery.ca",
+      "post_tags": [
+        "derived from ancient Confucian classics. This certified **Archery Ontario** club focuses on **Olympic Recurve Archery** lessons and archery games at both indoor and outdoor locations.\n\nWhat sets Grand Archery apart is its pay-per-class model rather than bulk prepayment",
+        "ensuring students attend from genuine interest rather than obligation. This creates a positive",
+        "motivated community. For archers in **Toronto** seeking Olympic-style instruction with a philosophical foundation and flexible payment structure",
+        "Grand Archery offers a refreshing alternative to traditional club models."
+      ]
+    },
+    {
+      "id": "14c0654b-8b42-47fd-8d48-86b3e5de70e3",
+      "name": "Lakehead Archers Inc.",
+      "phone_number": "807-939-1672",
+      "email": "lakeheadarchers@tbaytel.net",
+      "website": "http://www.lakeheadarchers.com",
+      "post_tags": [
+        "**Lakehead Archers Inc.** is widely considered the premier archery destination in **Northern Ontario**. Located just 10 minutes west of **Thunder Bay**",
+        "this volunteer-run club boasts exceptional facilities",
+        "including a specialized **20-yard indoor range** and an expansive **90-yard outdoor range**. The quality of the grounds is so high that it is often cited as one of the finest archery sites in the entire province",
+        "catering to everything from short-range precision to long-distance target shooting.\n\nThe club is deeply committed to growing the sport",
+        "offering a renowned **Junior Development program** and certified coach/judge training. With a friendly",
+        "welcoming atmosphere and a well-maintained property",
+        "it is the perfect home for both recreational shooters and serious competitive athletes. For anyone in the Thunder Bay area seeking world-class facilities and a strong community of like-minded archers",
+        "Lakehead Archers is the definitive choice."
+      ]
+    },
+    {
+      "id": "9e0517b3-38f8-4bf9-abcc-86b27832c599",
+      "name": "Lambton Sportsman's Club",
+      "phone_number": null,
+      "email": null,
+      "website": "https://www.lambtonsportsman.com/",
+      "post_tags": [
+        "shooting range",
+        "Lambton",
+        "St. Clair",
+        "archery",
+        "private club",
+        "rifle range",
+        "outdoor archery"
+      ]
+    },
+    {
+      "id": "d8344a9a-0436-4502-81d8-8f789824b69d",
+      "name": "Archery Exclusive",
+      "phone_number": "705-324-4934",
+      "email": null,
+      "website": null,
+      "post_tags": [
+        "**Archery Exclusive** is a specialized indoor range located in **Lindsay**",
+        "serving the **Kawartha Lakes** region. Unlike multi-discipline clubs",
+        "this is a dedicated",
+        "archery-only facility",
+        "providing a focused environment for practice and improvement. Being an indoor venue",
+        "it offers a reliable space for archers to hone their skills year-round",
+        "shielded from the elements.\n\nThe facility caters specifically to the needs of the archery community",
+        "offering a professional setting for both beginners and seasoned pros. Its location in the heart of the Kawarthas makes it a convenient and essential resource for local enthusiasts looking for high-quality",
+        "specialized archery lanes."
+      ]
+    },
+    {
+      "id": "dfcc3719-49b5-40c9-b994-d400e0d4b6d2",
+      "name": "Saugeen Shafts",
+      "phone_number": "705-749-1533",
+      "email": null,
+      "website": "https://saugeenshafts.com",
+      "post_tags": [
+        "**Saugeen Shafts** in **Peterborough** has been a trusted cornerstone of the regional archery community for over 25 years. This specialized pro shop and training facility offers **indoor shooting lanes** and a full suite of professional services including bow repairs",
+        "custom arrow building",
+        "and elite technical tuning. It is particularly well-known for its work with schools",
+        "camps",
+        "and institutional programs",
+        "making it the area's top authority on youth archery education.\n\nBeyond gear",
+        "Saugeen Shafts offers structured lessons for both adults and kids",
+        "providing a pathway to club membership through their instructional programs. Founded by the legendary Bill Embury",
+        "the facility continues to provide expert",
+        "friendly advice that caters to everyone from first-time shooters to competitive pros. If you need professional gear setup or high-quality foundational instruction in Peterborough",
+        "Saugeen Shafts is the place to go."
+      ]
+    },
+    {
+      "id": "82071eb6-e040-43f8-8f4f-92285135eccb",
+      "name": "East Grey Hunters and Anglers Association",
+      "phone_number": "519-538-5168",
+      "email": "eghaa.ca@gmail.com",
+      "website": "https://www.eghaa.ca",
+      "post_tags": [
+        "**East Grey Hunters and Anglers Association** in **Meaford** is a comprehensive multi-sport institution established in 1967. Situated on 63 beautiful acres",
+        "the club features dedicated **outdoor archery ranges** and a professional **3D course** that has famously hosted the All-Ontario Bowhunting Championships. This historic pedigree ensures a high-quality experience for both target archers and serious hunters.\n\nThe facility is exceptionally well-equipped with a full clubhouse featuring a kitchen",
+        "wood stove",
+        "and covered firing lines. It is a true community hub that hosts events like National Range Day and specialized women's range days. For those in the Meaford and Grey County area seeking a members-only club with a rich history",
+        "excellent amenities",
+        "and top-tier archery courses",
+        "East Grey is a premier regional choice."
+      ]
+    },
+    {
+      "id": "4b1077f9-21b3-459c-bb91-e386be2b658f",
+      "name": "Niagara Regional Sportsmen",
+      "phone_number": "(905) 327-3337",
+      "email": "Via phone",
+      "website": "Contact via phone",
+      "post_tags": [
+        "St. Anns",
+        "Niagara",
+        "outdoor",
+        "members only",
+        "private"
+      ]
+    },
+    {
+      "id": "7b934c1c-fbca-4e6d-93d0-7e8be0af219c",
+      "name": "E.T. Seton Park Archery Range",
+      "phone_number": "416-392-1111",
+      "email": null,
+      "website": "https://www.toronto.ca/",
+      "post_tags": [
+        "public archery range",
+        "free archery",
+        "Toronto",
+        "E.T. Seton Park",
+        "outdoor archery",
+        "70m range",
+        "Don Valley"
+      ]
+    },
+    {
+      "id": "35917add-091c-4a5a-a3e1-ad017ec23b4a",
+      "name": "St. Catharines Bowmen Archery Club",
+      "phone_number": "(905) 937-9074",
+      "email": "Via phone",
+      "website": "Contact via phone",
+      "post_tags": [
+        "St. Catharines",
+        "Niagara",
+        "indoor archery"
+      ]
+    },
+    {
+      "id": "a819390b-e2f2-4e2f-a42a-e3f1d948e448",
+      "name": "XQuest Archery",
+      "phone_number": null,
+      "email": null,
+      "website": "https://www.xquestarchery.com",
+      "post_tags": [
+        "**XQuest Archery** is a premier",
+        "family-run destination in **Ottawa**",
+        "boasting the city's largest and most modern **indoor archery range**. Owned by Janice Clark—a world-class competitor and elite **NCCP certified coach**—the facility offers an unparalleled level of instruction. Whether you're a complete beginner looking for an intro class or a high-level athlete seeking competitive development",
+        "XQuest provides the expert coaching needed to reach the next level.\n\nThe facility includes a fully-equipped onsite pro shop for expert gear sales and precision timing services. With a focus on accessibility and growth",
+        "XQuest welcomes archers of all styles including recurve and compound. The mix of professional competition history and friendly",
+        "family-oriented service makes this a top-tier choice for any archer in the National Capital Region."
+      ]
+    },
+    {
+      "id": "32b42577-4764-479f-ae58-f2d28b2683aa",
+      "name": "Dryden District Conservation Club Inc.",
+      "phone_number": "807-216-9102",
+      "email": null,
+      "website": "https://drydendistrictconservationclub.ca",
+      "post_tags": [
+        "The **Dryden District Conservation Club** is an award-winning leader in outdoor recreation and stewardship",
+        "serving the **Dryden** area since 1953. This multi-discipline club has recently been transformed into a best-in-class community archery facility",
+        "thanks to significant regional investment and the support of the Rotary Club. It features a unique **3D archery and snowshoe trail** that takes archers through natural terrain with a rigorous safety-flag system.\n\nThe clubhouse has undergone major renovations to provide a modern hub for its members",
+        "who also enjoy access to rifle",
+        "pistol",
+        "and upgraded trap shooting facilities. As a certified **OFAH** affiliate",
+        "the club foster strong community engagement and leadership among local anglers and hunters. For families in the Dryden region seeking a professional",
+        "community-focused club with high-end archery trails and top-tier facilities",
+        "this conservation club is the gold standard."
+      ]
+    },
+    {
+      "id": "70c1803b-a826-4847-825b-f51f64ed5082",
+      "name": "Eganville and District Sportsman's Club",
+      "phone_number": "613-649-2795",
+      "email": null,
+      "website": "http://www.edsc.ca",
+      "post_tags": [
+        "Spanning an incredible 400 total acres near the **Bonnechere Caves**",
+        "the **Eganville and District Sportsman's Club** is a massive destination for outdoor enthusiasts in the **Ottawa Valley**. This historic club",
+        "established in 1978",
+        "features an exceptional **outdoor archery range** alongside rifle",
+        "moving target",
+        "and trap facilities. The picturesque property with its large ponds and expansive trails provides a beautiful backdrop for a day on the range.\n\nThe club is famous for hosting the largest annual gun show in Ontario and its robust **National Range Day Open House**",
+        "where the public can try archery and other disciplines for free. With a strong culture of mentorship and a 250-member strong community",
+        "it is a welcoming place for archers of all ages and skill levels. If you're looking for a club with vast territory",
+        "a rich event calendar",
+        "and a deep community spirit in the **Eganville** area",
+        "this is a top regional institution."
+      ]
+    },
+    {
+      "id": "bd8cd9bf-c779-4a97-a838-314daa9e436d",
+      "name": "Carleton Archery Club",
+      "phone_number": null,
+      "email": null,
+      "website": "https://carletonarchery.ca",
+      "post_tags": [
+        "The **Carleton Archery Club** is a vibrant",
+        "beginner-friendly organization based at the **Carleton Ice House** in **Ottawa**. Established in 2013",
+        "it serves as a community hub for Carleton University students",
+        "students from other local universities",
+        "and the wider Ottawa public. The club features a specialized indoor 12-meter range with four dedicated lanes",
+        "perfect for precision practice and regular club events.\n\nA major advantage for newcomers is the club's extensive loaner equipment pool",
+        "which includes everything from recurve bows to arm guards. As a member of **Archery Ontario**",
+        "the club maintains high instructional standards",
+        "offering structured beginner lessons alongside casual recreational shooting. It is an ideal starting point for anyone in Ottawa looking to enter the sport of archery in a social",
+        "educational environment."
+      ]
+    },
+    {
+      "id": "2eb5fef6-c40d-40e2-a65f-27ed730a0d2f",
+      "name": "Peterborough Fish and Game Association",
+      "phone_number": "705-742-6845",
+      "email": null,
+      "website": "https://www.pfga.ca",
+      "post_tags": [
+        "The **Peterborough Fish and Game Association (PFGA)** is the most established shooting facility in the region",
+        "situated on 100 sprawling acres just east of downtown **Peterborough**. This world-class club offers year-round **indoor and outdoor archery**",
+        "including a detailed **3D walkabout range** with over 20 targets. Its pedigree is such that it routinely hosts major **Archery Ontario** and national events",
+        "providing members with access to elite-level competitive environments.\n\nMembers enjoy incredible flexibility with 24/7 grounds access",
+        "supported by an impressive heated clubhouse featuring a canteen and lounge. The PFGA is especially proud of its award-winning junior program",
+        "which has produced numerous national champions across various disciplines. For archers in the Peterborough area seeking a high-caliber facility with a powerful track record of athletic success and comprehensive amenities",
+        "PFGA is the undisputed leader."
+      ]
+    },
+    {
+      "id": "46fa7e15-4439-4d83-a8fc-62b94f051ed0",
+      "name": "Barrie District Hunters & Anglers Conservation Club",
+      "phone_number": "705-722-3049",
+      "email": null,
+      "website": "https://www.bdhacc.com",
+      "post_tags": [
+        "Located in **Midhurst**",
+        "the **Barrie District Hunters & Anglers Conservation Club (BDHACC)** is an award-winning institution with a legacy dating back to 1953. This club is a paradise for outdoor enthusiasts",
+        "featuring a dedicated **archery target range** and a unique **archery 3D walking course** set within its 64-acre property. The club's multi-discipline focus also includes rifle ranges and 5-stand sporting clays",
+        "making it a comprehensive site for all types of marksmanship.\n\nBeyond shooting",
+        "BDHACC is a leader in regional conservation",
+        "recognized with the Mary Pickford Trophy for its wildlife protection and restoration work. With a robust youth program and a strong affiliation with **OFAH**",
+        "it is an ideal environment for families and conservationists. For residents near Barrie looking for a community that balances elite-level archery facilities with active environmental leadership",
+        "this is an outstanding choice."
+      ]
+    },
+    {
+      "id": "c18a4230-0135-4693-be37-8397a180d427",
+      "name": "Algoma Rod and Gun Club",
+      "phone_number": "(705) 945-6410",
+      "email": "Via phone",
+      "website": "Contact via phone",
+      "post_tags": [
+        "Hilton Beach",
+        "Sault Ste. Marie",
+        "Algoma",
+        "indoor",
+        "outdoor",
+        "3D"
+      ]
+    },
+    {
+      "id": "b5654769-351a-49a5-8d47-9d22297d5bc1",
+      "name": "Pembroke Outdoor Sportsman Club",
+      "phone_number": "613-735-6969",
+      "email": "pembrokesportsman@gmail.com",
+      "website": "https://www.posc.biz",
+      "post_tags": [
+        "Founded in 1958",
+        "the **Pembroke Outdoor Sportsman Club** is a historic and community-led institution in the **Ottawa Valley**. This private",
+        "members-only club offers a comprehensive multi-discipline environment",
+        "featuring both **indoor and outdoor archery ranges** alongside a full suite of firearms facilities. The club is a dedicated advocate for conservation and safe sportsmanship",
+        "run entirely by a passionate volunteer membership.\n\nA key highlight is their **annual summer open house**",
+        "where the public can experience archery and other marksmanship disciplines for free under expert supervision. With specialized youth programs and a focus on educating the next generation",
+        "it is an ideal club for families in the **Pembroke** area. If you're looking for an established club that combines year-round archery access with a deep commitment to the local outdoors",
+        "this sportsman club is a cornerstone of the regional community."
+      ]
+    },
+    {
+      "id": "24401b3f-5feb-494f-917a-a8cb82ae5bd3",
+      "name": "Woods North Archery",
+      "phone_number": "905-433-0760",
+      "email": "taylormade@sympatico.ca",
+      "website": "http://www.woodsnortharchery.ca",
+      "post_tags": [
+        "**Woods North Archery** in **Oshawa** is a true family-operated destination for archery enthusiasts. Led by certified expert Alex Taylor",
+        "the facility offers professional coaching for both adults and children (ages 6+). With certifications from the **PSE Shooter School** and **Easton Technical Dealer training**",
+        "the onsite pro shop provides elite-level equipment sales",
+        "precision tuning",
+        "and repairs that are hard to find elsewhere.\n\nThis facility is unique in its focus on technical excellence",
+        "helping archers prepare for everything from casual backyard shooting to high-level **FITA** and **3D tournaments**. Operating primarily in the evenings",
+        "it provides a specialized environment for focused learning and high-end gear setup. For anyone in the **Durham Region** seeking expert technical advice and high-quality instruction",
+        "Woods North Archery is a trusted and authoritative local resource."
+      ]
+    }
+  ],
+  "long_phone": []
+}
