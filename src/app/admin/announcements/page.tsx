@@ -1,8 +1,13 @@
-// src/app/admin/announcements/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
 import { Plus, Edit, Trash2, Eye, Pin, Star } from 'lucide-react'
 import Link from 'next/link'
+import {
+  getAnnouncements,
+  togglePinnedAnnouncement,
+  toggleFeaturedAnnouncement,
+  deleteAnnouncement
+} from './actions'
 
 interface Announcement {
   id: string
@@ -30,69 +35,75 @@ export default function AnnouncementsPage() {
   }, [statusFilter, categoryFilter])
 
   const fetchAnnouncements = async () => {
-    // TODO: Fetch from Supabase
-    setAnnouncements([
-      {
-        id: '1',
-        title: 'National Championship 2024 - Registration Open',
-        excerpt: 'Register now for the 2024 Canadian National Archery Championship in Toronto',
-        category: 'tournament',
-        status: 'published',
-        is_featured: true,
-        is_pinned: true,
-        province: 'Ontario',
-        publish_date: '2024-03-01',
-        expire_date: '2024-06-30',
-        views_count: 1547,
-        clicks_count: 234
-      },
-      {
-        id: '2',
-        title: 'New Safety Guidelines Released',
-        excerpt: 'Updated safety guidelines for indoor archery ranges',
-        category: 'update',
-        status: 'published',
-        is_featured: false,
-        is_pinned: false,
-        publish_date: '2024-03-05',
-        views_count: 892,
-        clicks_count: 156
-      },
-      {
-        id: '3',
-        title: 'Youth Archery Camp - Summer 2024',
-        excerpt: 'Sign up for our summer youth archery program',
-        category: 'event',
-        status: 'draft',
-        is_featured: false,
-        is_pinned: false,
-        province: 'British Columbia',
-        publish_date: '2024-03-15',
-        views_count: 0,
-        clicks_count: 0
-      }
-    ])
+    setLoading(true)
+    const { data, error } = await getAnnouncements({
+      status: statusFilter,
+      category: categoryFilter
+    })
+
+    if (data) {
+      setAnnouncements(data as Announcement[])
+    } else {
+      console.error(error)
+      // Fallback to empty list or handle error
+    }
     setLoading(false)
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this announcement?')) return
-    // TODO: Delete from Supabase
+
+    // Optimistic update
+    const previousAnnouncements = [...announcements]
     setAnnouncements(announcements.filter(a => a.id !== id))
+
+    const { success, error } = await deleteAnnouncement(id)
+
+    if (!success) {
+      alert('Failed to delete announcement')
+      setAnnouncements(previousAnnouncements)
+      console.error(error)
+    }
   }
 
   const toggleFeatured = async (id: string) => {
-    // TODO: Update in Supabase
+    const announcement = announcements.find(a => a.id === id)
+    if (!announcement) return
+
+    // Optimistic update
     setAnnouncements(announcements.map(a =>
       a.id === id ? { ...a, is_featured: !a.is_featured } : a
     ))
+
+    const { success, error } = await toggleFeaturedAnnouncement(id, !announcement.is_featured)
+
+    if (!success) {
+      alert('Failed to update featured status')
+      setAnnouncements(announcements.map(a =>
+        a.id === id ? { ...a, is_featured: announcement.is_featured } : a
+      ))
+      console.error(error)
+    }
   }
 
   const togglePinned = async (id: string) => {
-    // TODO: Update in Supabase
+    const announcement = announcements.find(a => a.id === id)
+    if (!announcement) return
+
+    // Optimistic update
     setAnnouncements(announcements.map(a =>
       a.id === id ? { ...a, is_pinned: !a.is_pinned } : a
     ))
+
+    const { success, error } = await togglePinnedAnnouncement(id, !announcement.is_pinned)
+
+    if (!success) {
+      alert('Failed to update pinned status')
+      setAnnouncements(announcements.map(a =>
+        a.id === id ? { ...a, is_pinned: announcement.is_pinned } : a
+      ))
+      console.error(error)
+    }
   }
 
   const getCategoryColor = (category: string) => {
