@@ -4,6 +4,7 @@ import { SearchRangeResult } from '@/types/database'
 
 // Force dynamic rendering for API route
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
   try {

@@ -16,7 +16,10 @@ export function getSupabaseAdmin() {
   }
 
   if (!supabaseServiceRoleKey) {
-    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+    const envKeys = Object.keys(process.env).sort().join(', ')
+    const hasNextPublic = !!process.env.NEXT_PUBLIC_SUPABASE_URL
+    const debugMsg = `Env check: NEXT_PUBLIC=${hasNextPublic}, Keys=${envKeys}`
+    throw new Error(`Missing SUPABASE_SERVICE_ROLE_KEY. ${debugMsg}`)
   }
 
   return createClient(supabaseUrl, supabaseServiceRoleKey, {
