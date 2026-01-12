@@ -54,6 +54,8 @@ export async function PATCH(request: NextRequest) {
         if (status) updates.status = status;
         updates.updated_at = new Date().toISOString();
 
+        // Create admin client for bypassing RLS
+        const adminSupabase = getSupabaseAdmin();
         const { data, error } = await adminSupabase
             .from('profiles')
             .update(updates)
@@ -89,6 +91,9 @@ export async function DELETE(request: NextRequest) {
         if (!id) {
             return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
         }
+
+        // Create admin client for bypassing RLS
+        const adminSupabase = getSupabaseAdmin();
 
         // Delete from profiles using admin client
         const { error } = await adminSupabase
