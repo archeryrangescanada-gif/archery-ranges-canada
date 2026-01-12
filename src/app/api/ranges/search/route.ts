@@ -24,11 +24,11 @@ export async function GET(request: NextRequest) {
         address,
         facility_type,
         owner_id,
-        cities!inner(name),
-        provinces!inner(name)
+        cities(name),
+        provinces(name)
       `)
       .is('owner_id', null) // Only unclaimed ranges
-      .or(`name.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%,cities.name.ilike.%${searchTerm}%,provinces.name.ilike.%${searchTerm}%`)
+      .ilike('name', `%${searchTerm}%`)
       .limit(20)
 
     if (error) {
