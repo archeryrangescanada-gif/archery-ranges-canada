@@ -2,18 +2,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/supabase/api'
 import { SearchRangeResult } from '@/types/database'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
+    console.log('[Search API] Starting search request')
+
     const supabase = getSupabaseClient()
+    console.log('[Search API] Supabase client created')
 
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
+    console.log('[Search API] Query parameter:', query)
 
     if (!query || query.trim().length === 0) {
+      console.log('[Search API] Empty query, returning empty results')
       return NextResponse.json({ ranges: [] })
     }
 
     const searchTerm = query.trim().toLowerCase()
+    console.log('[Search API] Searching for:', searchTerm)
 
     // Use SQL filtering with Supabase .or() and .ilike() for server-side search
     const { data, error } = await supabase
@@ -32,9 +40,10 @@ export async function GET(request: NextRequest) {
       .limit(20)
 
     if (error) {
-      console.error('[Search API] Error:', error)
+      console.error('[Search API] Database error:', error)
+      console.error('[Search API] Error details:', JSON.stringify(error))
       return NextResponse.json(
-        { error: error.message },
+        { error: error.message || 'Database query failed' },
         { status: 500 }
       )
     }
