@@ -62,7 +62,7 @@ export default function UsersPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
 
-      setUsers(users.map(u => u.id === userId ? { ...u, role: newRole as any } : u))
+      setUsers(users.map(u => u.id === userId ? { ...u, role: newRole as User['role'] } : u))
     } catch (err: any) {
       alert(err.message)
     } finally {
@@ -84,7 +84,7 @@ export default function UsersPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
 
-      setUsers(users.map(u => u.id === userId ? { ...u, status: newStatus as any } : u))
+      setUsers(users.map(u => u.id === userId ? { ...u, status: newStatus as User['status'] } : u))
     } catch (err: any) {
       alert(err.message)
     } finally {
@@ -316,7 +316,7 @@ export default function UsersPage() {
                     <div className="flex space-x-2 items-center">
                       {user.status === 'invited' && (
                         <button
-                          onClick={() => handleResendInvite(user.email, user.role as any)}
+                          onClick={() => handleResendInvite(user.email, user.role)}
                           className="text-emerald-600 hover:text-emerald-900 p-1 rounded hover:bg-emerald-50"
                           title="Resend Invite"
                         >

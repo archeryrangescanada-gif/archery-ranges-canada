@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { MapPin, Navigation, ExternalLink } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 // Dynamically import react-leaflet components to avoid SSR issues
 const MapContainer = dynamic(

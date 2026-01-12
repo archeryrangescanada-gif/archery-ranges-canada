@@ -8,7 +8,16 @@ import { createClient } from '@/lib/supabase/client'
 import { Check, ArrowLeft, Loader2, Shield } from 'lucide-react'
 import Link from 'next/link'
 
-const plans = {
+interface Plan {
+  id: string
+  name: string
+  price: number
+  priceId: string
+  popular?: boolean
+  features: string[]
+}
+
+const plans: Record<string, Plan> = {
   basic: {
     id: 'basic',
     name: 'Basic',
@@ -176,7 +185,7 @@ export default function SubscribePage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-stone-800">{plan.name} Plan</h2>
-                {(plan as any).popular && (
+                {plan.popular && (
                   <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
                     Most Popular
                   </span>

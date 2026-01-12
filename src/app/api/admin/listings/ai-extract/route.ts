@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import * as cheerio from 'cheerio'
 
+// Set maximum execution time to 60 seconds (requires Vercel Pro)
+export const maxDuration = 60
+export const dynamic = 'force-dynamic'
+
 // TypeScript interface matching the exact database schema
 interface ArcheryRangeData {
   post_title: string
@@ -58,12 +62,53 @@ export async function POST(request: NextRequest) {
 
     console.log(`🚀 START: Fetching HTML from: ${url}`)
 
-    // Fetch and scrape the webpage content
+    // Fetch with size limit check
     const webResponse = await fetch(url)
     if (!webResponse.ok) {
       throw new Error(`Failed to fetch URL: ${webResponse.status} ${webResponse.statusText}`)
     }
-    const html = await webResponse.text()
+
+    // Check content length before downloading
+    const contentLength = webResponse.headers.get('content-length')
+    const MAX_SIZE = 5_000_000 // 5MB limit
+
+    if (contentLength && parseInt(contentLength) > MAX_SIZE) {
+      return NextResponse.json(
+        { error: 'Page too large (max 5MB)' },
+        { status: 413 }
+      )
+    }
+
+    // Stream with size limit to prevent memory overflow
+    const reader = webResponse.body?.getReader()
+    if (!reader) {
+      throw new Error('Failed to read response body')
+    }
+
+    const chunks: Uint8Array[] = []
+    let totalSize = 0
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        totalSize += value.length
+        if (totalSize > MAX_SIZE) {
+          reader.cancel()
+          return NextResponse.json(
+            { error: 'Page too large (max 5MB)' },
+            { status: 413 }
+          )
+        }
+
+        chunks.push(value)
+      }
+    } finally {
+      reader.releaseLock()
+    }
+
+    const html = new TextDecoder().decode(Buffer.concat(chunks))
     console.log(`✅ HTML DOWNLOADED: ${html.length} characters`)
     console.log(`   First 200 chars: ${html.substring(0, 200)}...`)
 
@@ -150,10 +195,14 @@ ${cleanText.substring(0, 15000)}`
     console.log(`   Prompt length: ${prompt.length} characters`)
     console.log(`   Model: gemini-2.5-flash`)
 
-    // Call Gemini AI with error handling
+    // Call Gemini AI with 45s timeout
     let result
     try {
-      result = await model.generateContent(prompt)
+      const aiPromise = model.generateContent(prompt)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('AI request timeout - exceeded 45 seconds')), 45000)
+      )
+      result = await Promise.race([aiPromise, timeoutPromise]) as any
     } catch (aiError: any) {
       console.error('❌ Gemini API Error:', aiError)
       return NextResponse.json(

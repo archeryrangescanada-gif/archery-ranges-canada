@@ -7,26 +7,18 @@ import Link from 'next/link'
 import { supabaseClient } from '@/lib/auth'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-
+// Custom interface for compare page
 interface Range {
   id: string
   name: string
   slug: string
-  address: string
-  city_id: string
-  phone_number: string | null
-  website: string | null
-  facility_type: string
-  amenities: string[]
-  price_range: string
-  city?: {
-    name: string
-    slug: string
-    province?: {
-      name: string
-      slug: string
-    }
-  }
+  address?: string | null
+  facility_type?: string | null
+  phone_number?: string | null
+  amenities?: string[]
+  price_range?: string
+  cities?: { name: string; slug?: string; provinces?: { name: string; slug?: string } } | null
+  city?: { name: string; slug?: string; province?: { name: string; slug?: string } }
 }
 
 export default function ComparePage() {
@@ -43,7 +35,7 @@ export default function ComparePage() {
         .order('name')
 
       if (data) {
-        setRanges(data as any)
+        setRanges(data as Range[])
       }
       setLoading(false)
     }
@@ -52,7 +44,7 @@ export default function ComparePage() {
 
   const filteredRanges = ranges.filter(range =>
     range.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    range.city?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    range.cities?.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const addToCompare = (range: Range) => {

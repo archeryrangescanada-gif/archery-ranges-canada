@@ -6,15 +6,16 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 })
 
 // Pricing tiers
+// Support both naming conventions for backward compatibility
 export const PRICING_TIERS = {
   basic: {
     name: 'Basic',
     monthly: {
-      priceId: process.env.NEXT_PUBLIC_STRIPE_BASIC_MONTHLY_PRICE_ID!,
+      priceId: process.env.STRIPE_SILVER_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_BASIC_MONTHLY_PRICE_ID || '',
       amount: 2900, // $29.00 in cents
     },
     yearly: {
-      priceId: process.env.NEXT_PUBLIC_STRIPE_BASIC_YEARLY_PRICE_ID!,
+      priceId: process.env.NEXT_PUBLIC_STRIPE_BASIC_YEARLY_PRICE_ID || '',
       amount: 29000, // $290.00 in cents (save $58)
     },
     features: [
@@ -29,11 +30,11 @@ export const PRICING_TIERS = {
   pro: {
     name: 'Pro',
     monthly: {
-      priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID!,
+      priceId: process.env.STRIPE_GOLD_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID || '',
       amount: 7900, // $79.00 in cents
     },
     yearly: {
-      priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID!,
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID || '',
       amount: 79000, // $790.00 in cents (save $158)
     },
     features: [
@@ -50,11 +51,11 @@ export const PRICING_TIERS = {
   premium: {
     name: 'Premium',
     monthly: {
-      priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_MONTHLY_PRICE_ID!,
+      priceId: process.env.STRIPE_PLATINUM_PRICE_ID || process.env.STRIPE_PLATNIUM_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PREMIUM_MONTHLY_PRICE_ID || '',
       amount: 14900, // $149.00 in cents
     },
     yearly: {
-      priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_YEARLY_PRICE_ID!,
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_YEARLY_PRICE_ID || '',
       amount: 149000, // $1,490.00 in cents (save $298)
     },
     features: [

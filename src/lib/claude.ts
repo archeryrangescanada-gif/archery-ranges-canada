@@ -1,10 +1,15 @@
 // src/lib/claude.ts
 import Anthropic from '@anthropic-ai/sdk'
 
-// Initialize Claude client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+// Validate API key exists
+const apiKey = process.env.ANTHROPIC_API_KEY
+
+if (!apiKey) {
+  console.warn('⚠️ WARNING: ANTHROPIC_API_KEY is not defined - AI features will be disabled')
+}
+
+// Initialize Claude client only if API key is available
+export const anthropic = apiKey ? new Anthropic({ apiKey }) : null
 
 /**
  * Send a message to Claude and get a response
@@ -18,6 +23,10 @@ export async function askClaude(
   systemPrompt?: string,
   model: string = 'claude-3-5-sonnet-20241022'
 ): Promise<string> {
+  if (!anthropic) {
+    throw new Error('Claude AI service not configured - ANTHROPIC_API_KEY missing')
+  }
+
   try {
     const response = await anthropic.messages.create({
       model,
@@ -89,6 +98,10 @@ export const claudeAPI = {
    * Chat with Claude (conversation style)
    */
   async chat(messages: Array<{ role: 'user' | 'assistant'; content: string }>) {
+    if (!anthropic) {
+      throw new Error('Claude AI service not configured - ANTHROPIC_API_KEY missing')
+    }
+
     try {
       const response = await anthropic.messages.create({
         model: 'claude-3-5-sonnet-20241022',
@@ -121,6 +134,10 @@ export const claudeAPI = {
       systemPrompt?: string
     }
   ) {
+    if (!anthropic) {
+      throw new Error('Claude AI service not configured - ANTHROPIC_API_KEY missing')
+    }
+
     try {
       const response = await anthropic.messages.create({
         model: 'claude-3-5-sonnet-20241022',

@@ -1,0 +1,67 @@
+# Documentation
+*.md
+!README.md
+PHASE_*.md
+PRODUCTION_*.md
+SECURITY_*.md
+SETUP_*.md
+FIX_*.md
+AGENTS.md
+
+# Audit and utility scripts
+audit_*.js
+*_garbage.js
+check_*.js
+cleanup_*.js
+create_*.js
+find_*.js
+fix_*.js
+inspect_*.js
+list_*.js
+upload_*.js
+add-listing-images.js
+
+# Data files
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+audit_results.json
+corrupted_ranges.json
+
+# SQL files
+*.sql
+
+# Demo/test files
+demo_*.txt
+
+# IDE and development
+.claude/
+.jules/
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Build artifacts
+.next/
+
+# Archives and images folder
+*.zip
+*.tar.gz
+Archery Range Images/
+
+# Environment files (already handled by Vercel)
+.env.local.clean
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db

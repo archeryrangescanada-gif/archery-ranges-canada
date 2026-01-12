@@ -18,11 +18,16 @@ export interface SendEmailParams {
 
 export class EmailService {
   /**
-   * Send a generic email
+   * Send a generic email with 45s timeout
    */
   static async sendEmail(params: SendEmailParams) {
+    if (!resend) {
+      console.error('Email service not configured - RESEND_API_KEY missing')
+      return { success: false, error: new Error('Email service not configured') }
+    }
+
     try {
-      const result = await resend.emails.send({
+      const emailPromise = resend.emails.send({
         from: EMAIL_CONFIG.from,
         to: params.to,
         subject: params.subject,
@@ -30,6 +35,12 @@ export class EmailService {
         text: params.text,
         replyTo: params.replyTo || EMAIL_CONFIG.replyTo,
       })
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Email send timeout - exceeded 45 seconds')), 45000)
+      )
+
+      const result = await Promise.race([emailPromise, timeoutPromise]) as any
 
       return { success: true, data: result }
     } catch (error) {

@@ -3,27 +3,7 @@
 import { useEffect, useState } from 'react'
 import { FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-
-interface VerificationRequest {
-  id: string
-  range_id: string
-  user_id: string
-  first_name: string
-  last_name: string
-  gst_number: string
-  business_license_url: string
-  insurance_certificate_url: string
-  status: 'pending' | 'approved' | 'rejected'
-  rejection_reason?: string
-  submitted_at: string
-  created_at: string
-  range?: {
-    name: string
-  }
-  user?: {
-    email: string
-  }
-}
+import { VerificationRequest } from '@/types/database'
 
 export default function ClaimsPage() {
   const supabase = createClient()
@@ -80,7 +60,7 @@ export default function ClaimsPage() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setRequests(data as any || [])
+      setRequests((data as VerificationRequest[]) || [])
     } catch (err) {
       console.error('Error fetching requests:', err)
     } finally {

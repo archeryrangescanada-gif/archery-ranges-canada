@@ -17,15 +17,15 @@ import {
     BarChart3,
     Star
 } from 'lucide-react'
-
+// Custom interface for dashboard (some fields use different names)
 interface Range {
     id: string
     name: string
     slug: string
-    address: string
-    subscription_tier: string
-    city?: { name: string; slug: string }
-    province?: { name: string; slug: string }
+    address?: string | null
+    subscription_tier?: string | null
+    city?: { name: string; slug: string } | null
+    province?: { name: string; slug: string } | null
 }
 
 interface User {
@@ -69,7 +69,7 @@ export default function DashboardPage() {
         `)
                 .eq('owner_id', user.id)
 
-            setRanges((rangesData as any) || [])
+            setRanges((rangesData as Range[]) || [])
             setLoading(false)
         }
 
@@ -211,7 +211,7 @@ export default function DashboardPage() {
                                                                 : 'bg-stone-100 text-stone-600'
                                                     }`}>
                                                     {range.subscription_tier === 'premium' && <Star className="w-3 h-3" />}
-                                                    {range.subscription_tier?.charAt(0).toUpperCase() + range.subscription_tier?.slice(1) || 'Free'}
+                                                    {(range.subscription_tier && range.subscription_tier.charAt(0).toUpperCase() + range.subscription_tier.slice(1)) || 'Free'}
                                                 </span>
                                             </div>
                                         </div>

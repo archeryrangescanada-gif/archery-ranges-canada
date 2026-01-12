@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Loader2, ArrowUpRight, ArrowDownRight, Users, MapPin, UserCheck, Megaphone } from 'lucide-react'
+import { AdminStats, ChartDataPoint, RecentUser, RecentListing } from '@/types/database'
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
@@ -14,10 +15,10 @@ export default function AdminDashboard() {
       totalUsers: 0,
       pendingClaims: 0,
       activeAds: 0
-    },
-    recentUsers: [] as any[],
-    recentListings: [] as any[],
-    chartData: [] as any[]
+    } as AdminStats,
+    recentUsers: [] as RecentUser[],
+    recentListings: [] as RecentListing[],
+    chartData: [] as ChartDataPoint[]
   })
 
   useEffect(() => {

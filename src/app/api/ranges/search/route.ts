@@ -1,20 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-// Service Role Client for bypassing RLS
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-)
+import { getSupabaseClient } from '@/lib/supabase/api'
+import { SearchRangeResult } from '@/types/database'
 
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient()
+
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
 
@@ -22,7 +13,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ranges: [] })
     }
 
-    // Get all ranges and filter client-side for better fuzzy matching
+    const searchTerm = query.trim().toLowerCase()
+
+    // Use SQL filtering with Supabase .or() and .ilike() for server-side search
     const { data, error } = await supabase
       .from('ranges')
       .select(`
@@ -34,7 +27,9 @@ export async function GET(request: NextRequest) {
         cities!inner(name),
         provinces!inner(name)
       `)
-      .limit(200)
+      .is('owner_id', null) // Only unclaimed ranges
+      .or(`name.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%,cities.name.ilike.%${searchTerm}%,provinces.name.ilike.%${searchTerm}%`)
+      .limit(20)
 
     if (error) {
       console.error('[Search API] Error:', error)
@@ -44,30 +39,22 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Filter for unclaimed listings and fuzzy search
-    const searchTerm = query.trim().toLowerCase().replace(/\s+/g, '')
+    const results: SearchRangeResult[] = (data || []).map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      address: r.address,
+      facility_type: r.facility_type,
+      owner_id: r.owner_id,
+      cities: r.cities ? { name: r.cities.name } : null,
+      provinces: r.provinces ? { name: r.provinces.name } : null
+    }))
 
-    const filtered = data?.filter((r: any) => {
-      if (r.owner_id) return false // Skip claimed ranges
-
-      // Remove spaces from name and address for fuzzy matching
-      const nameLower = (r.name || '').toLowerCase().replace(/\s+/g, '')
-      const addressLower = (r.address || '').toLowerCase().replace(/\s+/g, '')
-      const cityName = (r.cities?.name || '').toLowerCase().replace(/\s+/g, '')
-      const provinceName = (r.provinces?.name || '').toLowerCase().replace(/\s+/g, '')
-
-      return nameLower.includes(searchTerm) ||
-             addressLower.includes(searchTerm) ||
-             cityName.includes(searchTerm) ||
-             provinceName.includes(searchTerm)
-    }) || []
-
-    console.log('[Search API] Query:', query, 'Returning', filtered.length, 'unclaimed ranges')
-    if (filtered.length > 0) {
-      console.log('[Search API] Sample result:', filtered[0]?.name)
+    console.log('[Search API] Query:', query, 'Returning', results.length, 'unclaimed ranges')
+    if (results.length > 0) {
+      console.log('[Search API] Sample result:', results[0]?.name)
     }
 
-    return NextResponse.json({ ranges: filtered.slice(0, 20) })
+    return NextResponse.json({ ranges: results })
 
   } catch (error: any) {
     console.error('[Search API] Exception:', error)

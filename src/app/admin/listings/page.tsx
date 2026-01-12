@@ -4,14 +4,15 @@ import { Search, Filter, Plus, Edit, Trash2, Eye, Star, Upload, FileUp } from 'l
 import Link from 'next/link'
 import Papa from 'papaparse'
 import { createClient } from '@/lib/supabase/client'
+import { RangeWithRelations } from '@/types/database'
 
 interface Listing {
   id: string
   name: string
-  city: { name: string } | null
-  province: { name: string } | null
-  city_id?: string
-  province_id?: string
+  city: string
+  province: string
+  city_id?: string | null
+  province_id?: string | null
   status: 'active' | 'pending' | 'inactive' | 'rejected'
   is_premium: boolean
   is_featured: boolean
@@ -121,17 +122,20 @@ export default function ListingsPage() {
 
       if (error) throw error
 
-      let formattedData = (data as any[]).map(item => ({
-        ...item,
-        city: item.city?.name || 'Unknown',
-        province: item.province?.name || 'Unknown',
-        // IDs are already at top level if selected, or we ensure they map correctly
+      const rangeData = data as RangeWithRelations[]
+      const formattedData: Listing[] = rangeData.map(item => ({
+        id: item.id,
+        name: item.name,
+        city: item.cities?.name || 'Unknown',
+        province: item.provinces?.name || 'Unknown',
         city_id: item.city_id,
         province_id: item.province_id,
         status: item.status || 'active',
         is_premium: item.is_premium || false,
-        claimed: item.claimed || false,
-        views_count: 0
+        is_featured: item.is_featured || false,
+        claimed: item.is_claimed || false,
+        views_count: item.views_count ?? 0,
+        created_at: item.created_at
       }))
 
       setListings(formattedData)
@@ -149,7 +153,7 @@ export default function ListingsPage() {
       const lowerQ = searchQuery.toLowerCase()
       const matchesSearch =
         l.name.toLowerCase().includes(lowerQ) ||
-        (l.city as any).toLowerCase().includes(lowerQ)
+        l.city.toLowerCase().includes(lowerQ)
       if (!matchesSearch) return false
     }
 
@@ -157,7 +161,7 @@ export default function ListingsPage() {
     if (statusFilter !== 'all' && l.status !== statusFilter) return false
 
     // Province Filter
-    if (provinceFilter !== 'all' && (l.province as any) !== provinceFilter) return false
+    if (provinceFilter !== 'all' && l.province !== provinceFilter) return false
 
     return true
   })
@@ -238,7 +242,7 @@ export default function ListingsPage() {
       if (!res.ok) throw new Error('Failed to update status')
 
       setListings(listings.map(l =>
-        l.id === id ? { ...l, status: newStatus as any } : l
+        l.id === id ? { ...l, status: newStatus as Listing['status'] } : l
       ))
     } catch (err: any) {
       alert(err.message)
@@ -319,12 +323,11 @@ export default function ListingsPage() {
 
     listings.forEach(l => {
       if (!l.province_id || !l.province) return
-      const pName = typeof l.province === 'string' ? l.province : (l.province as any).name || (l.province as any)
 
       if (!provinceMap.has(l.province_id)) {
         provinceMap.set(l.province_id, {
           id: l.province_id,
-          name: String(pName),
+          name: l.province,
           count: 0,
           cities: new Map()
         })
@@ -333,10 +336,9 @@ export default function ListingsPage() {
       const prov = provinceMap.get(l.province_id)!
       prov.count++
 
-      if (l.city_id) {
-        const cName = typeof l.city === 'string' ? l.city : (l.city as any).name || (l.city as any)
+      if (l.city_id && l.city) {
         if (!prov.cities.has(l.city_id)) {
-          prov.cities.set(l.city_id, { id: l.city_id, name: String(cName), count: 0 })
+          prov.cities.set(l.city_id, { id: l.city_id, name: l.city, count: 0 })
         }
         prov.cities.get(l.city_id)!.count++
       }
@@ -529,8 +531,8 @@ export default function ListingsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{listing.city as any}</div>
-                    <div className="text-sm text-gray-500">{listing.province as any}</div>
+                    <div className="text-sm text-gray-900">{listing.city || 'N/A'}</div>
+                    <div className="text-sm text-gray-500">{listing.province || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
@@ -565,7 +567,7 @@ export default function ListingsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex items-center">
                       <Eye className="w-4 h-4 mr-1" />
-                      {listing.views_count}
+                      {listing.views_count ?? 0}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

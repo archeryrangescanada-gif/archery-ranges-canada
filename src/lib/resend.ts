@@ -1,10 +1,13 @@
 import { Resend } from 'resend'
 
+// Graceful fallback for build time - warn but don't crash
 if (!process.env.RESEND_API_KEY) {
-  throw new Error('RESEND_API_KEY is not defined')
+  console.warn('⚠️ WARNING: RESEND_API_KEY is not defined - email features will be disabled')
 }
 
-export const resend = new Resend(process.env.RESEND_API_KEY)
+export const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null
 
 // Email configuration
 export const EMAIL_CONFIG = {

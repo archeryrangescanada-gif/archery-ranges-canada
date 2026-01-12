@@ -7,37 +7,24 @@ import { useState, useEffect } from 'react'
 import { supabaseClient } from '@/lib/auth'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-
-interface Province {
-  id: string
-  name: string
-  slug: string
-}
-
-interface City {
-  id: string
-  name: string
-  slug: string
-  province?: Province
-}
-
+// Custom interface for featured page
 interface Range {
   id: string
   name: string
   slug: string
-  city_id: string
-  facility_type: string
-  amenities: string[]
-  price_range: string
+  city_id?: string | null
+  facility_type?: string | null
+  amenities?: string[]
+  price_range?: string
   is_premium?: boolean
   is_featured?: boolean
   photos?: string[]
-  description?: string
-  phone_number?: string
-  website?: string
-  latitude?: number
-  longitude?: number
-  city?: City
+  description?: string | null
+  phone_number?: string | null
+  website?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  city?: { name: string; slug: string; province?: { name: string; slug: string } } | null
 }
 
 export default function FeaturedPage() {
@@ -59,7 +46,7 @@ export default function FeaturedPage() {
         .order('name')
 
       if (data) {
-        setRanges(data as any)
+        setRanges(data as Range[])
       }
       setLoading(false)
     }

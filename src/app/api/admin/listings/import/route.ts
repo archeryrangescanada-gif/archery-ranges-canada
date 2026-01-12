@@ -57,16 +57,53 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`📊 Processing ${ranges.length} range(s)`)
+    // Limit max batch size to prevent timeouts
+    const MAX_BATCH_SIZE = 50
+    if (ranges.length > MAX_BATCH_SIZE) {
+      return NextResponse.json(
+        { error: `Too many ranges. Maximum ${MAX_BATCH_SIZE} per request. Please split into multiple batches.` },
+        { status: 400 }
+      )
+    }
+
+    console.log(`📊 Processing ${ranges.length} range(s) using database transaction`)
 
     const supabase = await createClient()
+
+    // Call PostgreSQL RPC function for atomic batch insert
+    const { data: rpcResults, error: rpcError } = await supabase
+      .rpc('import_ranges_batch', { ranges_json: ranges })
+
+    if (rpcError) {
+      console.error('❌ RPC Error:', rpcError)
+      return NextResponse.json(
+        { error: `Database transaction failed: ${rpcError.message}` },
+        { status: 500 }
+      )
+    }
+
     const results = {
       success: 0,
       failed: 0,
       errors: [] as string[]
     }
 
-    for (const range of ranges as RangeImport[]) {
+    // Process RPC results
+    if (rpcResults && Array.isArray(rpcResults)) {
+      for (const result of rpcResults) {
+        if (result.success) {
+          results.success++
+          console.log(`  ✅ Imported: ${result.range_name}`)
+        } else {
+          results.failed++
+          results.errors.push(`${result.range_name}: ${result.error_message}`)
+          console.log(`  ❌ Failed: ${result.range_name} - ${result.error_message}`)
+        }
+      }
+    }
+
+    // Legacy code commented out - now handled by database transaction
+    /* for (const range of ranges as RangeImport[]) {
       try {
         // Validate required field
         if (!range.post_title) {
@@ -85,32 +122,31 @@ export async function POST(request: NextRequest) {
           .replace(/\s+/g, '-') // Replace spaces with hyphens
           .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
 
-        // Find or create city
+        // Find or create city (using pre-fetched map)
         let cityId: string | null = null
         if (range.post_city && range.post_city.trim()) {
-          const { data: existingCity } = await supabase
-            .from('cities')
-            .select('id')
-            .ilike('name', range.post_city.trim())
-            .single()
+          const cityName = range.post_city.trim()
+          const cityKey = cityName.toLowerCase()
 
-          if (existingCity) {
-            cityId = existingCity.id
+          if (cityMap.has(cityKey)) {
+            cityId = cityMap.get(cityKey)!
           } else {
+            // City doesn't exist, create it
             const { data: newCity, error: cityError } = await supabase
               .from('cities')
-              .insert({ name: range.post_city.trim() })
+              .insert({ name: cityName })
               .select('id')
               .single()
 
             if (!cityError && newCity) {
               cityId = newCity.id
-              console.log(`  ✅ Created new city: ${range.post_city}`)
+              cityMap.set(cityKey, cityId)
+              console.log(`  ✅ Created new city: ${cityName}`)
             }
           }
         }
 
-        // Find or create province (ONLY if it's a valid Canadian province)
+        // Find or create province (using pre-fetched map, ONLY if valid Canadian province)
         let provinceId: string | null = null
         if (range.post_region && range.post_region.trim()) {
           const provinceName = range.post_region.trim()
@@ -121,20 +157,16 @@ export async function POST(request: NextRequest) {
           )
 
           if (isValidProvince) {
-            const { data: existingProvince } = await supabase
-              .from('provinces')
-              .select('id')
-              .ilike('name', provinceName)
-              .single()
+            // Use the properly capitalized name from VALID_PROVINCES
+            const correctName = VALID_PROVINCES.find(
+              p => p.toLowerCase() === provinceName.toLowerCase()
+            )!
+            const provinceKey = correctName.toLowerCase()
 
-            if (existingProvince) {
-              provinceId = existingProvince.id
+            if (provinceMap.has(provinceKey)) {
+              provinceId = provinceMap.get(provinceKey)!
             } else {
-              // Use the properly capitalized name from VALID_PROVINCES
-              const correctName = VALID_PROVINCES.find(
-                p => p.toLowerCase() === provinceName.toLowerCase()
-              )!
-
+              // Province doesn't exist, create it
               const { data: newProvince, error: provinceError } = await supabase
                 .from('provinces')
                 .insert({
@@ -146,6 +178,7 @@ export async function POST(request: NextRequest) {
 
               if (!provinceError && newProvince) {
                 provinceId = newProvince.id
+                provinceMap.set(provinceKey, provinceId)
                 console.log(`  ✅ Created new province: ${correctName}`)
               }
             }
@@ -228,7 +261,7 @@ export async function POST(request: NextRequest) {
         results.failed++
         results.errors.push(`${range.post_title || 'Unknown'}: ${itemError.message}`)
       }
-    }
+    } */
 
     console.log(`📊 Import complete: ${results.success} success, ${results.failed} failed`)
 

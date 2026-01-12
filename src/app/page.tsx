@@ -8,41 +8,25 @@ import SearchFilters from '@/components/SearchFilters'
 import ReportRangeModal from '@/components/ReportRangeModal'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-
-interface Province {
-  id: string
-  name: string
-  slug: string
-}
-
-interface City {
-  id: string
-  name: string
-  slug: string
-  province_id: string
-  province?: Province
-  latitude?: number
-  longitude?: number
-}
+import { Province, City } from '@/types/database'
 
 interface Range {
   id: string
   name: string
   slug: string
-  city_id: string
-  facility_type: string
-  amenities: string[]
-  price_range: string
+  facility_type?: string | null
+  price_range?: string | null
+  photos?: string[] | null
+  description?: string | null
   is_premium?: boolean
   is_featured?: boolean
-  photos?: string[]
-  description?: string
-  phone_number?: string
-  website?: string
-  latitude?: number
-  longitude?: number
-  city?: City
+  latitude?: number | null
+  longitude?: number | null
+  city?: City | null
+  amenities?: string[] | null
   distance?: number
+  phone_number?: string | null
+  website?: string | null
 }
 
 interface SearchResult {
@@ -50,9 +34,9 @@ interface SearchResult {
   id: string
   name: string
   slug: string
-  parentName?: string
-  provinceSlug?: string
-  citySlug?: string
+  parentName?: string | null
+  provinceSlug?: string | null
+  citySlug?: string | null
 }
 
 interface FilterState {
@@ -181,10 +165,10 @@ export default function Home() {
         .select('id, name, slug, facility_type, price_range, photos, description, is_premium, is_featured, latitude, longitude, city:cities(*, province:provinces(*))')
         .order('name')
 
-      if (provincesData) setProvinces(provincesData)
-      if (citiesData) setCities(citiesData as any)
+      if (provincesData) setProvinces(provincesData as Province[])
+      if (citiesData) setCities(citiesData as City[])
       if (rangesData) {
-        setRanges(rangesData as any)
+        setRanges(rangesData as unknown as Range[])
       }
       setLoading(false)
     }
@@ -260,7 +244,7 @@ export default function Home() {
     let filteredRanges = ranges
 
     if (filters.rangeType.length > 0) {
-      filteredRanges = filteredRanges.filter(r => filters.rangeType.includes(r.facility_type))
+      filteredRanges = filteredRanges.filter(r => r.facility_type && filters.rangeType.includes(r.facility_type))
     }
 
     if (filters.amenities.length > 0) {
@@ -270,7 +254,7 @@ export default function Home() {
     }
 
     if (filters.priceRange.length > 0) {
-      filteredRanges = filteredRanges.filter(r => filters.priceRange.includes(r.price_range))
+      filteredRanges = filteredRanges.filter(r => r.price_range && filters.priceRange.includes(r.price_range))
     }
 
     if (!query || query === '') {
@@ -300,7 +284,7 @@ export default function Home() {
             type: 'city',
             id: city.id,
             name: city.name,
-            slug: city.slug,
+            slug: city.slug || '',
             parentName: city.province?.name,
             provinceSlug: city.province?.slug,
           })
@@ -323,7 +307,7 @@ export default function Home() {
           id: range.id,
           name: range.name,
           slug: range.slug,
-          parentName: range.city?.name + ', ' + range.city?.province?.name,
+          parentName: range.city?.name ? `${range.city.name}, ${range.city.province?.name || ''}` : undefined,
           provinceSlug: range.city?.province?.slug,
           citySlug: range.city?.slug,
         })

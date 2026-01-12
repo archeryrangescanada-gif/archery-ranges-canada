@@ -7,6 +7,10 @@ import Footer from '@/components/Footer';
 import { Range } from '@/types/range';
 import { RangeCard, RangeCardFeatured } from '@/components/listing/RangeCard';
 import { MapPin, Filter, ArrowLeft, Target, Home, ChevronRight, Calendar, Scale, DollarSign, HelpCircle, Building2, TreePine } from 'lucide-react';
+import { Province } from '@/types/database';
+
+// Enable ISR - revalidate every 5 minutes
+export const revalidate = 300;
 
 interface PageProps {
   params: {
@@ -112,15 +116,15 @@ async function getCityData(provinceSlug: string, citySlug: string): Promise<City
 
   if (error || !data) return null;
 
-  const provinces = data.provinces as any;
+  const provincesData = data.provinces as any;
   return {
     id: data.id,
     name: data.name,
     slug: data.slug,
     province: {
-      id: provinces.id,
-      name: provinces.name,
-      slug: provinces.slug,
+      id: provincesData.id,
+      name: provincesData.name,
+      slug: provincesData.slug,
     },
   };
 }

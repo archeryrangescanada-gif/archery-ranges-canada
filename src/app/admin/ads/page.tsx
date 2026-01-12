@@ -71,7 +71,7 @@ export default function AdsPage() {
       alert('Error updating status: ' + error.message)
     } else {
       setAds(ads.map(a =>
-        a.id === id ? { ...a, status: newStatus as any } : a
+        a.id === id ? { ...a, status: newStatus as AdCampaign['status'] } : a
       ))
     }
   }
