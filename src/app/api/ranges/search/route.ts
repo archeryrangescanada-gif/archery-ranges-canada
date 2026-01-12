@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseClient } from '@/lib/supabase/api'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { SearchRangeResult } from '@/types/database'
 
 // Force dynamic rendering for API route
@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
   try {
     console.log('[Search API] Starting search request')
 
-    const supabase = getSupabaseClient()
-    console.log('[Search API] Supabase client created')
+    const supabase = getSupabaseAdmin()
+    console.log('[Search API] Supabase admin client created')
 
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getSupabaseClient } from '@/lib/supabase/api'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,7 +30,7 @@ export async function GET() {
   // Check database connection
   try {
     const dbStart = Date.now()
-    const supabase = getSupabaseClient()
+    const supabase = getSupabaseAdmin()
 
     // Simple query to test database connectivity
     const { error } = await supabase
