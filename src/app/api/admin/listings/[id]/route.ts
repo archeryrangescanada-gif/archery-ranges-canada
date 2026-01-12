@@ -1,18 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin as getAdminSupabase } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
-
-// Service Role Client for Admin Operations
-const adminSupabase = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
 
 export async function PATCH(
   request: NextRequest,
@@ -27,6 +15,7 @@ export async function PATCH(
     // Updates object - typically used for is_featured, is_premium, status
     const updates = { ...body, updated_at: new Date().toISOString() }
 
+    const adminSupabase = getAdminSupabase()
     const { data, error } = await adminSupabase
       .from('ranges')
       .update(updates)
@@ -67,6 +56,7 @@ export async function DELETE(
     }
 
     // Use Service Role to ensure delete works even if RLS is strict
+    const adminSupabase = getAdminSupabase()
     const { error } = await adminSupabase
       .from('ranges')
       .delete()
