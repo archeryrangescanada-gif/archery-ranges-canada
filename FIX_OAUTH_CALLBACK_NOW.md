@@ -31,22 +31,25 @@ https://archeryrangescanada.ca
 
 ### Step 4: Update Redirect URLs
 
-In the **Redirect URLs** section, you should have these (one per line):
+In the **Redirect URLs** section, add these (one per line):
+
+```
+https://archeryrangescanada.ca/api/auth/callback
+https://archeryrangescanada.ca/auth/callback
+https://archeryrangescanada.ca/dashboard
+https://archeryrangescanada.ca/dashboard/onboarding
+https://*.vercel.app/api/auth/callback
+https://*.vercel.app/auth/callback
+http://localhost:3000/api/auth/callback
+http://localhost:3000/auth/callback
+```
+
+**OR use wildcards (recommended):**
 
 ```
 https://archeryrangescanada.ca/**
 https://*.vercel.app/**
 http://localhost:3000/**
-```
-
-**OR** be more specific:
-
-```
-https://archeryrangescanada.ca/auth/callback
-https://archeryrangescanada.ca/dashboard
-https://archeryrangescanada.ca/dashboard/onboarding
-https://*.vercel.app/auth/callback
-http://localhost:3000/auth/callback
 ```
 
 ### Step 5: Click Save
