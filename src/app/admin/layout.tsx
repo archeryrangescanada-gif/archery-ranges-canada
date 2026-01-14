@@ -67,6 +67,11 @@ export default function AdminLayout({
 
   const isActive = (href: string) => pathname.startsWith(href)
 
+  // If on login page, render only the children without the admin layout
+  if (pathname === '/admin/login') {
+    return <>{children}</>
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Top Navigation Bar */}
