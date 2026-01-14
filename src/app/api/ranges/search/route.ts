@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { createClient } from '@supabase/supabase-js'
 import { SearchRangeResult } from '@/types/database'
 
 // Force dynamic rendering for API route
@@ -10,8 +10,12 @@ export async function GET(request: NextRequest) {
   try {
     console.log('[Search API] Starting search request')
 
-    const supabase = getSupabaseAdmin()
-    console.log('[Search API] Supabase admin client created')
+    // Use the public anon key for search (safer and fixes Vercel env issue)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    console.log('[Search API] Supabase client created (Anon)')
 
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
