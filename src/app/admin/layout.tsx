@@ -16,7 +16,8 @@ import {
   CreditCard,
   LogOut,
   Shield,
-  Mail
+  Mail,
+  Wrench
 } from 'lucide-react'
 
 export default function AdminLayout({
@@ -62,6 +63,7 @@ export default function AdminLayout({
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    { name: 'Tools', href: '/admin/tools', icon: Wrench },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ]
 
