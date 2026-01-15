@@ -18,7 +18,16 @@ export default function AdminLogin() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
+
     console.log('Form submitted', { email })
+
+    // Validate inputs
+    if (!email || !password) {
+      setError('Please enter both email and password')
+      return
+    }
+
     setError('')
     setLoading(true)
 
@@ -90,7 +99,6 @@ export default function AdminLogin() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
               placeholder="admin@archeryranges.com"
-              required
               disabled={loading}
             />
           </div>
@@ -107,7 +115,6 @@ export default function AdminLogin() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
                 placeholder="••••••••"
-                required
                 disabled={loading}
               />
               <button
