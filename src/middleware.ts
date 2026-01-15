@@ -86,8 +86,24 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/admin/login', request.url))
     }
 
-    // User is authenticated - allow access to admin routes
-    // TODO: Add role-based access control when profiles table is set up
+    // Check if user has admin role in profiles table
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    // If profiles table doesn't exist yet or query fails, allow access (dev mode)
+    if (error) {
+      console.warn('Profile check failed - allowing access:', error.message)
+      return response
+    }
+
+    // Check if user has admin role
+    if (profile?.role !== 'admin') {
+      return NextResponse.redirect(new URL('/admin/unauthorized', request.url))
+    }
+
     return response
   }
 
