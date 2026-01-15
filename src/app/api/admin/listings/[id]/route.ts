@@ -1,6 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
-import { getSupabaseAdmin as getAdminSupabase } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 export async function PATCH(
   request: NextRequest,
@@ -15,8 +14,12 @@ export async function PATCH(
     // Updates object - typically used for is_featured, is_premium, status
     const updates = { ...body, updated_at: new Date().toISOString() }
 
-    const adminSupabase = getAdminSupabase()
-    const { data, error } = await adminSupabase
+    // Use anon key since service role key isn't available in Vercel
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { data, error } = await supabase
       .from('ranges')
       .update(updates)
       .eq('id', id)
@@ -37,16 +40,11 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const { id } = params
-
-    // Check Auth (Optional for extra security, but layout handles most)
-    // const supabase = await createClient()
-    // const { data: { user } } = await supabase.auth.getUser()
-    // if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     if (!id) {
       return NextResponse.json(
@@ -55,9 +53,12 @@ export async function DELETE(
       )
     }
 
-    // Use Service Role to ensure delete works even if RLS is strict
-    const adminSupabase = getAdminSupabase()
-    const { error } = await adminSupabase
+    // Use anon key since service role key isn't available in Vercel
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { error } = await supabase
       .from('ranges')
       .delete()
       .eq('id', id)
