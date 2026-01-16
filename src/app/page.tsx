@@ -105,7 +105,10 @@ export default function Home() {
           let detectedCityName = 'Toronto'
           try {
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`, {
-              headers: { 'Accept-Language': 'en-US,en;q=0.9' }
+              headers: {
+                'Accept-Language': 'en-US,en;q=0.9',
+                'User-Agent': 'ArcheryRangesCanada/1.0'
+              }
             })
             const geoData = await response.json()
             detectedCityName = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || 'Toronto'
@@ -137,13 +140,36 @@ export default function Home() {
           })
         } catch (error) {
           console.error('Error in location detection:', error)
+          setLocationError('Could not determine your city')
         }
 
         setLocationLoading(false)
       },
       (error) => {
-        console.log('Location not available:', error.message)
+        console.error('Geolocation error:', error)
+        let errorMessage = 'Location access denied'
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location permission denied. Please enable location access in your browser settings.'
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information unavailable. Please check your device settings.'
+            break
+          case error.TIMEOUT:
+            errorMessage = 'Location request timed out. Please try again.'
+            break
+          default:
+            errorMessage = 'Could not get your location. Please try again or search manually.'
+        }
+
+        setLocationError(errorMessage)
         setLocationLoading(false)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
       }
     )
   }
