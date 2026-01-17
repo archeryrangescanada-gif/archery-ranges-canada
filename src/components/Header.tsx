@@ -31,6 +31,9 @@ export default function Header() {
                     <Link href="/" className="hover:text-green-100 transition-colors font-medium">
                         Home
                     </Link>
+                    <Link href="/about" className="hover:text-green-100 transition-colors font-medium">
+                        About
+                    </Link>
                     <Link href="/blog" className="hover:text-green-100 transition-colors font-medium">
                         Blog
                     </Link>
@@ -74,6 +77,9 @@ export default function Header() {
                 <nav className="md:hidden bg-emerald-800 px-4 py-4 space-y-3 relative z-40" role="navigation">
                     <Link href="/" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
                         Home
+                    </Link>
+                    <Link href="/about" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
+                        About
                     </Link>
                     <Link href="/blog" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
                         Blog
