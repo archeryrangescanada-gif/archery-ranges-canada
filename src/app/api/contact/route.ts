@@ -73,7 +73,7 @@ Sent from archeryrangescanada.ca contact form
     const { data, error } = await resend.emails.send({
       from: 'Archery Ranges Canada <noreply@archeryrangescanada.ca>',
       to: 'archeryrangescanada@gmail.com',
-      reply_to: email,
+      replyTo: email,
       subject: `Contact Form: ${subject}`,
       html: htmlContent,
       text: textContent
