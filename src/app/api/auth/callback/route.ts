@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
   console.log('🔐 API Auth callback triggered')
@@ -7,7 +8,10 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') || '/dashboard'
-  const plan = searchParams.get('plan') // Capture plan
+
+  // Try to get plan from URL first, then cookie
+  const cookieStore = cookies()
+  const plan = searchParams.get('plan') || cookieStore.get('signup_plan')?.value
 
   console.log('📍 API Auth callback params:', {
     hasCode: !!code,

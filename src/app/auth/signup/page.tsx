@@ -86,13 +86,15 @@ export default function SignUpPage() {
   const handleGoogleSignIn = async () => {
     setError('')
     try {
-      const redirectTo = new URL(`${window.location.origin}/api/auth/callback`)
-      if (plan) redirectTo.searchParams.set('plan', plan)
+      // Set cookie for plan persistence (bypasses URL whitelist issues)
+      if (plan) {
+        document.cookie = `signup_plan=${plan}; path=/; max-age=3600`
+      }
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectTo.toString(),
+          redirectTo: `${window.location.origin}/api/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -110,13 +112,15 @@ export default function SignUpPage() {
   const handleFacebookSignIn = async () => {
     setError('')
     try {
-      const redirectTo = new URL(`${window.location.origin}/api/auth/callback`)
-      if (plan) redirectTo.searchParams.set('plan', plan)
+      // Set cookie for plan persistence
+      if (plan) {
+        document.cookie = `signup_plan=${plan}; path=/; max-age=3600`
+      }
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
         options: {
-          redirectTo: redirectTo.toString(),
+          redirectTo: `${window.location.origin}/api/auth/callback`,
         },
       })
       if (error) {
