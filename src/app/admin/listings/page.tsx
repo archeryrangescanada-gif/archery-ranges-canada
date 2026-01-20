@@ -251,16 +251,20 @@ export default function ListingsPage() {
         try {
           // Debugging: Log Raw Keys of first row
           if (results.data.length > 0) {
-            console.log('CSV Raw Keys (Row 1):', Object.keys(results.data[0] as object))
+            const firstRow = results.data[0] as object
+            const keys = Object.keys(firstRow)
+            console.log('CSV Raw Keys (Row 1):', keys)
+            // ALERT THE USER TO DEBUG
+            alert(`DEBUG: Found Columns: \n${keys.join(', ')}\n\nFirst Row Name Value: ${JSON.stringify(getValue(firstRow, ['post_title', 'name', 'title', 'range_name']))}`)
           }
 
           // Transform and Clean Data Logic
           const transformedData = results.data.map((row: any) => {
             // Robust Key Lookup
-            const postTitle = getValue(row, ['post_title', 'name', 'title', 'range_name']) || 'Untitled Range'
-            const city = getValue(row, ['post_city', 'city', 'town'])
-            const province = getValue(row, ['post_region', 'province', 'region', 'prov'])
-            const address = getValue(row, ['post_address', 'address', 'post_address_1'])
+            const postTitle = getValue(row, ['post_title', 'name', 'title', 'range_name', 'club', 'organization', 'business_name', 'company']) || 'Untitled Range'
+            const city = getValue(row, ['post_city', 'city', 'town', 'location'])
+            const province = getValue(row, ['post_region', 'province', 'region', 'prov', 'state'])
+            const address = getValue(row, ['post_address', 'address', 'post_address_1', 'street'])
 
             // Skip totally empty garbage rows that might have slipped through
             if (postTitle === 'Untitled Range' && !city && !province) {
