@@ -4,9 +4,9 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react' // Added useEffect
 import { useRouter } from 'next/navigation'
-import { signUp } from '@/lib/auth'
+// import { signUp } from '@/lib/auth' // Removed
 import { createClient } from '@/lib/supabase/client'
 
 export default function SignUpPage() {
@@ -47,11 +47,17 @@ export default function SignUpPage() {
     setLoading(true)
 
     try {
-      await signUp(
-        formData.email,
-        formData.password,
-        formData.fullName
-      )
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName
+          }
+        }
+      })
+
+      if (error) throw error
 
       // Success! Check email for verification
       alert('Success! Please check your email to verify your account.')
@@ -62,6 +68,20 @@ export default function SignUpPage() {
       setLoading(false)
     }
   }
+
+  // Check if already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        console.log('User already logged in', session)
+        // Optional: Redirect to dashboard if logged in?
+        // router.push('/admin/dashboard')
+        // For now, let's just Log it so we know.
+      }
+    }
+    checkSession()
+  }, [])
 
   const handleGoogleSignIn = async () => {
     setError('')
