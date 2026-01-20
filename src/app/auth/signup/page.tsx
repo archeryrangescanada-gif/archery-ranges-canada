@@ -1,16 +1,17 @@
-// src/app/auth/signup/page.tsx
 'use client'
 
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react' // Added useEffect
-import { useRouter } from 'next/navigation'
-// import { signUp } from '@/lib/auth' // Removed
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SignUpPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan')
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -21,6 +22,19 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false)
 
   const supabase = createClient()
+
+  // Check if already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        console.log('User already logged in', session)
+        // Optional: Redirect to dashboard if logged in?
+        // router.push('/admin/dashboard')
+      }
+    }
+    checkSession()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -69,27 +83,20 @@ export default function SignUpPage() {
     }
   }
 
-  // Check if already logged in
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        console.log('User already logged in', session)
-        // Optional: Redirect to dashboard if logged in?
-        // router.push('/admin/dashboard')
-        // For now, let's just Log it so we know.
-      }
-    }
-    checkSession()
-  }, [])
-
   const handleGoogleSignIn = async () => {
     setError('')
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const redirectTo = new URL(`${window.location.origin}/api/auth/callback`)
+      if (plan) redirectTo.searchParams.set('plan', plan)
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectTo.toString(),
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       })
       if (error) {
@@ -103,10 +110,13 @@ export default function SignUpPage() {
   const handleFacebookSignIn = async () => {
     setError('')
     try {
+      const redirectTo = new URL(`${window.location.origin}/api/auth/callback`)
+      if (plan) redirectTo.searchParams.set('plan', plan)
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectTo.toString(),
         },
       })
       if (error) {

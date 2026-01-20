@@ -7,10 +7,12 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') || '/dashboard'
+  const plan = searchParams.get('plan') // Capture plan
 
   console.log('📍 API Auth callback params:', {
     hasCode: !!code,
     next,
+    plan,
     origin,
     fullUrl: request.url
   })
@@ -50,7 +52,9 @@ export async function GET(request: Request) {
           return NextResponse.redirect(`${origin}/dashboard`)
         } else {
           console.log('↗️ Redirecting to onboarding (new user)')
-          return NextResponse.redirect(`${origin}/dashboard/onboarding`)
+          const redirectUrl = new URL(`${origin}/dashboard/onboarding`)
+          if (plan) redirectUrl.searchParams.set('plan', plan)
+          return NextResponse.redirect(redirectUrl)
         }
       }
     } catch (err) {
