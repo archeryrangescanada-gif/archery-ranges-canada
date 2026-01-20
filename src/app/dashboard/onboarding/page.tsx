@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseClient as supabase } from '@/lib/auth'
 import Link from 'next/link'
 import { Check, ArrowRight, ArrowLeft, Building2, Phone, Image, CreditCard, Search, Plus, MapPin, ChevronRight, Star } from 'lucide-react'
@@ -55,6 +55,7 @@ const provinces = [
 
 export default function OnboardingPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [mode, setMode] = useState<Mode>('choose')
   const [currentStep, setCurrentStep] = useState<Step>('business')
@@ -90,6 +91,14 @@ export default function OnboardingPage() {
   const updateField = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
+
+  // Pre-select plan if passed in URL
+  useEffect(() => {
+    const planParam = searchParams.get('plan')
+    if (planParam && ['basic', 'pro', 'premium'].includes(planParam)) {
+      setFormData(prev => ({ ...prev, selectedPlan: planParam as any }))
+    }
+  }, [searchParams])
 
   const currentStepIndex = steps.findIndex(s => s.id === currentStep)
 
