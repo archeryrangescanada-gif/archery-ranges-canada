@@ -113,8 +113,8 @@ export default function ListingsPage() {
           created_at,
           city_id,
           province_id,
-          city:cities(name),
-          province:provinces(name)
+          cities(name),
+          provinces(name)
         `)
         .order('created_at', { ascending: false })
 
@@ -122,21 +122,38 @@ export default function ListingsPage() {
 
       if (error) throw error
 
-      const rangeData = data as RangeWithRelations[]
-      const formattedData: Listing[] = rangeData.map(item => ({
-        id: item.id,
-        name: item.name,
-        city: item.cities?.name || 'Unknown',
-        province: item.provinces?.name || 'Unknown',
-        city_id: item.city_id,
-        province_id: item.province_id,
-        status: item.status || 'active',
-        is_premium: item.is_premium || false,
-        is_featured: item.is_featured || false,
-        claimed: item.is_claimed || false,
-        views_count: item.views_count ?? 0,
-        created_at: item.created_at
-      }))
+      const rangeData = data as any[]
+      console.log('Admin Listings Raw Data:', rangeData[0]) // Debug first item
+
+      const formattedData: Listing[] = rangeData.map(item => {
+        // Handle explicit nulls or missing relations
+        const cityObj = item.cities
+        const provinceObj = item.provinces
+
+        // Supabase can return arrays for relations sometimes
+        const cityName = Array.isArray(cityObj)
+          ? cityObj[0]?.name
+          : cityObj?.name
+
+        const provinceName = Array.isArray(provinceObj)
+          ? provinceObj[0]?.name
+          : provinceObj?.name
+
+        return {
+          id: item.id,
+          name: item.name,
+          city: cityName || 'Unknown',
+          province: provinceName || 'Unknown',
+          city_id: item.city_id,
+          province_id: item.province_id,
+          status: item.status || 'active',
+          is_premium: item.is_premium || false,
+          is_featured: item.is_featured || false,
+          claimed: item.is_claimed || false,
+          views_count: item.views_count ?? 0,
+          created_at: item.created_at
+        }
+      })
 
       setListings(formattedData)
     } catch (error) {
