@@ -92,11 +92,22 @@ export default function OnboardingPage() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  // Pre-select plan if passed in URL
+  // Pre-select plan if passed in URL or Cookie
   useEffect(() => {
     const planParam = searchParams.get('plan')
+
+    // 1. Try URL Param
     if (planParam && ['basic', 'pro', 'premium'].includes(planParam)) {
       setFormData(prev => ({ ...prev, selectedPlan: planParam as any }))
+      return
+    }
+
+    // 2. Try Cookie Fallback
+    const match = document.cookie.match(new RegExp('(^| )signup_plan=([^;]+)'))
+    const cookiePlan = match ? match[2] : null
+
+    if (cookiePlan && ['basic', 'pro', 'premium'].includes(cookiePlan)) {
+      setFormData(prev => ({ ...prev, selectedPlan: cookiePlan as any }))
     }
   }, [searchParams])
 

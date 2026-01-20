@@ -60,6 +60,11 @@ export default function SignUpPage() {
 
     setLoading(true)
 
+    // Set cookie for plan persistence (Email flow)
+    if (plan) {
+      document.cookie = `signup_plan=${plan}; path=/; max-age=3600`
+    }
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
