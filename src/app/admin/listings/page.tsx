@@ -183,6 +183,26 @@ export default function ListingsPage() {
     return true
   })
 
+  const parseCurrency = (value: any): number | null => {
+    if (!value) return null
+    if (typeof value === 'number') return value
+
+    // Convert "Free" to 0
+    if (typeof value === 'string' && value.toLowerCase().includes('free')) return 0
+
+    // Extract first number from strings like "$50 (Adult)" or "$5/round"
+    const match = value.toString().match(/(\d+(\.\d+)?)/)
+    return match ? parseFloat(match[0]) : null
+  }
+
+  const parseBoolean = (value: any): boolean => {
+    if (!value) return false
+    if (typeof value === 'boolean') return value
+    const s = value.toString().toLowerCase().trim()
+    // Check for varying truthy formats
+    return ['yes', 'true', '1', 'y', 'available'].some(t => s.includes(t))
+  }
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -194,12 +214,45 @@ export default function ListingsPage() {
       skipEmptyLines: true,
       complete: async (results) => {
         try {
+          // Transform and Clean Data Logic
+          const transformedData = results.data.map((row: any) => {
+            // Map alternate column names
+            const postTitle = row.post_title || row.name || 'Untitled Range'
+            const city = row.post_city || row.city
+            const province = row.post_region || row.province || row.region
+            const address = row.post_address || row.address
+
+            return {
+              ...row,
+              post_title: postTitle,
+              post_city: city,
+              post_region: province,
+              post_address: address,
+
+              // Clean Boolean Fields (Postgres fails on "Yes")
+              has_pro_shop: parseBoolean(row.has_pro_shop),
+              has_3d_course: parseBoolean(row.has_3d_course),
+              has_field_course: parseBoolean(row.has_field_course),
+              equipment_rental_available: parseBoolean(row.equipment_rental_available),
+              lessons_available: parseBoolean(row.lessons_available),
+              membership_required: parseBoolean(row.membership_required),
+
+              // Clean Numeric Fields (Postgres fails on "$50")
+              membership_price_adult: parseCurrency(row.membership_price_adult),
+              drop_in_price: parseCurrency(row.drop_in_price),
+              range_length_yards: row.range_length_yards ? parseInt(row.range_length_yards) : null,
+              number_of_lanes: row.number_of_lanes ? parseInt(row.number_of_lanes) : null,
+            }
+          })
+
+          console.log('Processed Import Data:', transformedData[0]) // Debug first row
+
           const response = await fetch('/api/admin/listings/import', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ranges: results.data }),
+            body: JSON.stringify({ ranges: transformedData }),
           })
 
           const data = await response.json()
@@ -208,7 +261,7 @@ export default function ListingsPage() {
             throw new Error(data.details || data.error || 'Import failed')
           }
 
-          alert(`Import complete!\nSuccess: ${data.success}\nFailed: ${data.failed}\nErrors:\n${data.errors.join('\n')}`)
+          alert(`Import complete!\nSuccess: ${data.success}\nFailed: ${data.failed}\nErrors:\n${data.errors.slice(0, 10).join('\n')}${data.errors.length > 10 ? '\n...and more' : ''}`)
           fetchListings() // Refresh list
         } catch (error: any) {
           console.error('Import error:', error)
