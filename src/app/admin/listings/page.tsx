@@ -183,6 +183,40 @@ export default function ListingsPage() {
     return true
   })
 
+  // Helper Helpers
+  const stripBOM = (str: string) => str.replace(/^\uFEFF/, '')
+
+  const cleanFloat = (val: any): number | null => {
+    if (!val) return null
+    if (typeof val === 'number') return val
+    if (typeof val === 'string') {
+      const s = val.trim().toLowerCase()
+      if (s === 'n/a' || s === '') return null
+      const casted = parseFloat(s)
+      return isNaN(casted) ? null : casted
+    }
+    return null
+  }
+
+  const cleanInt = (val: any): number | null => {
+    if (!val) return null
+    const f = cleanFloat(val)
+    return f !== null ? Math.round(f) : null
+  }
+
+  // Find value in row by fuzzy key match
+  const getValue = (row: any, keys: string[]) => {
+    const rowKeys = Object.keys(row)
+    for (const target of keys) {
+      // Direct match
+      if (row[target]) return row[target]
+      // Case insensitive match
+      const foundKey = rowKeys.find(k => k.toLowerCase().trim() === target.toLowerCase())
+      if (foundKey && row[foundKey]) return row[foundKey]
+    }
+    return null
+  }
+
   const parseCurrency = (value: any): number | null => {
     if (!value) return null
     if (typeof value === 'number') return value
@@ -212,55 +246,65 @@ export default function ListingsPage() {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      transformHeader: (h) => h.toLowerCase().trim().replace(/^"|"$/g, ''), // Normalize headers
+      transformHeader: (h) => stripBOM(h).toLowerCase().trim().replace(/^"|"$/g, ''),
       complete: async (results) => {
         try {
+          // Debugging: Log Raw Keys of first row
+          if (results.data.length > 0) {
+            console.log('CSV Raw Keys (Row 1):', Object.keys(results.data[0] as object))
+          }
+
           // Transform and Clean Data Logic
           const transformedData = results.data.map((row: any) => {
-            // Map keys using normalized headers
-            // CSV might use 'name' or 'post_title'
-            const postTitle = row.post_title || row.name || 'Untitled Range'
-            const city = row.post_city || row.city
-            const province = row.post_region || row.province || row.region
-            const address = row.post_address || row.address || row.post_address_1
+            // Robust Key Lookup
+            const postTitle = getValue(row, ['post_title', 'name', 'title', 'range_name']) || 'Untitled Range'
+            const city = getValue(row, ['post_city', 'city', 'town'])
+            const province = getValue(row, ['post_region', 'province', 'region', 'prov'])
+            const address = getValue(row, ['post_address', 'address', 'post_address_1'])
 
-            // Construct STRICT object to avoid sending garbage columns
+            // Skip totally empty garbage rows that might have slipped through
+            if (postTitle === 'Untitled Range' && !city && !province) {
+              return null
+            }
+
             return {
               post_title: postTitle,
               post_city: city,
               post_region: province,
               post_address: address,
-              post_zip: row.post_zip,
-              post_latitude: row.post_latitude,
-              post_longitude: row.post_longitude,
-              phone: row.phone || row.phone_number,
-              email: row.email,
-              website: row.website,
-              post_content: row.post_content || row.description,
-              post_tags: row.post_tags,
-              business_hours: row.business_hours,
 
-              // Clean Boolean Fields (Postgres fails on "Yes" or random text)
-              has_pro_shop: parseBoolean(row.has_pro_shop),
-              has_3d_course: parseBoolean(row.has_3d_course),
-              has_field_course: parseBoolean(row.has_field_course),
-              equipment_rental_available: parseBoolean(row.equipment_rental_available),
-              lessons_available: parseBoolean(row.lessons_available),
-              membership_required: parseBoolean(row.membership_required),
-              accessibility: parseBoolean(row.accessibility),
-              parking_available: parseBoolean(row.parking_available),
+              post_zip: getValue(row, ['post_zip', 'zip', 'postal_code']),
+              post_latitude: cleanFloat(getValue(row, ['post_latitude', 'latitude', 'lat'])),
+              post_longitude: cleanFloat(getValue(row, ['post_longitude', 'longitude', 'long', 'lng'])),
 
-              // Clean Numeric Fields (Postgres fails on "$50")
-              membership_price_adult: parseCurrency(row.membership_price_adult),
-              drop_in_price: parseCurrency(row.drop_in_price),
-              range_length_yards: row.range_length_yards ? parseInt(row.range_length_yards) : null,
-              number_of_lanes: row.number_of_lanes ? parseInt(row.number_of_lanes) : null,
+              phone: getValue(row, ['phone', 'phone_number']),
+              email: getValue(row, ['email']),
+              website: getValue(row, ['website', 'url']),
+              post_content: getValue(row, ['post_content', 'description', 'notes']),
+              post_tags: getValue(row, ['post_tags', 'tags']),
+              business_hours: getValue(row, ['business_hours', 'hours']),
 
-              facility_type: row.facility_type || 'Indoor',
-              bow_types_allowed: row.bow_types_allowed,
-              lesson_price_range: row.lesson_price_range
+              // Clean Boolean Fields
+              has_pro_shop: parseBoolean(getValue(row, ['has_pro_shop', 'pro_shop'])),
+              has_3d_course: parseBoolean(getValue(row, ['has_3d_course', '3d_course'])),
+              has_field_course: parseBoolean(getValue(row, ['has_field_course', 'field_course'])),
+              equipment_rental_available: parseBoolean(getValue(row, ['equipment_rental_available', 'rentals'])),
+              lessons_available: parseBoolean(getValue(row, ['lessons_available', 'lessons'])),
+              membership_required: parseBoolean(getValue(row, ['membership_required', 'membership'])),
+              accessibility: parseBoolean(getValue(row, ['accessibility', 'accessible'])),
+              parking_available: parseBoolean(getValue(row, ['parking_available', 'parking'])),
+
+              // Clean Numeric Fields
+              membership_price_adult: parseCurrency(getValue(row, ['membership_price_adult', 'membership_price'])),
+              drop_in_price: parseCurrency(getValue(row, ['drop_in_price', 'drop_in'])),
+              range_length_yards: cleanInt(getValue(row, ['range_length_yards', 'length_yards', 'distance'])),
+              number_of_lanes: cleanInt(getValue(row, ['number_of_lanes', 'lanes'])),
+
+              facility_type: getValue(row, ['facility_type', 'type']) || 'Indoor',
+              bow_types_allowed: getValue(row, ['bow_types_allowed', 'bow_types']),
+              lesson_price_range: getValue(row, ['lesson_price_range'])
             }
-          })
+          }).filter(r => r !== null) // Filter out nulls (garbage rows)
 
           console.log('Processed Import Data (Row 1):', transformedData[0])
 
