@@ -212,40 +212,57 @@ export default function ListingsPage() {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
+      transformHeader: (h) => h.toLowerCase().trim().replace(/^"|"$/g, ''), // Normalize headers
       complete: async (results) => {
         try {
           // Transform and Clean Data Logic
           const transformedData = results.data.map((row: any) => {
-            // Map alternate column names
+            // Map keys using normalized headers
+            // CSV might use 'name' or 'post_title'
             const postTitle = row.post_title || row.name || 'Untitled Range'
             const city = row.post_city || row.city
             const province = row.post_region || row.province || row.region
-            const address = row.post_address || row.address
+            const address = row.post_address || row.address || row.post_address_1
 
+            // Construct STRICT object to avoid sending garbage columns
             return {
-              ...row,
               post_title: postTitle,
               post_city: city,
               post_region: province,
               post_address: address,
+              post_zip: row.post_zip,
+              post_latitude: row.post_latitude,
+              post_longitude: row.post_longitude,
+              phone: row.phone || row.phone_number,
+              email: row.email,
+              website: row.website,
+              post_content: row.post_content || row.description,
+              post_tags: row.post_tags,
+              business_hours: row.business_hours,
 
-              // Clean Boolean Fields (Postgres fails on "Yes")
+              // Clean Boolean Fields (Postgres fails on "Yes" or random text)
               has_pro_shop: parseBoolean(row.has_pro_shop),
               has_3d_course: parseBoolean(row.has_3d_course),
               has_field_course: parseBoolean(row.has_field_course),
               equipment_rental_available: parseBoolean(row.equipment_rental_available),
               lessons_available: parseBoolean(row.lessons_available),
               membership_required: parseBoolean(row.membership_required),
+              accessibility: parseBoolean(row.accessibility),
+              parking_available: parseBoolean(row.parking_available),
 
               // Clean Numeric Fields (Postgres fails on "$50")
               membership_price_adult: parseCurrency(row.membership_price_adult),
               drop_in_price: parseCurrency(row.drop_in_price),
               range_length_yards: row.range_length_yards ? parseInt(row.range_length_yards) : null,
               number_of_lanes: row.number_of_lanes ? parseInt(row.number_of_lanes) : null,
+
+              facility_type: row.facility_type || 'Indoor',
+              bow_types_allowed: row.bow_types_allowed,
+              lesson_price_range: row.lesson_price_range
             }
           })
 
-          console.log('Processed Import Data:', transformedData[0]) // Debug first row
+          console.log('Processed Import Data (Row 1):', transformedData[0])
 
           const response = await fetch('/api/admin/listings/import', {
             method: 'POST',
@@ -511,7 +528,7 @@ export default function ListingsPage() {
       </div>
 
       {/* ... Existing Filters and Table ... */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      < div className="bg-white rounded-lg shadow p-6 mb-6" >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -552,7 +569,7 @@ export default function ListingsPage() {
             <option value="New Brunswick">New Brunswick</option>
           </select>
         </div>
-      </div>
+      </div >
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
@@ -670,116 +687,120 @@ export default function ListingsPage() {
       </div>
 
       {/* Bulk Delete Modal */}
-      {showBulkDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            {/* ... existing modal content ... */}
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Trash2 className="text-red-600 w-6 h-6" />
-                Bulk Delete Listings
-              </h2>
-              <button onClick={() => setShowBulkDelete(false)} className="text-gray-500 hover:text-gray-700">
-                Close
-              </button>
-            </div>
-            {/* ... */}
-            <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-lg">
-              <h3 className="font-bold text-red-800 mb-2">Danger Zone</h3>
-              <p className="text-red-700 text-sm mb-4">Actions here are irreversible. Confirm carefully.</p>
-              <button
-                onClick={() => handleBulkDelete('all')}
-                className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded flex items-center justify-center gap-2"
-              >
-                <Trash2 className="w-5 h-5" />
-                DELETE ALL LISTINGS ({listings.length})
-              </button>
-            </div>
+      {
+        showBulkDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+              {/* ... existing modal content ... */}
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <Trash2 className="text-red-600 w-6 h-6" />
+                  Bulk Delete Listings
+                </h2>
+                <button onClick={() => setShowBulkDelete(false)} className="text-gray-500 hover:text-gray-700">
+                  Close
+                </button>
+              </div>
+              {/* ... */}
+              <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-lg">
+                <h3 className="font-bold text-red-800 mb-2">Danger Zone</h3>
+                <p className="text-red-700 text-sm mb-4">Actions here are irreversible. Confirm carefully.</p>
+                <button
+                  onClick={() => handleBulkDelete('all')}
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-5 h-5" />
+                  DELETE ALL LISTINGS ({listings.length})
+                </button>
+              </div>
 
-            <h3 className="font-semibold text-gray-800 mb-4">Delete by Location</h3>
-            <div className="space-y-4">
-              {getStats().map(prov => (
-                <div key={prov.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-2">
-                      {prov.cities.length > 0 && (
-                        <button
-                          onClick={() => toggleProvince(prov.id)}
-                          className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                          {expandedProvinces.has(prov.id) ? (
-                            <div className="transform rotate-180">▼</div>
-                          ) : (
-                            <div>▶</div>
-                          )}
-                        </button>
-                      )}
-                      <span className="font-bold text-gray-900">{prov.name}</span>
-                      <span className="text-sm text-gray-500">({prov.count} listings)</span>
-                    </div>
-                    <button
-                      onClick={() => handleBulkDelete('province', prov.id, prov.name)}
-                      className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200"
-                    >
-                      Delete Entire Province
-                    </button>
-                  </div>
-
-                  {prov.cities.length > 0 && expandedProvinces.has(prov.id) && (
-                    <div className="ml-8 pl-4 border-l-2 border-gray-100 space-y-2 mt-2">
-                      {prov.cities.map(city => (
-                        <div key={city.id} className="flex justify-between items-center text-sm">
-                          <span className="text-gray-600">{city.name} ({city.count})</span>
+              <h3 className="font-semibold text-gray-800 mb-4">Delete by Location</h3>
+              <div className="space-y-4">
+                {getStats().map(prov => (
+                  <div key={prov.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-2">
+                        {prov.cities.length > 0 && (
                           <button
-                            onClick={() => handleBulkDelete('city', city.id, city.name)}
-                            className="text-xs text-red-600 hover:text-red-800 underline"
+                            onClick={() => toggleProvince(prov.id)}
+                            className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600 transition-colors"
                           >
-                            Delete City
+                            {expandedProvinces.has(prov.id) ? (
+                              <div className="transform rotate-180">▼</div>
+                            ) : (
+                              <div>▶</div>
+                            )}
                           </button>
-                        </div>
-                      ))}
+                        )}
+                        <span className="font-bold text-gray-900">{prov.name}</span>
+                        <span className="text-sm text-gray-500">({prov.count} listings)</span>
+                      </div>
+                      <button
+                        onClick={() => handleBulkDelete('province', prov.id, prov.name)}
+                        className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200"
+                      >
+                        Delete Entire Province
+                      </button>
                     </div>
-                  )}
-                </div>
-              ))}
-              {getStats().length === 0 && <p className="text-gray-500 italic">No listings found to organize.</p>}
+
+                    {prov.cities.length > 0 && expandedProvinces.has(prov.id) && (
+                      <div className="ml-8 pl-4 border-l-2 border-gray-100 space-y-2 mt-2">
+                        {prov.cities.map(city => (
+                          <div key={city.id} className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">{city.name} ({city.count})</span>
+                            <button
+                              onClick={() => handleBulkDelete('city', city.id, city.name)}
+                              className="text-xs text-red-600 hover:text-red-800 underline"
+                            >
+                              Delete City
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {getStats().length === 0 && <p className="text-gray-500 italic">No listings found to organize.</p>}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* AI Import Modal */}
-      {showAIModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Star className="text-purple-600" />
-              AI Auto-Import
-            </h2>
-            <p className="text-gray-600 mb-6">Paste a business website URL or Google Maps link. Gemini will auto-extract the details.</p>
+      {
+        showAIModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-xl p-8 max-w-md w-full">
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Star className="text-purple-600" />
+                AI Auto-Import
+              </h2>
+              <p className="text-gray-600 mb-6">Paste a business website URL or Google Maps link. Gemini will auto-extract the details.</p>
 
-            <input
-              type="url"
-              placeholder="https://example.com"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-purple-500 outline-none text-black placeholder:text-gray-500"
-              style={{ color: 'black' }}
-              value={aiUrl}
-              onChange={(e) => setAiUrl(e.target.value)}
-            />
+              <input
+                type="url"
+                placeholder="https://example.com"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-purple-500 outline-none text-black placeholder:text-gray-500"
+                style={{ color: 'black' }}
+                value={aiUrl}
+                onChange={(e) => setAiUrl(e.target.value)}
+              />
 
-            <div className="flex justify-end gap-3">
-              <button onClick={() => setShowAIModal(false)} className="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
-              <button
-                onClick={handleAiExtract}
-                disabled={aiLoading}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
-              >
-                {aiLoading ? 'Analyzing...' : 'Extract & Create'}
-              </button>
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setShowAIModal(false)} className="px-4 py-2 text-gray-500 hover:text-gray-700">Cancel</button>
+                <button
+                  onClick={handleAiExtract}
+                  disabled={aiLoading}
+                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {aiLoading ? 'Analyzing...' : 'Extract & Create'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   )
 }
