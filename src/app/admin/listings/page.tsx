@@ -212,7 +212,7 @@ export default function ListingsPage() {
       if (row[target]) return row[target]
       // Case insensitive match
       const foundKey = rowKeys.find(k => k.toLowerCase().trim() === target.toLowerCase())
-      if (foundKey && row[foundKey]) return row[foundKey]
+      if (foundKey && row[foundKey] !== undefined) return row[foundKey]
     }
     return null
   }
@@ -253,9 +253,9 @@ export default function ListingsPage() {
           if (results.data.length > 0) {
             const firstRow = results.data[0] as object
             const keys = Object.keys(firstRow)
-            console.log('CSV Raw Keys (Row 1):', keys)
             // ALERT THE USER TO DEBUG
-            alert(`DEBUG: Found Columns: \n${keys.join(', ')}\n\nFirst Row Name Value: ${JSON.stringify(getValue(firstRow, ['post_title', 'name', 'title', 'range_name']))}`)
+            const titleFound = getValue(firstRow, ['post_title', 'name', 'title', 'range_name', 'club', 'organization'])
+            alert(`DEBUG: Scanning CSV Columns...\n\nFound Keys: ${keys.join(', ')}\n\nLooking for 'name'/'title'... Found: "${titleFound}"\n\nIf this says "undefined" or "Untitled Range", the column name is wrong!`)
           }
 
           // Transform and Clean Data Logic
