@@ -248,17 +248,35 @@ export default function OnboardingPage() {
     return newCity.id
   }
 
+  // Check for session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        console.log('No session on mount, redirecting...')
+        router.push('/auth/login')
+      }
+    }
+    checkSession()
+  }, [])
+
+
   const handleSubmit = async () => {
     setLoading(true)
     setError('')
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      // Use getSession instead of getUser for better performance/reliability here
+      // RLS will enforce security on the insert anyway
+      const { data: { session } } = await supabase.auth.getSession()
 
-      if (!user) {
+      if (!session?.user) {
+        console.error('No session found during submit')
         router.push('/auth/login')
         return
       }
+
+      const user = session.user
 
       const provinceId = await findProvince(formData.province)
 
