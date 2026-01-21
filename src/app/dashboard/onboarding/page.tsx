@@ -94,20 +94,38 @@ export default function OnboardingPage() {
 
   // Pre-select plan if passed in URL or Cookie
   useEffect(() => {
+    const mapPlanId = (id: string | null) => {
+      if (!id) return null
+
+      const normalized = id.toLowerCase()
+
+      // Direct match
+      if (['basic', 'pro', 'premium'].includes(normalized)) return normalized as any
+
+      // Mapping from pricing page values -> onboarding IDs
+      if (normalized === 'silver') return 'basic'
+      if (normalized === 'gold') return 'pro'
+      if (normalized === 'platinum') return 'premium'
+
+      return null
+    }
+
     const planParam = searchParams.get('plan')
+    const mappedUrlPlan = mapPlanId(planParam)
 
     // 1. Try URL Param
-    if (planParam && ['basic', 'pro', 'premium'].includes(planParam)) {
-      setFormData(prev => ({ ...prev, selectedPlan: planParam as any }))
+    if (mappedUrlPlan) {
+      setFormData(prev => ({ ...prev, selectedPlan: mappedUrlPlan }))
       return
     }
 
     // 2. Try Cookie Fallback
     const match = document.cookie.match(new RegExp('(^| )signup_plan=([^;]+)'))
     const cookiePlan = match ? match[2] : null
+    const mappedCookiePlan = mapPlanId(cookiePlan)
 
-    if (cookiePlan && ['basic', 'pro', 'premium'].includes(cookiePlan)) {
-      setFormData(prev => ({ ...prev, selectedPlan: cookiePlan as any }))
+    if (mappedCookiePlan) {
+      setFormData(prev => ({ ...prev, selectedPlan: mappedCookiePlan }))
     }
   }, [searchParams])
 
