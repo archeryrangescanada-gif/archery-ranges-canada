@@ -112,5 +112,9 @@ export async function middleware(request: NextRequest) {
 
 // Configure which routes use this middleware
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: [
+    '/admin/:path*',
+    '/dashboard/:path*',
+    '/auth/:path*'
+  ],
 }
