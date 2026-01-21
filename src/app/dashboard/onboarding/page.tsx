@@ -278,6 +278,17 @@ export default function OnboardingPage() {
 
       const user = session.user
 
+      // Map frontend plan names (Silver/Gold/Platinum) to legacy DB enum values (Basic/Pro/Premium)
+      // This fixes the "invalid input value for enum subscription_tier" error
+      const dbPlanMap: Record<string, string> = {
+        'silver': 'basic',
+        'gold': 'pro',
+        'platinum': 'premium',
+        'free': 'free'
+      }
+
+      const dbTier = dbPlanMap[formData.selectedPlan.toLowerCase()] || 'free'
+
       const provinceId = await findProvince(formData.province)
 
       if (!provinceId) {
@@ -308,7 +319,7 @@ export default function OnboardingPage() {
           has_field_course: formData.hasFieldCourse,
           equipment_rental_available: formData.equipmentRental,
           lessons_available: formData.lessonsAvailable,
-          subscription_tier: formData.selectedPlan || 'free',
+          subscription_tier: dbTier,
           owner_id: user.id,
           slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         })

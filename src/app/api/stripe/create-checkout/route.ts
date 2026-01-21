@@ -13,11 +13,14 @@ export async function POST(request: Request) {
     })
 
     // 2. Map plan IDs to your ACTUAL Vercel Environment Variables
-    // (We map 'basic' -> 'SILVER' because that is what you saved in Vercel)
     const PRICE_IDS: Record<string, string> = {
+      silver: process.env.STRIPE_SILVER_PRICE_ID || '',
+      gold: process.env.STRIPE_GOLD_PRICE_ID || '',
+      platinum: process.env.STRIPE_PLATNIUM_PRICE_ID || '', // Note: 'PLATNIUM' matches your specific typo in Vercel
+      // Backwards compatibility if needed
       basic: process.env.STRIPE_SILVER_PRICE_ID || '',
       pro: process.env.STRIPE_GOLD_PRICE_ID || '',
-      premium: process.env.STRIPE_PLATNIUM_PRICE_ID || '', // Note: 'PLATNIUM' matches your specific typo in Vercel
+      premium: process.env.STRIPE_PLATNIUM_PRICE_ID || '',
     }
 
     const { planId, rangeId, userId, userEmail } = await request.json()
