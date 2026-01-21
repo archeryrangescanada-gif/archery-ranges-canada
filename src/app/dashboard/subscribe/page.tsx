@@ -18,44 +18,44 @@ interface Plan {
 }
 
 const plans: Record<string, Plan> = {
-  basic: {
-    id: 'basic',
-    name: 'Basic',
-    price: 29,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID || 'price_basic',
+  silver: {
+    id: 'silver',
+    name: 'Silver',
+    price: 49,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_SILVER_PRICE_ID || 'price_silver',
     features: [
-      '1 Photo',
-      'Contact Form',
+      '5 Photos',
+      'Contact Info',
+      'Social Links',
       'Basic Analytics',
-      'Featured Badge',
-      'Email Support',
+      'Standard Support',
     ],
   },
-  pro: {
-    id: 'pro',
-    name: 'Pro',
-    price: 79,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || 'price_pro',
+  gold: {
+    id: 'gold',
+    name: 'Gold',
+    price: 149,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_GOLD_PRICE_ID || 'price_gold',
     popular: true,
     features: [
-      '5 Photos + 1 Video',
-      'Reviews & Events',
+      'Unlimited Photos',
+      'Start Conversations',
+      'Reply to Reviews',
       'Advanced Analytics',
-      'Top Ranges Feature',
-      '48hr Support Response',
+      'Priority Support',
     ],
   },
-  premium: {
-    id: 'premium',
-    name: 'Premium',
-    price: 149,
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID || 'price_premium',
+  platinum: {
+    id: 'platinum',
+    name: 'Platinum',
+    price: 399,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PLATNIUM_PRICE_ID || 'price_platinum',
     features: [
-      'Unlimited Photos & Videos',
-      'Homepage Feature',
-      'Social Media Promotion',
-      'Custom Design Options',
-      '24hr Phone Support',
+      'Everything in Gold',
+      'Pinned Top Search',
+      'Home Page Hero',
+      'Waiver System',
+      '24/7 Support',
     ],
   },
 }
@@ -64,10 +64,10 @@ export default function SubscribePage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const supabase = createClient()
-  
+
   const planId = searchParams.get('plan') as keyof typeof plans
   const rangeId = searchParams.get('range')
-  
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [range, setRange] = useState<{ id: string; name: string } | null>(null)
@@ -92,7 +92,7 @@ export default function SubscribePage() {
           .select('id, name')
           .eq('id', rangeId)
           .single()
-        
+
         if (rangeData) {
           setRange(rangeData)
         }
@@ -145,7 +145,7 @@ export default function SubscribePage() {
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8 max-w-md text-center">
           <h1 className="text-2xl font-bold text-stone-800 mb-4">Invalid Plan</h1>
           <p className="text-stone-600 mb-6">The selected plan is not valid.</p>
-          <Link 
+          <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700"
           >
@@ -162,7 +162,7 @@ export default function SubscribePage() {
       {/* Header */}
       <div className="bg-white border-b border-stone-200">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <Link 
+          <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 text-stone-600 hover:text-stone-800 mb-4"
           >
@@ -179,7 +179,7 @@ export default function SubscribePage() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="grid md:grid-cols-2 gap-8">
-          
+
           {/* Plan Summary */}
           <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
             <div className="flex items-center justify-between mb-6">

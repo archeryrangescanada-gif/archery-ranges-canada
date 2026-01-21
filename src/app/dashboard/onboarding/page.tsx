@@ -96,17 +96,8 @@ export default function OnboardingPage() {
   useEffect(() => {
     const mapPlanId = (id: string | null) => {
       if (!id) return null
-
       const normalized = id.toLowerCase()
-
-      // Direct match
-      if (['basic', 'pro', 'premium'].includes(normalized)) return normalized as any
-
-      // Mapping from pricing page values -> onboarding IDs
-      if (normalized === 'silver') return 'basic'
-      if (normalized === 'gold') return 'pro'
-      if (normalized === 'platinum') return 'premium'
-
+      if (['silver', 'gold', 'platinum'].includes(normalized)) return normalized as any
       return null
     }
 
@@ -909,26 +900,26 @@ export default function OnboardingPage() {
               <div className="space-y-4">
                 {[
                   {
-                    id: 'basic',
-                    name: 'Basic',
+                    id: 'silver',
+                    name: 'Silver',
                     price: '$49',
                     period: '/month',
-                    features: ['1 Photo', 'Contact Form', 'Analytics', 'Featured Badge', 'Email Support'],
+                    features: ['5 Photos', 'Contact Info', 'Social Links', 'Basic Analytics', 'Standard Support'],
                   },
                   {
-                    id: 'pro',
-                    name: 'Pro',
-                    price: '$79',
-                    period: '/month',
-                    popular: true,
-                    features: ['5 Photos + 1 Video', 'Reviews & Events', 'Advanced Analytics', 'Top Ranges Feature', '48hr Support'],
-                  },
-                  {
-                    id: 'premium',
-                    name: 'Premium',
+                    id: 'gold',
+                    name: 'Gold',
                     price: '$149',
                     period: '/month',
-                    features: ['Unlimited Photos & Videos', 'Homepage Feature', 'Social Promotion', 'Custom Design', '24hr Phone Support'],
+                    popular: true,
+                    features: ['Unlimited Photos', 'Start Conversations', 'Reply to Reviews', 'Advanced Analytics', 'Priority Support'],
+                  },
+                  {
+                    id: 'platinum',
+                    name: 'Platinum',
+                    price: '$399',
+                    period: '/month',
+                    features: ['Everything in Gold', 'Pinned Top Search', 'Home Page Hero', 'Waiver System', '24/7 Support'],
                   },
                 ].map(plan => (
                   <button
