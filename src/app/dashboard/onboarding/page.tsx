@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { supabaseClient as supabase } from '@/lib/auth'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Check, ArrowRight, ArrowLeft, Building2, Phone, Image, CreditCard, Search, Plus, MapPin, ChevronRight, Star } from 'lucide-react'
 
@@ -36,7 +36,7 @@ interface FormData {
   hasFieldCourse: boolean
   equipmentRental: boolean
   lessonsAvailable: boolean
-  selectedPlan: 'basic' | 'pro' | 'premium' | ''
+  selectedPlan: 'silver' | 'gold' | 'platinum' | ''
 }
 
 const steps: { id: Step; label: string; icon: React.ReactNode }[] = [
@@ -56,6 +56,7 @@ const provinces = [
 export default function OnboardingPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const supabase = createClient()
 
   const [mode, setMode] = useState<Mode>('choose')
   const [currentStep, setCurrentStep] = useState<Step>('business')
