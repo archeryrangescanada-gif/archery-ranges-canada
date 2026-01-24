@@ -44,6 +44,7 @@ export default function SettingsPage() {
         equipmentRental: false,
         lessonsAvailable: false,
     })
+    const [deleting, setDeleting] = useState(false)
 
     useEffect(() => {
         async function loadData() {
@@ -121,6 +122,32 @@ export default function SettingsPage() {
             setError(err.message || 'Failed to save changes')
         } finally {
             setSaving(false)
+        }
+    }
+
+    const handleDelete = async () => {
+        const confirmed = window.confirm(
+            'Are you sure you want to delete this listing? This action cannot be undone.'
+        )
+
+        if (!confirmed) return
+
+        setDeleting(true)
+        setError('')
+
+        try {
+            const { error: deleteError } = await supabase
+                .from('ranges')
+                .delete()
+                .eq('id', rangeId)
+
+            if (deleteError) throw deleteError
+
+            // Redirect to dashboard after successful deletion
+            router.push('/dashboard')
+        } catch (err: any) {
+            setError(err.message || 'Failed to delete listing')
+            setDeleting(false)
         }
     }
 
@@ -286,10 +313,12 @@ export default function SettingsPage() {
                     <div className="mt-8 pt-6 border-t border-stone-200 flex items-center justify-between">
                         <button
                             type="button"
-                            className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium"
+                            onClick={handleDelete}
+                            disabled={deleting}
+                            className="flex items-center gap-2 text-red-600 hover:text-red-700 disabled:text-stone-400 font-medium"
                         >
                             <Trash2 className="w-4 h-4" />
-                            Delete Listing
+                            {deleting ? 'Deleting...' : 'Delete Listing'}
                         </button>
 
                         <button
