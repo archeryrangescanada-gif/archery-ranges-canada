@@ -34,14 +34,27 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get plan from metadata
-    const planId = session.metadata?.planId || 'basic'
+    // Get plan from metadata and map to database tier
+    const planId = session.metadata?.planId || 'silver'
+
+    // Map Stripe plan IDs to database subscription tiers
+    const PLAN_TO_TIER: Record<string, string> = {
+      silver: 'basic',
+      gold: 'pro',
+      platinum: 'premium',
+      // Backwards compatibility
+      basic: 'basic',
+      pro: 'pro',
+      premium: 'premium',
+    }
+
+    const subscriptionTier = PLAN_TO_TIER[planId] || 'basic'
 
     // Update the range with subscription info
     const { error: updateError } = await supabaseAdmin
       .from('ranges')
       .update({
-        subscription_tier: planId,
+        subscription_tier: subscriptionTier,
         stripe_customer_id: session.customer as string,
         stripe_subscription_id: session.subscription as string,
         subscription_status: 'active',

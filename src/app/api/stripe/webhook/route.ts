@@ -30,8 +30,50 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  // Map Stripe plan IDs to database subscription tiers
+  const PLAN_TO_TIER: Record<string, string> = {
+    silver: 'basic',
+    gold: 'pro',
+    platinum: 'premium',
+    basic: 'basic',
+    pro: 'pro',
+    premium: 'premium',
+  }
+
   try {
     switch (event.type) {
+      // Handle successful checkout - apply subscription immediately
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session
+
+        if (session.payment_status === 'paid' && session.metadata?.rangeId) {
+          const rangeId = session.metadata.rangeId
+          const planId = session.metadata.planId || 'silver'
+          const subscriptionTier = PLAN_TO_TIER[planId] || 'basic'
+
+          console.log(`Checkout completed: Upgrading range ${rangeId} to ${subscriptionTier}`)
+
+          const { error } = await supabaseAdmin
+            .from('ranges')
+            .update({
+              subscription_tier: subscriptionTier,
+              stripe_customer_id: session.customer as string,
+              stripe_subscription_id: session.subscription as string,
+              subscription_status: 'active',
+              subscription_updated_at: new Date().toISOString(),
+              is_featured: subscriptionTier !== 'free', // Enable featured badge for paid tiers
+            })
+            .eq('id', rangeId)
+
+          if (error) {
+            console.error('Failed to update range subscription:', error)
+          } else {
+            console.log(`Successfully upgraded range ${rangeId} to ${subscriptionTier}`)
+          }
+        }
+        break
+      }
+
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
@@ -44,12 +86,20 @@ export async function POST(request: Request) {
           .single()
 
         if (range) {
+          // If subscription is canceled, revert to free tier
+          const updates: Record<string, any> = {
+            subscription_status: subscription.status,
+            subscription_updated_at: new Date().toISOString(),
+          }
+
+          if (subscription.status === 'canceled') {
+            updates.subscription_tier = 'free'
+            updates.is_featured = false
+          }
+
           await supabaseAdmin
             .from('ranges')
-            .update({
-              subscription_status: subscription.status,
-              subscription_updated_at: new Date().toISOString(),
-            })
+            .update(updates)
             .eq('id', range.id)
         }
         break
