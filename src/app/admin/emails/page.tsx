@@ -1,7 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { Mail, Send, Users, CheckCircle, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Mail, Send, Users, CheckCircle, AlertCircle, Building2, UserPlus, Check } from 'lucide-react'
+
+interface ListingEmail {
+  name: string
+  email: string
+}
+
+interface UserEmail {
+  id: string
+  email: string
+  first_name?: string
+  last_name?: string
+}
 
 export default function EmailsPage() {
   const [emailType, setEmailType] = useState<'single' | 'bulk'>('single')
@@ -10,6 +22,92 @@ export default function EmailsPage() {
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+
+  // Email lists
+  const [listingEmails, setListingEmails] = useState<ListingEmail[]>([])
+  const [userEmails, setUserEmails] = useState<UserEmail[]>([])
+  const [loadingEmails, setLoadingEmails] = useState(true)
+  const [selectedListings, setSelectedListings] = useState<Set<string>>(new Set())
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set())
+
+  // Fetch emails on load
+  useEffect(() => {
+    async function fetchEmails() {
+      setLoadingEmails(true)
+      try {
+        // Fetch listing emails
+        const listingsRes = await fetch('/api/admin/emails/listings')
+        if (listingsRes.ok) {
+          const listingsData = await listingsRes.json()
+          setListingEmails(listingsData.listings || [])
+        }
+
+        // Fetch user emails
+        const usersRes = await fetch('/api/admin/users/list')
+        if (usersRes.ok) {
+          const usersData = await usersRes.json()
+          setUserEmails(usersData.users || [])
+        }
+      } catch (err) {
+        console.error('Failed to fetch emails:', err)
+      } finally {
+        setLoadingEmails(false)
+      }
+    }
+    fetchEmails()
+  }, [])
+
+  const toggleListingEmail = (email: string) => {
+    const newSelected = new Set(selectedListings)
+    if (newSelected.has(email)) {
+      newSelected.delete(email)
+    } else {
+      newSelected.add(email)
+    }
+    setSelectedListings(newSelected)
+    updateRecipients(newSelected, selectedUsers)
+  }
+
+  const toggleUserEmail = (email: string) => {
+    const newSelected = new Set(selectedUsers)
+    if (newSelected.has(email)) {
+      newSelected.delete(email)
+    } else {
+      newSelected.add(email)
+    }
+    setSelectedUsers(newSelected)
+    updateRecipients(selectedListings, newSelected)
+  }
+
+  const selectAllListings = () => {
+    const allEmails = new Set(listingEmails.map(l => l.email))
+    setSelectedListings(allEmails)
+    updateRecipients(allEmails, selectedUsers)
+  }
+
+  const selectAllUsers = () => {
+    const allEmails = new Set(userEmails.map(u => u.email))
+    setSelectedUsers(allEmails)
+    updateRecipients(selectedListings, allEmails)
+  }
+
+  const clearAllListings = () => {
+    setSelectedListings(new Set())
+    updateRecipients(new Set(), selectedUsers)
+  }
+
+  const clearAllUsers = () => {
+    setSelectedUsers(new Set())
+    updateRecipients(selectedListings, new Set())
+  }
+
+  const updateRecipients = (listings: Set<string>, users: Set<string>) => {
+    const allEmails = [...Array.from(listings), ...Array.from(users)]
+    setRecipient(allEmails.join(', '))
+    if (allEmails.length > 1) {
+      setEmailType('bulk')
+    }
+  }
 
   const handleSendEmail = async () => {
     if (!recipient || !subject || !message) {
@@ -42,6 +140,8 @@ export default function EmailsPage() {
       setRecipient('')
       setSubject('')
       setMessage('')
+      setSelectedListings(new Set())
+      setSelectedUsers(new Set())
     } catch (err: any) {
       setStatus({ type: 'error', message: err.message })
     } finally {
@@ -124,18 +224,16 @@ The Archery Ranges Canada Team`,
           <div className="flex gap-2 p-1 bg-stone-100 rounded-xl mb-6">
             <button
               onClick={() => setEmailType('single')}
-              className={`flex-1 py-2 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-                emailType === 'single' ? 'bg-white shadow text-stone-900' : 'text-stone-500'
-              }`}
+              className={`flex-1 py-2 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${emailType === 'single' ? 'bg-white shadow text-stone-900' : 'text-stone-500'
+                }`}
             >
               <Mail className="w-4 h-4" />
               Single Email
             </button>
             <button
               onClick={() => setEmailType('bulk')}
-              className={`flex-1 py-2 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-                emailType === 'bulk' ? 'bg-white shadow text-stone-900' : 'text-stone-500'
-              }`}
+              className={`flex-1 py-2 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${emailType === 'bulk' ? 'bg-white shadow text-stone-900' : 'text-stone-500'
+                }`}
             >
               <Users className="w-4 h-4" />
               Bulk Email
@@ -144,11 +242,10 @@ The Archery Ranges Canada Team`,
 
           {/* Status Message */}
           {status && (
-            <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${
-              status.type === 'success'
-                ? 'bg-emerald-50 border-2 border-emerald-200 text-emerald-700'
-                : 'bg-red-50 border-2 border-red-200 text-red-700'
-            }`}>
+            <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${status.type === 'success'
+              ? 'bg-emerald-50 border-2 border-emerald-200 text-emerald-700'
+              : 'bg-red-50 border-2 border-red-200 text-red-700'
+              }`}>
               {status.type === 'success' ? (
                 <CheckCircle className="w-5 h-5" />
               ) : (
@@ -170,6 +267,11 @@ The Archery Ranges Canada Team`,
                 placeholder={emailType === 'single' ? 'user@example.com' : 'user1@example.com, user2@example.com'}
                 className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-emerald-500 outline-none text-stone-900"
               />
+              {(selectedListings.size > 0 || selectedUsers.size > 0) && (
+                <p className="text-sm text-emerald-600 mt-1">
+                  {selectedListings.size} listing(s) + {selectedUsers.size} user(s) selected
+                </p>
+              )}
             </div>
 
             <div>
@@ -205,28 +307,149 @@ The Archery Ranges Canada Team`,
           </div>
         </div>
 
-        {/* Templates Sidebar */}
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-          <h2 className="text-xl font-bold text-stone-800 mb-6">Email Templates</h2>
-          <p className="text-sm text-stone-500 mb-4">Click a template to load it into the composer.</p>
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Listing Emails */}
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-stone-800 flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-emerald-600" />
+                Listing Emails
+              </h2>
+              <span className="text-sm text-stone-500">{listingEmails.length}</span>
+            </div>
 
-          <div className="space-y-3">
-            {templates.map((template, index) => (
-              <button
-                key={index}
-                onClick={() => applyTemplate(template)}
-                className="w-full p-4 text-left bg-stone-50 hover:bg-stone-100 rounded-xl transition-colors border border-stone-200"
-              >
-                <div className="font-bold text-stone-800">{template.name}</div>
-                <div className="text-sm text-stone-500 mt-1 truncate">{template.subject}</div>
-              </button>
-            ))}
+            {loadingEmails ? (
+              <p className="text-sm text-stone-400">Loading...</p>
+            ) : listingEmails.length === 0 ? (
+              <p className="text-sm text-stone-400">No listing emails found</p>
+            ) : (
+              <>
+                <div className="flex gap-2 mb-3">
+                  <button
+                    onClick={selectAllListings}
+                    className="text-xs px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={clearAllListings}
+                    className="text-xs px-3 py-1 bg-stone-100 text-stone-600 rounded-lg hover:bg-stone-200"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div className="max-h-48 overflow-y-auto space-y-1">
+                  {listingEmails.map((listing, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => toggleListingEmail(listing.email)}
+                      className={`w-full text-left p-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${selectedListings.has(listing.email)
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-stone-50 hover:bg-stone-100 text-stone-700'
+                        }`}
+                    >
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedListings.has(listing.email)
+                        ? 'bg-emerald-500 border-emerald-500'
+                        : 'border-stone-300'
+                        }`}>
+                        {selectedListings.has(listing.email) && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                      <div className="truncate">
+                        <div className="font-medium truncate">{listing.name}</div>
+                        <div className="text-xs text-stone-500 truncate">{listing.email}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="mt-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-xl">
-            <p className="text-sm text-amber-800">
-              <strong>Note:</strong> Replace placeholders like [Name], [Range Name], [Link], etc. with actual values before sending.
-            </p>
+          {/* User Emails */}
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-stone-800 flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-blue-600" />
+                User Emails
+              </h2>
+              <span className="text-sm text-stone-500">{userEmails.length}</span>
+            </div>
+
+            {loadingEmails ? (
+              <p className="text-sm text-stone-400">Loading...</p>
+            ) : userEmails.length === 0 ? (
+              <p className="text-sm text-stone-400">No registered users found</p>
+            ) : (
+              <>
+                <div className="flex gap-2 mb-3">
+                  <button
+                    onClick={selectAllUsers}
+                    className="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={clearAllUsers}
+                    className="text-xs px-3 py-1 bg-stone-100 text-stone-600 rounded-lg hover:bg-stone-200"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div className="max-h-48 overflow-y-auto space-y-1">
+                  {userEmails.map((user) => (
+                    <button
+                      key={user.id}
+                      onClick={() => toggleUserEmail(user.email)}
+                      className={`w-full text-left p-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${selectedUsers.has(user.email)
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-stone-50 hover:bg-stone-100 text-stone-700'
+                        }`}
+                    >
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedUsers.has(user.email)
+                        ? 'bg-blue-500 border-blue-500'
+                        : 'border-stone-300'
+                        }`}>
+                        {selectedUsers.has(user.email) && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                      <div className="truncate">
+                        <div className="font-medium truncate">
+                          {user.first_name || user.last_name
+                            ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                            : 'Unknown User'}
+                        </div>
+                        <div className="text-xs text-stone-500 truncate">{user.email}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Templates */}
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+            <h2 className="text-lg font-bold text-stone-800 mb-4">Email Templates</h2>
+            <p className="text-sm text-stone-500 mb-3">Click a template to load it.</p>
+
+            <div className="space-y-2">
+              {templates.map((template, index) => (
+                <button
+                  key={index}
+                  onClick={() => applyTemplate(template)}
+                  className="w-full p-3 text-left bg-stone-50 hover:bg-stone-100 rounded-xl transition-colors border border-stone-200"
+                >
+                  <div className="font-bold text-stone-800 text-sm">{template.name}</div>
+                  <div className="text-xs text-stone-500 mt-1 truncate">{template.subject}</div>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-4 p-3 bg-amber-50 border-2 border-amber-200 rounded-xl">
+              <p className="text-xs text-amber-800">
+                <strong>Note:</strong> Replace [Name], [Range Name], etc. with actual values.
+              </p>
+            </div>
           </div>
         </div>
       </div>
