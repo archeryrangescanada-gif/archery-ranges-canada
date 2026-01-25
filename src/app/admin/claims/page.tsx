@@ -89,12 +89,16 @@ export default function ClaimsPage() {
       .order('name')
     setRanges(rangesData || [])
 
-    // Fetch users from profiles
-    const { data: usersData } = await supabase
-      .from('profiles')
-      .select('id, email, first_name, last_name')
-      .order('email')
-    setUsers(usersData || [])
+    // Fetch users via admin API (bypasses RLS)
+    try {
+      const response = await fetch('/api/admin/users/list')
+      const data = await response.json()
+      if (data.users) {
+        setUsers(data.users)
+      }
+    } catch (err) {
+      console.error('Failed to fetch users:', err)
+    }
   }
 
   const fetchDocumentUrls = async () => {
@@ -697,7 +701,7 @@ export default function ClaimsPage() {
                     >
                       <div className="font-black text-stone-900 capitalize">{plan}</div>
                       <div className="text-sm text-stone-500">
-                        {plan === 'silver' ? '$29/mo' : plan === 'gold' ? '$59/mo' : '$99/mo'}
+                        {plan === 'silver' ? '$49/mo' : plan === 'gold' ? '$149/mo' : '$399/mo'}
                       </div>
                     </button>
                   ))}
