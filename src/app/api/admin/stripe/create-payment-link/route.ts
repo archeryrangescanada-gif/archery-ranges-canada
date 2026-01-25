@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       .eq('id', user.id)
       .single()
 
-    if (!profile || !['admin_employee', 'super_admin'].includes(profile.role)) {
+    if (!profile || !['admin', 'admin_employee', 'super_admin'].includes(profile.role)) {
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
     }
 
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
       silver: process.env.STRIPE_SILVER_PRICE_ID || '',
       gold: process.env.STRIPE_GOLD_PRICE_ID || '',
       platinum: process.env.STRIPE_PLATNIUM_PRICE_ID || '',
+      legacy: process.env.STRIPE_LEGACY_PRICE_ID || '',
     }
 
     const { rangeId, planId, customerEmail } = await request.json()

@@ -19,7 +19,7 @@ export async function GET() {
       .eq('id', user.id)
       .single()
 
-    if (!profile || !['admin_employee', 'super_admin'].includes(profile.role)) {
+    if (!profile || !['admin', 'admin_employee', 'super_admin'].includes(profile.role)) {
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
     }
 

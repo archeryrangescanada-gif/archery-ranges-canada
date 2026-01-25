@@ -44,7 +44,7 @@ export default function ClaimsPage() {
   // Manual Payment State
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [paymentRangeId, setPaymentRangeId] = useState('')
-  const [paymentPlan, setPaymentPlan] = useState<'silver' | 'gold' | 'platinum'>('silver')
+  const [paymentPlan, setPaymentPlan] = useState<'silver' | 'gold' | 'platinum' | 'legacy'>('silver')
   const [paymentEmail, setPaymentEmail] = useState('')
   const [processingPayment, setProcessingPayment] = useState(false)
   const [paymentLink, setPaymentLink] = useState<string | null>(null)
@@ -304,29 +304,49 @@ export default function ClaimsPage() {
 
     setProcessingPayment(true)
     try {
+      // Map plan names to database subscription tiers
       const PLAN_TO_TIER: Record<string, string> = {
         silver: 'basic',
         gold: 'pro',
         platinum: 'premium',
+        legacy: 'premium', // Legacy maps to premium tier features
+      }
+
+      const subscriptionTier = PLAN_TO_TIER[paymentPlan] || 'basic'
+
+      // Build update object based on tier
+      const updateData: Record<string, any> = {
+        subscription_tier: subscriptionTier,
+        subscription_status: 'active',
+        subscription_updated_at: new Date().toISOString(),
+        is_featured: true,
+      }
+
+      // Enable features based on tier
+      if (subscriptionTier === 'pro' || subscriptionTier === 'premium') {
+        updateData.show_reviews = true
+        updateData.events_enabled = true
+      }
+
+      if (subscriptionTier === 'premium' || paymentPlan === 'legacy') {
+        updateData.featured_on_homepage = true
+        updateData.featured_in_top_ranges = true
       }
 
       const { error } = await supabase
         .from('ranges')
-        .update({
-          subscription_tier: PLAN_TO_TIER[paymentPlan],
-          subscription_status: 'active',
-          subscription_updated_at: new Date().toISOString(),
-          is_featured: true,
-        })
+        .update(updateData)
         .eq('id', paymentRangeId)
 
       if (error) throw error
 
-      alert(`Subscription applied! Range upgraded to ${paymentPlan} tier.`)
+      const tierDisplay = paymentPlan === 'legacy' ? 'Legacy' : paymentPlan.charAt(0).toUpperCase() + paymentPlan.slice(1)
+      alert(`Subscription applied! Range upgraded to ${tierDisplay} (${subscriptionTier} tier).`)
       setShowPaymentModal(false)
       setPaymentRangeId('')
       setPaymentEmail('')
       setPaymentLink(null)
+      setRangeSearch('')
     } catch (err: any) {
       alert('Error: ' + err.message)
     } finally {
@@ -689,20 +709,26 @@ export default function ClaimsPage() {
               {/* Select Plan */}
               <div>
                 <label className="block text-sm font-bold text-stone-700 mb-2">Select Plan</label>
-                <div className="grid grid-cols-3 gap-4">
-                  {(['silver', 'gold', 'platinum'] as const).map((plan) => (
+                <div className="grid grid-cols-2 gap-4">
+                  {([
+                    { id: 'silver' as const, name: 'Silver', price: '$49/mo' },
+                    { id: 'gold' as const, name: 'Gold', price: '$149/mo' },
+                    { id: 'platinum' as const, name: 'Platinum', price: '$399/mo' },
+                    { id: 'legacy' as const, name: 'Legacy', price: '$199.99/mo' },
+                  ]).map((plan) => (
                     <button
-                      key={plan}
-                      onClick={() => setPaymentPlan(plan)}
-                      className={`p-4 rounded-xl border-2 transition-all ${paymentPlan === plan
+                      key={plan.id}
+                      onClick={() => setPaymentPlan(plan.id)}
+                      className={`p-4 rounded-xl border-2 transition-all ${paymentPlan === plan.id
                           ? 'border-emerald-500 bg-emerald-50'
                           : 'border-stone-200 hover:border-stone-300'
                         }`}
                     >
-                      <div className="font-black text-stone-900 capitalize">{plan}</div>
-                      <div className="text-sm text-stone-500">
-                        {plan === 'silver' ? '$49/mo' : plan === 'gold' ? '$149/mo' : '$399/mo'}
-                      </div>
+                      <div className="font-black text-stone-900">{plan.name}</div>
+                      <div className="text-sm text-stone-500">{plan.price}</div>
+                      {plan.id === 'legacy' && (
+                        <div className="text-xs text-amber-600 mt-1">Admin Only</div>
+                      )}
                     </button>
                   ))}
                 </div>
