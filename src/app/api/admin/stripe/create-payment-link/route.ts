@@ -13,14 +13,9 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    // If no Supabase user and no valid admin token, reject
-    if (!user && adminToken !== 'valid-token') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // If using admin token (demo mode), allow through
-    if (!user && adminToken === 'valid-token') {
-      // Skip role check for demo admin
+    // If valid admin token, allow through (skip all other checks)
+    if (adminToken === 'valid-token') {
+      // Admin token is valid, proceed
     } else if (user) {
       // Check if user has admin role
       const { data: profile } = await supabase
@@ -32,6 +27,9 @@ export async function POST(request: Request) {
       if (!profile || !['admin', 'admin_employee', 'super_admin'].includes(profile.role)) {
         return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
       }
+    } else {
+      // No valid auth
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Initialize Stripe
