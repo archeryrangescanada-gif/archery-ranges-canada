@@ -11,8 +11,7 @@ interface ListingEmail {
 interface UserEmail {
   id: string
   email: string
-  first_name?: string
-  last_name?: string
+  full_name?: string
 }
 
 export default function EmailsPage() {
@@ -43,7 +42,7 @@ export default function EmailsPage() {
         }
 
         // Fetch user emails
-        const usersRes = await fetch('/api/admin/users/list')
+        const usersRes = await fetch('/api/admin/users')
         if (usersRes.ok) {
           const usersData = await usersRes.json()
           setUserEmails(usersData.users || [])
@@ -414,9 +413,7 @@ The Archery Ranges Canada Team`,
                       </div>
                       <div className="truncate">
                         <div className="font-medium truncate">
-                          {user.first_name || user.last_name
-                            ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
-                            : 'Unknown User'}
+                          {user.full_name || 'Unknown User'}
                         </div>
                         <div className="text-xs text-stone-500 truncate">{user.email}</div>
                       </div>

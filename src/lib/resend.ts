@@ -11,6 +11,6 @@ export const resend = process.env.RESEND_API_KEY
 
 // Email configuration
 export const EMAIL_CONFIG = {
-  from: process.env.RESEND_FROM_EMAIL || 'Archery Ranges Canada <noreply@archeryrangescanada.com>',
-  replyTo: process.env.RESEND_REPLY_TO_EMAIL || 'support@archeryrangescanada.com',
+  from: process.env.RESEND_FROM_EMAIL || 'Archery Ranges Canada <noreply@archeryrangescanada.ca>',
+  replyTo: process.env.RESEND_REPLY_TO_EMAIL || 'support@archeryrangescanada.ca',
 }
