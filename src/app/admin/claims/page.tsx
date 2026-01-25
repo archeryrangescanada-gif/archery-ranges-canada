@@ -623,6 +623,12 @@ export default function ClaimsPage() {
                   />
                 </div>
                 <div className="mt-2 max-h-40 overflow-y-auto border-2 border-stone-100 rounded-xl">
+                  {users.length === 0 && (
+                    <div className="px-4 py-3 text-stone-500 text-sm">Loading users...</div>
+                  )}
+                  {filteredUsers.length === 0 && users.length > 0 && (
+                    <div className="px-4 py-3 text-stone-500 text-sm">No users found matching "{userSearch}"</div>
+                  )}
                   {filteredUsers.slice(0, 50).map((user) => (
                     <button
                       key={user.id}
@@ -638,6 +644,19 @@ export default function ClaimsPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Selection Summary */}
+              {(selectedRangeId || selectedUserId) && (
+                <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                  <div className="text-sm font-bold text-blue-700 mb-2">Transfer Summary:</div>
+                  <div className="text-sm text-blue-900">
+                    <strong>Range:</strong> {selectedRangeId ? ranges.find(r => r.id === selectedRangeId)?.name : 'Not selected'}
+                  </div>
+                  <div className="text-sm text-blue-900">
+                    <strong>New Owner:</strong> {selectedUserId ? users.find(u => u.id === selectedUserId)?.email : 'Not selected'}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-8 flex gap-4">
@@ -650,7 +669,7 @@ export default function ClaimsPage() {
               <button
                 onClick={handleTransferClaim}
                 disabled={transferring || !selectedRangeId || !selectedUserId}
-                className="flex-1 py-4 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-2xl transition-all disabled:opacity-50"
+                className="flex-1 py-4 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {transferring ? 'Transferring...' : 'Transfer Claim'}
               </button>
