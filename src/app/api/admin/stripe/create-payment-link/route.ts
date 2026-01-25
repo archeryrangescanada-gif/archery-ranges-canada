@@ -1,26 +1,37 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 
 export async function POST(request: Request) {
   try {
-    // Verify admin user
+    // Check for admin token cookie (legacy/demo auth)
+    const cookieStore = await cookies()
+    const adminToken = cookieStore.get('admin-token')?.value
+
+    // Verify admin user via Supabase OR admin token
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) {
+    // If no Supabase user and no valid admin token, reject
+    if (!user && adminToken !== 'valid-token') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    // If using admin token (demo mode), allow through
+    if (!user && adminToken === 'valid-token') {
+      // Skip role check for demo admin
+    } else if (user) {
+      // Check if user has admin role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
 
-    if (!profile || !['admin', 'admin_employee', 'super_admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
+      if (!profile || !['admin', 'admin_employee', 'super_admin'].includes(profile.role)) {
+        return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
+      }
     }
 
     // Initialize Stripe
@@ -85,7 +96,7 @@ export async function POST(request: Request) {
         rangeId,
         planId,
         adminCreated: 'true',
-        createdBy: user.id,
+        createdBy: user?.id || 'admin-dashboard',
       },
       success_url: `${baseUrl}/dashboard/subscribe/success?session_id={CHECKOUT_SESSION_ID}&range=${rangeId}`,
       cancel_url: `${baseUrl}/dashboard/subscribe?plan=${planId}&range=${rangeId}&canceled=true`,
