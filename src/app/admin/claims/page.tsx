@@ -1,9 +1,24 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FileText } from 'lucide-react'
+import { FileText, UserPlus, CreditCard, Search, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { VerificationRequest } from '@/types/database'
+
+interface RangeBasic {
+  id: string
+  name: string
+  owner_id: string | null
+  is_claimed: boolean
+  subscription_tier: string
+}
+
+interface UserBasic {
+  id: string
+  email: string
+  first_name: string | null
+  last_name: string | null
+}
 
 export default function ClaimsPage() {
   const supabase = createClient()
@@ -16,6 +31,24 @@ export default function ClaimsPage() {
   const [licenseUrl, setLicenseUrl] = useState<string | null>(null)
   const [insuranceUrl, setInsuranceUrl] = useState<string | null>(null)
 
+  // Transfer Claim State
+  const [showTransferModal, setShowTransferModal] = useState(false)
+  const [ranges, setRanges] = useState<RangeBasic[]>([])
+  const [users, setUsers] = useState<UserBasic[]>([])
+  const [selectedRangeId, setSelectedRangeId] = useState('')
+  const [selectedUserId, setSelectedUserId] = useState('')
+  const [rangeSearch, setRangeSearch] = useState('')
+  const [userSearch, setUserSearch] = useState('')
+  const [transferring, setTransferring] = useState(false)
+
+  // Manual Payment State
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [paymentRangeId, setPaymentRangeId] = useState('')
+  const [paymentPlan, setPaymentPlan] = useState<'silver' | 'gold' | 'platinum'>('silver')
+  const [paymentEmail, setPaymentEmail] = useState('')
+  const [processingPayment, setProcessingPayment] = useState(false)
+  const [paymentLink, setPaymentLink] = useState<string | null>(null)
+
   useEffect(() => {
     fetchRequests()
   }, [])
@@ -26,11 +59,48 @@ export default function ClaimsPage() {
     }
   }, [selectedRequest, showModal])
 
+  // Fetch ranges and users when transfer modal opens
+  useEffect(() => {
+    if (showTransferModal) {
+      fetchRangesAndUsers()
+    }
+  }, [showTransferModal])
+
+  // Fetch ranges when payment modal opens
+  useEffect(() => {
+    if (showPaymentModal) {
+      fetchRanges()
+    }
+  }, [showPaymentModal])
+
+  const fetchRanges = async () => {
+    const { data } = await supabase
+      .from('ranges')
+      .select('id, name, owner_id, is_claimed, subscription_tier')
+      .order('name')
+    setRanges(data || [])
+  }
+
+  const fetchRangesAndUsers = async () => {
+    // Fetch ranges
+    const { data: rangesData } = await supabase
+      .from('ranges')
+      .select('id, name, owner_id, is_claimed, subscription_tier')
+      .order('name')
+    setRanges(rangesData || [])
+
+    // Fetch users from profiles
+    const { data: usersData } = await supabase
+      .from('profiles')
+      .select('id, email, first_name, last_name')
+      .order('email')
+    setUsers(usersData || [])
+  }
+
   const fetchDocumentUrls = async () => {
     if (!selectedRequest) return
 
     try {
-      // Generate signed URLs for the documents (valid for 1 hour)
       const { data: licenseData } = await supabase.storage
         .from('verification-documents')
         .createSignedUrl(selectedRequest.business_license_url, 3600)
@@ -49,8 +119,6 @@ export default function ClaimsPage() {
   const fetchRequests = async () => {
     setLoading(true)
     try {
-      // In a real app, we'd use a join or handle the user data properly. 
-      // For now, we fetch requests and try to get range names.
       const { data, error } = await supabase
         .from('verification_requests')
         .select(`
@@ -73,7 +141,6 @@ export default function ClaimsPage() {
 
     setProcessing(true)
     try {
-      // 1. Update request status
       const { error: reqError } = await supabase
         .from('verification_requests')
         .update({ status: 'approved' })
@@ -81,7 +148,6 @@ export default function ClaimsPage() {
 
       if (reqError) throw reqError
 
-      // 2. Update range owner
       const { error: rangeError } = await supabase
         .from('ranges')
         .update({
@@ -92,18 +158,14 @@ export default function ClaimsPage() {
 
       if (rangeError) throw rangeError
 
-      // 3. Send approval email
       try {
         await fetch('/api/admin/emails/verification-approved', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            requestId: request.id,
-          }),
+          body: JSON.stringify({ requestId: request.id }),
         })
       } catch (emailErr) {
         console.error('Failed to send approval email:', emailErr)
-        // Don't fail the approval if email fails
       }
 
       alert('Claim approved successfully! Confirmation email sent.')
@@ -134,7 +196,6 @@ export default function ClaimsPage() {
 
       if (error) throw error
 
-      // Send rejection email
       try {
         await fetch('/api/admin/emails/verification-rejected', {
           method: 'POST',
@@ -146,7 +207,6 @@ export default function ClaimsPage() {
         })
       } catch (emailErr) {
         console.error('Failed to send rejection email:', emailErr)
-        // Don't fail the rejection if email fails
       }
 
       alert('Claim denied. Notification email sent.')
@@ -160,13 +220,158 @@ export default function ClaimsPage() {
     }
   }
 
+  // Transfer claim to a user
+  const handleTransferClaim = async () => {
+    if (!selectedRangeId || !selectedUserId) {
+      alert('Please select both a range and a user.')
+      return
+    }
+
+    setTransferring(true)
+    try {
+      const { error } = await supabase
+        .from('ranges')
+        .update({
+          owner_id: selectedUserId,
+          is_claimed: true
+        })
+        .eq('id', selectedRangeId)
+
+      if (error) throw error
+
+      alert('Claim transferred successfully!')
+      setShowTransferModal(false)
+      setSelectedRangeId('')
+      setSelectedUserId('')
+      setRangeSearch('')
+      setUserSearch('')
+      fetchRequests()
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    } finally {
+      setTransferring(false)
+    }
+  }
+
+  // Generate payment link for a range
+  const handleGeneratePaymentLink = async () => {
+    if (!paymentRangeId || !paymentEmail) {
+      alert('Please select a range and enter the customer email.')
+      return
+    }
+
+    setProcessingPayment(true)
+    setPaymentLink(null)
+    try {
+      const response = await fetch('/api/admin/stripe/create-payment-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rangeId: paymentRangeId,
+          planId: paymentPlan,
+          customerEmail: paymentEmail,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create payment link')
+      }
+
+      setPaymentLink(data.url)
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    } finally {
+      setProcessingPayment(false)
+    }
+  }
+
+  // Apply subscription directly (without payment - for manual processing)
+  const handleApplySubscription = async () => {
+    if (!paymentRangeId) {
+      alert('Please select a range.')
+      return
+    }
+
+    if (!confirm('This will apply the subscription directly without processing a Stripe payment. Use this only if payment was collected separately (phone, etc.). Continue?')) {
+      return
+    }
+
+    setProcessingPayment(true)
+    try {
+      const PLAN_TO_TIER: Record<string, string> = {
+        silver: 'basic',
+        gold: 'pro',
+        platinum: 'premium',
+      }
+
+      const { error } = await supabase
+        .from('ranges')
+        .update({
+          subscription_tier: PLAN_TO_TIER[paymentPlan],
+          subscription_status: 'active',
+          subscription_updated_at: new Date().toISOString(),
+          is_featured: true,
+        })
+        .eq('id', paymentRangeId)
+
+      if (error) throw error
+
+      alert(`Subscription applied! Range upgraded to ${paymentPlan} tier.`)
+      setShowPaymentModal(false)
+      setPaymentRangeId('')
+      setPaymentEmail('')
+      setPaymentLink(null)
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    } finally {
+      setProcessingPayment(false)
+    }
+  }
+
+  // Filter ranges and users by search
+  const filteredRanges = ranges.filter(r =>
+    r.name.toLowerCase().includes(rangeSearch.toLowerCase())
+  )
+
+  const filteredUsers = users.filter(u =>
+    u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
+    (u.first_name && u.first_name.toLowerCase().includes(userSearch.toLowerCase())) ||
+    (u.last_name && u.last_name.toLowerCase().includes(userSearch.toLowerCase()))
+  )
+
+  const filteredPaymentRanges = ranges.filter(r =>
+    r.name.toLowerCase().includes(rangeSearch.toLowerCase())
+  )
+
   if (loading) return <div className="p-12 text-center text-stone-500">Loading claims...</div>
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-black text-stone-900">Verification Requests</h1>
-        <p className="text-stone-500 mt-2 text-lg">Review and process business ownership claims</p>
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h1 className="text-3xl font-black text-stone-900">Verification Requests</h1>
+          <p className="text-stone-500 mt-2 text-lg">Review and process business ownership claims</p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowTransferModal(true)}
+            className="flex items-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-colors"
+          >
+            <UserPlus className="w-5 h-5" />
+            Transfer Claim
+          </button>
+          <button
+            onClick={() => setShowPaymentModal(true)}
+            className="flex items-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors"
+          >
+            <CreditCard className="w-5 h-5" />
+            Process Payment
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -228,6 +433,7 @@ export default function ClaimsPage() {
         </table>
       </div>
 
+      {/* Review Claim Modal */}
       {showModal && selectedRequest && (
         <div className="fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
@@ -325,6 +531,235 @@ export default function ClaimsPage() {
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer Claim Modal */}
+      {showTransferModal && (
+        <div className="fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-black text-stone-900">Transfer Claim</h2>
+              <button
+                onClick={() => setShowTransferModal(false)}
+                className="p-2 hover:bg-stone-100 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-stone-500" />
+              </button>
+            </div>
+
+            <p className="text-stone-600 mb-6">
+              Transfer ownership of a range to a user. Use this when a business owner calls to claim their listing.
+            </p>
+
+            <div className="space-y-6">
+              {/* Select Range */}
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">Select Range</label>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
+                  <input
+                    type="text"
+                    value={rangeSearch}
+                    onChange={(e) => setRangeSearch(e.target.value)}
+                    placeholder="Search ranges..."
+                    className="w-full pl-12 pr-4 py-3 border-2 border-stone-200 rounded-xl focus:border-emerald-500 outline-none text-stone-900"
+                  />
+                </div>
+                <div className="mt-2 max-h-40 overflow-y-auto border-2 border-stone-100 rounded-xl">
+                  {filteredRanges.slice(0, 50).map((range) => (
+                    <button
+                      key={range.id}
+                      onClick={() => setSelectedRangeId(range.id)}
+                      className={`w-full px-4 py-3 text-left hover:bg-stone-50 transition-colors ${selectedRangeId === range.id ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''
+                        }`}
+                    >
+                      <div className="font-medium text-stone-900">{range.name}</div>
+                      <div className="text-sm text-stone-500">
+                        {range.is_claimed ? 'Currently claimed' : 'Not claimed'} | Tier: {range.subscription_tier}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Select User */}
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">Select User (New Owner)</label>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
+                  <input
+                    type="text"
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    placeholder="Search users by email or name..."
+                    className="w-full pl-12 pr-4 py-3 border-2 border-stone-200 rounded-xl focus:border-emerald-500 outline-none text-stone-900"
+                  />
+                </div>
+                <div className="mt-2 max-h-40 overflow-y-auto border-2 border-stone-100 rounded-xl">
+                  {filteredUsers.slice(0, 50).map((user) => (
+                    <button
+                      key={user.id}
+                      onClick={() => setSelectedUserId(user.id)}
+                      className={`w-full px-4 py-3 text-left hover:bg-stone-50 transition-colors ${selectedUserId === user.id ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''
+                        }`}
+                    >
+                      <div className="font-medium text-stone-900">{user.email}</div>
+                      <div className="text-sm text-stone-500">
+                        {user.first_name} {user.last_name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex gap-4">
+              <button
+                onClick={() => setShowTransferModal(false)}
+                className="flex-1 py-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-2xl transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleTransferClaim}
+                disabled={transferring || !selectedRangeId || !selectedUserId}
+                className="flex-1 py-4 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-2xl transition-all disabled:opacity-50"
+              >
+                {transferring ? 'Transferring...' : 'Transfer Claim'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Process Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-black text-stone-900">Process Payment</h2>
+              <button
+                onClick={() => { setShowPaymentModal(false); setPaymentLink(null); }}
+                className="p-2 hover:bg-stone-100 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-stone-500" />
+              </button>
+            </div>
+
+            <p className="text-stone-600 mb-6">
+              Generate a payment link to send to the customer, or apply a subscription directly after collecting payment by phone.
+            </p>
+
+            <div className="space-y-6">
+              {/* Select Range */}
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">Select Range</label>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
+                  <input
+                    type="text"
+                    value={rangeSearch}
+                    onChange={(e) => setRangeSearch(e.target.value)}
+                    placeholder="Search ranges..."
+                    className="w-full pl-12 pr-4 py-3 border-2 border-stone-200 rounded-xl focus:border-emerald-500 outline-none text-stone-900"
+                  />
+                </div>
+                <div className="mt-2 max-h-40 overflow-y-auto border-2 border-stone-100 rounded-xl">
+                  {filteredPaymentRanges.slice(0, 50).map((range) => (
+                    <button
+                      key={range.id}
+                      onClick={() => setPaymentRangeId(range.id)}
+                      className={`w-full px-4 py-3 text-left hover:bg-stone-50 transition-colors ${paymentRangeId === range.id ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''
+                        }`}
+                    >
+                      <div className="font-medium text-stone-900">{range.name}</div>
+                      <div className="text-sm text-stone-500">Current tier: {range.subscription_tier}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Select Plan */}
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">Select Plan</label>
+                <div className="grid grid-cols-3 gap-4">
+                  {(['silver', 'gold', 'platinum'] as const).map((plan) => (
+                    <button
+                      key={plan}
+                      onClick={() => setPaymentPlan(plan)}
+                      className={`p-4 rounded-xl border-2 transition-all ${paymentPlan === plan
+                          ? 'border-emerald-500 bg-emerald-50'
+                          : 'border-stone-200 hover:border-stone-300'
+                        }`}
+                    >
+                      <div className="font-black text-stone-900 capitalize">{plan}</div>
+                      <div className="text-sm text-stone-500">
+                        {plan === 'silver' ? '$29/mo' : plan === 'gold' ? '$59/mo' : '$99/mo'}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Customer Email */}
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">Customer Email</label>
+                <input
+                  type="email"
+                  value={paymentEmail}
+                  onChange={(e) => setPaymentEmail(e.target.value)}
+                  placeholder="customer@example.com"
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-emerald-500 outline-none text-stone-900"
+                />
+              </div>
+
+              {/* Payment Link Result */}
+              {paymentLink && (
+                <div className="p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl">
+                  <label className="block text-sm font-bold text-emerald-700 mb-2">Payment Link Generated!</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={paymentLink}
+                      readOnly
+                      className="flex-1 px-4 py-2 bg-white border border-emerald-300 rounded-lg text-sm text-stone-900"
+                    />
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(paymentLink); alert('Link copied!'); }}
+                      className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition-colors"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <p className="text-sm text-emerald-600 mt-2">Send this link to the customer to complete payment.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 flex gap-4">
+              <button
+                onClick={() => { setShowPaymentModal(false); setPaymentLink(null); }}
+                className="flex-1 py-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-2xl transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGeneratePaymentLink}
+                disabled={processingPayment || !paymentRangeId || !paymentEmail}
+                className="flex-1 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl transition-all disabled:opacity-50"
+              >
+                {processingPayment ? 'Generating...' : 'Generate Payment Link'}
+              </button>
+              <button
+                onClick={handleApplySubscription}
+                disabled={processingPayment || !paymentRangeId}
+                className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl transition-all disabled:opacity-50"
+              >
+                Apply Directly
+              </button>
             </div>
           </div>
         </div>
