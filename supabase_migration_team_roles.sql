@@ -2,14 +2,7 @@
 
 -- 1. Create profiles table if it doesn't exist (extends auth.users)
 create table if not exists public.profiles (
-  id uuid references auth.users on delete cascade primary key,
-  email text,
-  full_name text,
-  role text check (role in ('super_admin', 'admin_employee', 'business_owner', 'user')) default 'user',
-  status text check (status in ('active', 'invited', 'suspended')) default 'active',
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
+ 
 
 -- 2. Add columns if table existed but columns didn't
 do $$ 
