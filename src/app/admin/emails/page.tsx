@@ -176,20 +176,25 @@ P.S. Got a home range you love? Tell them about us. The more facilities listed, 
     {
       id: 'business_welcome',
       name: 'Welcome New User (Business)',
-      subject: 'Welcome to Archery Ranges Canada!',
+      subject: 'Your range is waiting for you, [Name]',
       message: `Hi [Name],
 
-Welcome to Archery Ranges Canada! We're excited to have you as part of our community.
+Thanks for joining Archery Ranges Canada. You're now part of the first dedicated directory connecting Canadian archers with facilities like yours.
 
-Your account has been created and you can now:
-- Claim your archery range listing
-- Manage your business profile
-- Connect with archery enthusiasts
+Your next step: Claim your listing and make it yours.
 
-If you have any questions, feel free to reach out.
+Add your hours, photos, programs, and what makes your range worth the drive. Archers are already searching — a complete profile means they find you instead of the other guy.
 
-Best regards,
-The Archery Ranges Canada Team`,
+[Claim Your Listing →]
+
+Questions? Just hit reply. I'm here to help you get set up.
+
+Talk soon,
+
+Josh
+Founder, Archery Ranges Canada
+
+P.S. As a founding member of the directory, your feedback shapes what we build next. Don't be a stranger.`,
     },
     {
       id: 'subscription_reminder',
