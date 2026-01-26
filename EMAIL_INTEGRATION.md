@@ -22,8 +22,8 @@ Add the following to your `.env` file:
 RESEND_API_KEY=re_your_api_key_here
 
 # Email sender configuration
-RESEND_FROM_EMAIL="Archery Ranges Canada <noreply@archeryrangescanada.com>"
-RESEND_REPLY_TO_EMAIL="support@archeryrangescanada.com"
+RESEND_FROM_EMAIL="Archery Ranges Canada <noreply@archeryrangescanada.ca>"
+RESEND_REPLY_TO_EMAIL="support@archeryrangescanada.ca"
 
 # Application URL for email links
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -32,7 +32,7 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ### 2. Get Your Resend API Key
 
 1. Sign up at [resend.com](https://resend.com)
-2. Verify your domain (e.g., archeryrangescanada.com)
+2. Verify your domain (e.g., archeryrangescanada.ca)
 3. Generate an API key from the [API Keys page](https://resend.com/api-keys)
 4. Add the key to your `.env` file
 
@@ -41,7 +41,7 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 For production, you need to verify your domain:
 
 1. Go to [Resend Domains](https://resend.com/domains)
-2. Add your domain (e.g., archeryrangescanada.com)
+2. Add your domain (e.g., archeryrangescanada.ca)
 3. Add the DNS records provided by Resend to your domain
 4. Wait for verification (usually takes a few minutes)
 
@@ -119,7 +119,7 @@ await EmailService.sendBusinessNotification({
   businessName: 'Toronto Archery Club',
   subject: 'Platform Update',
   message: '<p>We have exciting new features...</p>',
-  actionLink: 'https://archeryrangescanada.com/dashboard',
+  actionLink: 'https://archeryrangescanada.ca/dashboard',
   actionText: 'View Dashboard',
 })
 ```
@@ -136,7 +136,7 @@ const result = await EmailService.sendBulkEmails({
   ],
   subject: 'Important Platform Update',
   message: '<p>Hello <strong>{{businessName}}</strong>...</p>',
-  actionLink: 'https://archeryrangescanada.com/updates',
+  actionLink: 'https://archeryrangescanada.ca/updates',
   actionText: 'Learn More',
 })
 

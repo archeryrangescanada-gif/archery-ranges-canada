@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
+import { EmailService } from '@/lib/email/service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,18 +22,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-
-    // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY not configured')
-      return NextResponse.json(
-        { error: 'Email service not configured. Please contact us at archeryrangescanada@gmail.com' },
-        { status: 500 }
-      )
-    }
-
-    // Initialize Resend
-    const resend = new Resend(process.env.RESEND_API_KEY)
 
     // Format email content with HTML
     const htmlContent = `
@@ -69,9 +57,8 @@ ${message}
 Sent from archeryrangescanada.ca contact form
 `
 
-    // Send email using Resend
-    const { data, error } = await resend.emails.send({
-      from: 'Archery Ranges Canada <noreply@archeryrangescanada.ca>',
+    // Send email using centralized EmailService
+    const result = await EmailService.sendEmail({
       to: 'archeryrangescanada@gmail.com',
       replyTo: email,
       subject: `Contact Form: ${subject}`,
@@ -79,12 +66,10 @@ Sent from archeryrangescanada.ca contact form
       text: textContent
     })
 
-    if (error) {
-      console.error('Resend error:', error)
+    if (!result.success) {
+      console.error('Contact form email failed:', result.error)
       throw new Error('Failed to send email')
     }
-
-    console.log('Email sent successfully:', data)
 
     return NextResponse.json({
       success: true,

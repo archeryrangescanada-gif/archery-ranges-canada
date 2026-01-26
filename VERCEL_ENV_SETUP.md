@@ -15,8 +15,8 @@ NEXT_PUBLIC_APP_URL=https://archeryrangescanada.ca
 ## 📧 Email Configuration (Recommended)
 
 ```bash
-RESEND_FROM_EMAIL=noreply@archeryrangescanada.com
-RESEND_REPLY_TO_EMAIL=support@archeryrangescanada.com
+RESEND_FROM_EMAIL=noreply@archeryrangescanada.ca
+RESEND_REPLY_TO_EMAIL=support@archeryrangescanada.ca
 ```
 
 ---

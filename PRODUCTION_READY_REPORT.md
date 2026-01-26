@@ -269,8 +269,8 @@ RESEND_API_KEY=re_xxxxxxxxxxxxx
 NEXT_PUBLIC_APP_URL=https://archeryrangescanada.ca
 
 # RECOMMENDED - Email configuration
-RESEND_FROM_EMAIL=noreply@archeryrangescanada.com
-RESEND_REPLY_TO_EMAIL=support@archeryrangescanada.com
+RESEND_FROM_EMAIL=noreply@archeryrangescanada.ca
+RESEND_REPLY_TO_EMAIL=support@archeryrangescanada.ca
 
 # Optional - Analytics
 IP_SALT=random_string_for_hashing_ips
@@ -337,8 +337,8 @@ STRIPE_WEBHOOK_SECRET=whsec_xxxxx  # Get new production webhook secret
 # Add CRITICAL variables:
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 NEXT_PUBLIC_APP_URL=https://archeryrangescanada.ca
-RESEND_FROM_EMAIL=noreply@archeryrangescanada.com
-RESEND_REPLY_TO_EMAIL=support@archeryrangescanada.com
+RESEND_FROM_EMAIL=noreply@archeryrangescanada.ca
+RESEND_REPLY_TO_EMAIL=support@archeryrangescanada.ca
 
 # Update production URLs:
 NEXT_PUBLIC_BASE_URL=https://archeryrangescanada.ca

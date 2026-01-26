@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: 'https://archeryrangescanada.com',
+    canonical: 'https://archeryrangescanada.ca',
   },
 }
 

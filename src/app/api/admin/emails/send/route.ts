@@ -34,6 +34,12 @@ export async function POST(request: Request) {
 
     const { to, subject, message, type } = await request.json()
 
+    console.log(`[Admin Email API] Request received:
+      Type: ${type}
+      To: ${to}
+      Subject: ${subject}
+    `)
+
     if (!to || !subject || !message) {
       return NextResponse.json(
         { error: 'Missing required fields: to, subject, message' },

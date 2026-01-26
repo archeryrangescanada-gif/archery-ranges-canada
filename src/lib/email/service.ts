@@ -27,8 +27,22 @@ export class EmailService {
     }
 
     try {
+      const fromAddress = EMAIL_CONFIG.from
+      const toAddress = Array.isArray(params.to) ? params.to.join(', ') : params.to
+
+      console.log(`[EmailService] Attempting to send email:
+        Subject: ${params.subject}
+        From: ${fromAddress}
+        To: ${toAddress}
+      `)
+
+      // Detect common delivery pitfalls
+      if (fromAddress.toLowerCase().includes('@gmail.com')) {
+        console.warn(`[EmailService] WARNING: Sending from a @gmail.com address (${fromAddress}) via Resend is likely to fail or be flagged as spam due to DMARC policies. Please use a verified domain address like noreply@archeryrangescanada.ca for production.`)
+      }
+
       const emailPromise = resend.emails.send({
-        from: EMAIL_CONFIG.from,
+        from: fromAddress,
         to: params.to,
         subject: params.subject,
         html: params.html,
@@ -42,9 +56,16 @@ export class EmailService {
 
       const result = await Promise.race([emailPromise, timeoutPromise]) as any
 
-      return { success: true, data: result }
+      if (result.error) {
+        console.error('[EmailService] Resend returned error:', result.error)
+        return { success: false, error: result.error }
+      }
+
+      console.log(`[EmailService] Email sent successfully. ID: ${result.data?.id || 'N/A'}`)
+
+      return { success: true, data: result.data }
     } catch (error) {
-      console.error('Error sending email:', error)
+      console.error('[EmailService] Unexpected error sending email:', error)
       return { success: false, error }
     }
   }

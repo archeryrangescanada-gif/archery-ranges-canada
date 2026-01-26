@@ -51,8 +51,8 @@ SUPABASE_SERVICE_ROLE_KEY=[your key from .env.local]
 ANTHROPIC_API_KEY=[your key]
 GEMINI_API_KEY=[your key]
 RESEND_API_KEY=[your key]
-RESEND_FROM_EMAIL="Archery Ranges Canada <noreply@archeryrangescanada.com>"
-RESEND_REPLY_TO_EMAIL="support@archeryrangescanada.com"
+RESEND_FROM_EMAIL="Archery Ranges Canada <noreply@archeryrangescanada.ca>"
+RESEND_REPLY_TO_EMAIL="support@archeryrangescanada.ca"
 
 # Stripe - For production, you need LIVE keys!
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=[pk_live_ or pk_test_]
