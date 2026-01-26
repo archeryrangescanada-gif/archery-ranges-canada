@@ -264,61 +264,69 @@ export const welcomeEmail = (params: {
   dashboardLink: string
 }): EmailTemplate => {
   const html = emailWrapper(`
-    <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px;">Welcome to Archery Ranges Canada!</h2>
-
     <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
-      Hello <strong>${params.businessName}</strong>,
+      Hi ${params.businessName},
     </p>
 
     <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
-      Thank you for joining Archery Ranges Canada! We're excited to help you connect with archery enthusiasts across the country.
+      Thanks for joining Archery Ranges Canada. You're now part of the first dedicated directory connecting Canadian archers with facilities like yours.
     </p>
 
-    <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0;">
-      <p style="margin: 0; color: #166534; font-size: 14px; line-height: 1.6;">
-        <strong>Getting Started:</strong><br>
-        1. Complete your business profile<br>
-        2. Add high-quality photos of your range<br>
-        3. Set your hours and contact information<br>
-        4. Start receiving inquiries from customers
-      </p>
-    </div>
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6; font-weight: 600;">
+      Your next step: Claim your listing and make it yours.
+    </p>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      Add your hours, photos, programs, and what makes your range worth the drive. Archers are already searching — a complete profile means they find you instead of the other guy.
+    </p>
 
     <div style="text-align: center; margin: 30px 0;">
       <a href="${params.dashboardLink}"
          style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: 600; font-size: 16px;">
-        Complete Your Profile
+        Claim Your Listing →
       </a>
     </div>
 
-    <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
-      If you have any questions, our support team is here to help!
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      Questions? Just hit reply. I'm here to help you get set up.
+    </p>
+
+    <p style="margin: 0 0 10px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      Talk soon,<br>
+      <strong>Josh</strong><br>
+      Founder, Archery Ranges Canada
+    </p>
+
+    <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 13px; line-height: 1.6; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+      <strong>P.S.</strong> As a founding member of the directory, your feedback shapes what we build next. Don't be a stranger.
     </p>
   `)
 
   const text = `
-Welcome to Archery Ranges Canada!
+Hi ${params.businessName},
 
-Hello ${params.businessName},
+Thanks for joining Archery Ranges Canada. You're now part of the first dedicated directory connecting Canadian archers with facilities like yours.
 
-Thank you for joining Archery Ranges Canada! We're excited to help you connect with archery enthusiasts across the country.
+Your next step: Claim your listing and make it yours.
 
-Getting Started:
-1. Complete your business profile
-2. Add high-quality photos of your range
-3. Set your hours and contact information
-4. Start receiving inquiries from customers
+Add your hours, photos, programs, and what makes your range worth the drive. Archers are already searching — a complete profile means they find you instead of the other guy.
 
-Complete your profile: ${params.dashboardLink}
+Claim Your Listing: ${params.dashboardLink}
 
-If you have any questions, our support team is here to help!
+Questions? Just hit reply. I'm here to help you get set up.
+
+Talk soon,
+Josh
+Founder, Archery Ranges Canada
+
+P.S. As a founding member of the directory, your feedback shapes what we build next. Don't be a stranger.
 
 ---
 Archery Ranges Canada - Find the perfect archery range near you
 `
 
   return {
-    subject: 'Welcome to Archery Ranges Canada!',
+    subject: `Your range is waiting for you, ${params.businessName}`,
     html,
     text,
   }
