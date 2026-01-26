@@ -151,7 +151,31 @@ export default function EmailsPage() {
   // Email templates
   const templates = [
     {
-      name: 'Welcome New User',
+      id: 'archer_welcome',
+      name: 'Welcome New Archer (General User)',
+      subject: 'Welcome to the community, [Name] 🎯',
+      message: `Hi [Name],
+
+You're in. Welcome to Archery Ranges Canada.
+
+We're building the most complete directory of archery ranges, clubs, and coaches across the country — so you can spend less time searching and more time shooting.
+
+A few things you can do:
+
+Browse ranges near you, check out what programs are offered, and save your favourites. If you find a range that's missing or has outdated info, let us know — we're making this better every week.
+
+[Find Ranges Near You →]
+
+Happy shooting,
+
+Josh
+Founder, Archery Ranges Canada
+
+P.S. Got a home range you love? Tell them about us. The more facilities listed, the better this gets for everyone.`,
+    },
+    {
+      id: 'business_welcome',
+      name: 'Welcome New User (Business)',
       subject: 'Welcome to Archery Ranges Canada!',
       message: `Hi [Name],
 
@@ -168,6 +192,7 @@ Best regards,
 The Archery Ranges Canada Team`,
     },
     {
+      id: 'subscription_reminder',
       name: 'Subscription Reminder',
       subject: 'Your subscription is expiring soon',
       message: `Hi [Name],
@@ -184,6 +209,7 @@ Best regards,
 The Archery Ranges Canada Team`,
     },
     {
+      id: 'listing_approved',
       name: 'Listing Approved',
       subject: 'Your listing has been approved!',
       message: `Hi [Name],
@@ -199,9 +225,32 @@ The Archery Ranges Canada Team`,
     },
   ]
 
-  const applyTemplate = (template: typeof templates[0]) => {
-    setSubject(template.subject)
-    setMessage(template.message)
+  const applyTemplate = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId)
+    if (!template) return
+
+    let finalMessage = template.message
+    let finalSubject = template.subject
+
+    // Auto-fill [Name] if exactly one user is selected
+    if (selectedUsers.size === 1) {
+      const userEmail = Array.from(selectedUsers)[0]
+      const user = userEmails.find(u => u.email === userEmail)
+      if (user?.full_name) {
+        finalMessage = finalMessage.replace(/\[Name\]/g, user.full_name)
+        finalSubject = finalSubject.replace(/\[Name\]/g, user.full_name)
+      }
+    } else if (selectedListings.size === 1) {
+      const listingEmail = Array.from(selectedListings)[0]
+      const listing = listingEmails.find(l => l.email === listingEmail)
+      if (listing?.name) {
+        finalMessage = finalMessage.replace(/\[Name\]/g, listing.name)
+        finalSubject = finalSubject.replace(/\[Name\]/g, listing.name)
+      }
+    }
+
+    setSubject(finalSubject)
+    setMessage(finalMessage)
   }
 
   return (
@@ -214,10 +263,28 @@ The Archery Ranges Canada Team`,
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Email Composer */}
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-          <h2 className="text-xl font-bold text-stone-800 mb-6 flex items-center gap-2">
-            <Mail className="w-5 h-5" />
-            Compose Email
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-stone-800 flex items-center gap-2">
+              <Mail className="w-5 h-5" />
+              Compose Email
+            </h2>
+
+            {/* Template Dropdown */}
+            <div className="w-64">
+              <select
+                onChange={(e) => applyTemplate(e.target.value)}
+                defaultValue=""
+                className="w-full px-3 py-2 bg-stone-50 border-2 border-stone-200 rounded-xl focus:border-emerald-500 outline-none text-stone-900 text-sm font-bold"
+              >
+                <option value="" disabled>Select a template...</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           {/* Email Type Toggle */}
           <div className="flex gap-2 p-1 bg-stone-100 rounded-xl mb-6">
@@ -424,30 +491,6 @@ The Archery Ranges Canada Team`,
             )}
           </div>
 
-          {/* Templates */}
-          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-            <h2 className="text-lg font-bold text-stone-800 mb-4">Email Templates</h2>
-            <p className="text-sm text-stone-500 mb-3">Click a template to load it.</p>
-
-            <div className="space-y-2">
-              {templates.map((template, index) => (
-                <button
-                  key={index}
-                  onClick={() => applyTemplate(template)}
-                  className="w-full p-3 text-left bg-stone-50 hover:bg-stone-100 rounded-xl transition-colors border border-stone-200"
-                >
-                  <div className="font-bold text-stone-800 text-sm">{template.name}</div>
-                  <div className="text-xs text-stone-500 mt-1 truncate">{template.subject}</div>
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-4 p-3 bg-amber-50 border-2 border-amber-200 rounded-xl">
-              <p className="text-xs text-amber-800">
-                <strong>Note:</strong> Replace [Name], [Range Name], etc. with actual values.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

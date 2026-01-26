@@ -5,6 +5,7 @@ import {
   verificationRejectedEmail,
   businessNotificationEmail,
   welcomeEmail,
+  archerWelcomeEmail,
   inquiryNotificationEmail,
 } from './templates'
 
@@ -262,5 +263,24 @@ export class EmailService {
       failed,
       results,
     }
+  }
+
+  /**
+   * Send welcome email to new archer (general user)
+   */
+  static async sendArcherWelcomeEmail(params: {
+    to: string
+    name: string
+  }) {
+    const template = archerWelcomeEmail({
+      name: params.name,
+    })
+
+    return this.sendEmail({
+      to: params.to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
+    })
   }
 }

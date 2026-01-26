@@ -397,3 +397,78 @@ Archery Ranges Canada - Find the perfect archery range near you
     text,
   }
 }
+
+// Archer Welcome Email (General Users)
+export const archerWelcomeEmail = (params: {
+  name: string
+}): EmailTemplate => {
+  const html = emailWrapper(`
+    <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px;">Welcome to the community, ${params.name} 🎯</h2>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      Hi ${params.name},
+    </p>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      You're in. Welcome to Archery Ranges Canada.
+    </p>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      We're building the most complete directory of archery ranges, clubs, and coaches across the country — so you can spend less time searching and more time shooting.
+    </p>
+
+    <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0;">
+      <p style="margin: 0; color: #166534; font-size: 14px; line-height: 1.6;">
+        <strong>A few things you can do:</strong><br>
+        Browse ranges near you, check out what programs are offered, and save your favourites. If you find a range that's missing or has outdated info, let us know — we're making this better every week.
+      </p>
+    </div>
+
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="https://archeryrangescanada.ca"
+         style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: 600; font-size: 16px;">
+        Find Ranges Near You →
+      </a>
+    </div>
+
+    <p style="margin: 0 0 10px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      Happy shooting,<br>
+      <strong>Josh</strong><br>
+      Founder, Archery Ranges Canada
+    </p>
+
+    <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 13px; line-height: 1.6; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+      <strong>P.S.</strong> Got a home range you love? Tell them about us. The more facilities listed, the better this gets for everyone.
+    </p>
+  `)
+
+  const text = `
+Welcome to the community, ${params.name} 🎯
+
+Hi ${params.name},
+
+You're in. Welcome to Archery Ranges Canada.
+
+We're building the most complete directory of archery ranges, clubs, and coaches across the country — so you can spend less time searching and more time shooting.
+
+A few things you can do:
+Browse ranges near you, check out what programs are offered, and save your favourites. If you find a range that's missing or has outdated info, let us know — we're making this better every week.
+
+Find Ranges Near You: https://archeryrangescanada.ca
+
+Happy shooting,
+Josh
+Founder, Archery Ranges Canada
+
+P.S. Got a home range you love? Tell them about us. The more facilities listed, the better this gets for everyone.
+
+---
+Archery Ranges Canada - Find the perfect archery range near you
+`
+
+  return {
+    subject: `Welcome to the community, ${params.name} 🎯`,
+    html,
+    text,
+  }
+}

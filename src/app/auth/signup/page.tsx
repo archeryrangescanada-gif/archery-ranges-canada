@@ -78,6 +78,17 @@ export default function SignUpPage() {
 
       if (error) throw error
 
+      // Trigger Welcome Email (Server-side)
+      // This is non-blocking to ensure signup success is prioritized
+      fetch('/api/auth/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          name: formData.fullName || 'Archer',
+        }),
+      }).catch(err => console.error('Failed to trigger welcome email:', err))
+
       // Success! Check email for verification
       alert('Success! Please check your email to verify your account.')
       router.push('/auth/login')
