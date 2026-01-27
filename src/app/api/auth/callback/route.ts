@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { EmailService } from '@/lib/email/service'
 
 export async function GET(request: Request) {
   console.log('🔐 API Auth callback triggered')
@@ -49,6 +50,26 @@ export async function GET(request: Request) {
           .limit(1)
 
         const hasRanges = ranges && ranges.length > 0
+
+        // Check if this is a new user (created within the last minute) for welcome email
+        const createdAt = new Date(user.created_at)
+        const now = new Date()
+        const isNewUser = (now.getTime() - createdAt.getTime()) < 60000 // 1 minute
+
+        // Send welcome email to new general users (OAuth signups)
+        if (isNewUser && !hasRanges) {
+          const userName = user.user_metadata?.full_name || user.user_metadata?.name || 'Archer'
+          const userEmail = user.email
+
+          if (userEmail) {
+            console.log(`📧 Sending welcome email to new OAuth user: ${userEmail}`)
+            // Non-blocking - don't wait for email to send
+            EmailService.sendArcherWelcomeEmail({
+              to: userEmail,
+              name: userName,
+            }).catch(err => console.error('Failed to send welcome email:', err))
+          }
+        }
 
         // Redirect based on user status
         if (hasRanges) {

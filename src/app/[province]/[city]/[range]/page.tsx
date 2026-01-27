@@ -32,30 +32,56 @@ interface PageProps {
 async function getRange(provinceSlug: string, citySlug: string, rangeSlug: string): Promise<Range | null> {
   const supabase = await createClient();
 
+  // Query the range with city/province relationships
   const { data, error } = await supabase
     .from('ranges')
     .select(`
       *,
-      cities!inner (
+      cities (
         name,
         slug,
-        provinces!inner (
+        provinces (
           name,
           slug
         )
       )
     `)
     .eq('slug', rangeSlug)
-    .eq('cities.slug', citySlug)
-    .eq('cities.provinces.slug', provinceSlug)
     .single();
 
-  if (error || !data) return null;
+  if (error || !data) {
+    console.error('Range not found:', rangeSlug, error);
+    return null;
+  }
+
+  // Cast to handle Supabase's nested relationship types
+  const cities = data.cities as any;
+
+  // Validate the URL matches the city/province in the database
+  const cityMatches = cities?.slug === citySlug;
+  const provinceMatches = cities?.provinces?.slug === provinceSlug;
+
+  if (!cityMatches || !provinceMatches) {
+    console.error('URL mismatch for range:', {
+      rangeSlug,
+      expectedCity: citySlug,
+      actualCity: cities?.slug,
+      expectedProvince: provinceSlug,
+      actualProvince: cities?.provinces?.slug
+    });
+    return null;
+  }
 
   // Increment view count
   await supabase.rpc('increment_view_count', { range_uuid: data.id });
 
-  return data as Range;
+  // Map city/province names to the Range type's expected fields
+  return {
+    ...data,
+    city: cities?.name || '',
+    province: cities?.provinces?.name || '',
+    cities: cities,
+  } as Range;
 }
 
 async function getReviews(rangeId: string) {
@@ -143,8 +169,8 @@ export default async function RangeDetailPage({ params }: PageProps) {
       <main className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
         {/* Breadcrumb Navigation */}
         <BreadcrumbNav
-          province={{ name: range.cities!.provinces.name, slug: params.province }}
-          city={{ name: range.cities!.name, slug: params.city }}
+          province={{ name: range.cities?.provinces?.name || range.province, slug: params.province }}
+          city={{ name: range.cities?.name || range.city, slug: params.city }}
           rangeName={range.name}
         />
 
@@ -204,14 +230,24 @@ export default async function RangeDetailPage({ params }: PageProps) {
                     {range.post_content}
                   </div>
 
-                  {range.post_tags && range.post_tags.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {range.post_tags.map((tag, index) => (
-                        <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                  {range.post_tags && (
+                    (() => {
+                      // Handle post_tags as either array or JSON string
+                      const tags = Array.isArray(range.post_tags)
+                        ? range.post_tags
+                        : typeof range.post_tags === 'string'
+                          ? (() => { try { return JSON.parse(range.post_tags); } catch { return []; } })()
+                          : [];
+                      return tags.length > 0 ? (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {tags.map((tag: string, index: number) => (
+                            <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null;
+                    })()
                   )}
                 </section>
               )}
