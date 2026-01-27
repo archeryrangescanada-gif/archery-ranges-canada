@@ -194,7 +194,16 @@ export default function Home() {
       if (provincesData) setProvinces(provincesData as Province[])
       if (citiesData) setCities(citiesData as City[])
       if (rangesData) {
-        setRanges(rangesData as unknown as Range[])
+        const normalized = (rangesData as any[]).map(item => ({
+          ...item,
+          photos: typeof item.photos === 'string'
+            ? item.photos.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : Array.isArray(item.photos) ? item.photos : [],
+          amenities: typeof item.amenities === 'string'
+            ? item.amenities.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : Array.isArray(item.amenities) ? item.amenities : []
+        }))
+        setRanges(normalized as unknown as Range[])
       }
       setLoading(false)
     }

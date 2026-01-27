@@ -35,7 +35,13 @@ export default function ComparePage() {
         .order('name')
 
       if (data) {
-        setRanges(data as Range[])
+        const normalized = (data as any[]).map(item => ({
+          ...item,
+          amenities: typeof item.amenities === 'string'
+            ? item.amenities.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : Array.isArray(item.amenities) ? item.amenities : []
+        }))
+        setRanges(normalized as Range[])
       }
       setLoading(false)
     }

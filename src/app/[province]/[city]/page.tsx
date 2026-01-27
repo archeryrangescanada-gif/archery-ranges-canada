@@ -144,7 +144,28 @@ async function getRangesInCity(cityId: string): Promise<Range[]> {
     return [];
   }
 
-  return data as Range[];
+  // Post-process the data to handle TEXT columns that should be arrays/JSON
+  return (data as any[]).map(item => ({
+    ...item,
+    post_images: typeof item.post_images === 'string'
+      ? item.post_images.split(',').map((s: string) => s.trim()).filter(Boolean)
+      : Array.isArray(item.post_images) ? item.post_images : [],
+    post_tags: typeof item.post_tags === 'string'
+      ? item.post_tags.split(',').map((s: string) => s.trim()).filter(Boolean)
+      : Array.isArray(item.post_tags) ? item.post_tags : [],
+    bow_types_allowed: typeof item.bow_types_allowed === 'string'
+      ? item.bow_types_allowed.split(',').map((s: string) => s.trim()).filter(Boolean)
+      : Array.isArray(item.bow_types_allowed) ? item.bow_types_allowed : [],
+    business_hours: typeof item.business_hours === 'string'
+      ? (() => {
+        try {
+          return JSON.parse(item.business_hours);
+        } catch (e) {
+          return item.business_hours;
+        }
+      })()
+      : item.business_hours
+  })) as Range[];
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

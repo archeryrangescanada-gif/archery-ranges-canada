@@ -46,7 +46,19 @@ export default function FeaturedPage() {
         .order('name')
 
       if (data) {
-        setRanges(data as Range[])
+        const normalized = (data as any[]).map(item => ({
+          ...item,
+          photos: typeof item.photos === 'string'
+            ? item.photos.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : Array.isArray(item.photos) ? item.photos : [],
+          post_images: typeof item.post_images === 'string'
+            ? item.post_images.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : Array.isArray(item.post_images) ? item.post_images : [],
+          amenities: typeof item.amenities === 'string'
+            ? item.amenities.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : Array.isArray(item.amenities) ? item.amenities : []
+        }))
+        setRanges(normalized as Range[])
       }
       setLoading(false)
     }

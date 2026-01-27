@@ -111,12 +111,29 @@ async function getRange(provinceSlug: string, citySlug: string, rangeSlug: strin
   // Increment view count
   await supabase.rpc('increment_view_count', { range_uuid: data.id });
 
-  // Map city/province names to the Range type's expected fields
+  // Map city/province names and normalize string-encoded arrays
   return {
     ...data,
     city: cities?.name || '',
     province: cities?.provinces?.name || '',
     cities: cities,
+    post_images: normalizeToArray(data.post_images),
+    video_urls: normalizeToArray(data.video_urls),
+    post_tags: typeof data.post_tags === 'string'
+      ? data.post_tags.split(',').map((s: string) => s.trim()).filter(Boolean)
+      : Array.isArray(data.post_tags) ? data.post_tags : [],
+    bow_types_allowed: typeof data.bow_types_allowed === 'string'
+      ? data.bow_types_allowed.split(',').map((s: string) => s.trim()).filter(Boolean)
+      : Array.isArray(data.bow_types_allowed) ? data.bow_types_allowed : [],
+    business_hours: typeof data.business_hours === 'string' && data.business_hours.startsWith('{')
+      ? (() => {
+        try {
+          return JSON.parse(data.business_hours);
+        } catch (e) {
+          return data.business_hours;
+        }
+      })()
+      : data.business_hours
   } as Range;
 }
 
