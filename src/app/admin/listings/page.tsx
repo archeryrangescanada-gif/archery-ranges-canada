@@ -389,11 +389,19 @@ export default function ListingsPage() {
     if (!listing) return
 
     const newVal = !listing.is_premium
+    // Synchronize subscription_tier with premium status
+    const newTier = newVal ? 'premium' : 'free'
+
+    if (!confirm(`Are you sure you want to set "${listing.name}" to ${newVal ? 'PREMIUM' : 'FREE'}? This will update the subscription tier to ${newTier}.`)) return
+
     try {
       const res = await fetch(`/api/admin/listings/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_premium: newVal })
+        body: JSON.stringify({
+          is_premium: newVal,
+          subscription_tier: newTier
+        })
       })
 
       if (!res.ok) throw new Error('Failed to update premium status')

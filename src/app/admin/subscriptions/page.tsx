@@ -1,336 +1,369 @@
 // src/app/admin/subscriptions/page.tsx
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Trash2, Edit, Eye, Plus, CreditCard, Users, BarChart3, TrendingUp, Award, Star, Crown } from 'lucide-react'
+import Image from 'next/image'
+
+interface SubscriptionPlan {
+  id: string
+  name: string
+  description: string
+  price: string
+  interval: string
+  activeCount: number
+  features: string[]
+  badgeImage?: string
+  color: string
+}
+
+interface ActiveSubscription {
+  id: string
+  customerName: string
+  email: string
+  planName: string
+  status: 'Active' | 'Cancelled' | 'Pending'
+  startDate: string
+  nextBilling: string
+  revenue: string
+}
 
 export default function SubscriptionsPage() {
   const [activeTab, setActiveTab] = useState<'plans' | 'active'>('plans')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  // Initial mock data for plans (reflecting the user's requested names and badges)
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([
+    {
+      id: '1',
+      name: 'Free',
+      description: 'Basic listing',
+      price: '$0',
+      interval: 'month',
+      activeCount: 0,
+      features: ['Basic listing', 'Contact information', '✗ Photos', '✗ Featured placement'],
+      color: 'gray',
+    },
+    {
+      id: '2',
+      name: 'Featured (Bronze)',
+      description: 'Enhanced listing',
+      price: '$29',
+      interval: 'month',
+      activeCount: 3,
+      features: ['Everything in Free', 'Up to 10 photos', 'Business hours', '✗ Featured placement'],
+      badgeImage: '/bronze-badge.png',
+      color: 'amber',
+    },
+    {
+      id: '3',
+      name: 'Pro (Silver)',
+      description: 'Full features',
+      price: '$79',
+      interval: 'month',
+      activeCount: 7,
+      features: ['Everything in Featured', 'Unlimited photos', 'Featured placement', 'Priority support'],
+      badgeImage: '/silver-badge.png',
+      color: 'emerald',
+    },
+    {
+      id: '4',
+      name: 'Premium (Gold)',
+      description: 'Custom solution',
+      price: 'Custom',
+      interval: 'month',
+      activeCount: 2,
+      features: ['Everything in Pro', 'Multiple locations', 'Custom branding', 'API access'],
+      badgeImage: '/gold-badge.png',
+      color: 'blue',
+    }
+  ])
+
+  // Initial mock data for active subscriptions
+  const [subscriptions, setSubscriptions] = useState<ActiveSubscription[]>([
+    {
+      id: 's1',
+      customerName: 'Toronto Archery Range',
+      email: 'john@torontoarchery.com',
+      planName: 'Premium (Gold)',
+      status: 'Active',
+      startDate: '1/15/2024',
+      nextBilling: '4/15/2024',
+      revenue: '$79/mo'
+    },
+    {
+      id: 's2',
+      customerName: 'Vancouver Archery Club',
+      email: 'info@vancouverarchery.ca',
+      planName: 'Featured (Bronze)',
+      status: 'Active',
+      startDate: '2/1/2024',
+      nextBilling: '5/1/2024',
+      revenue: '$29/mo'
+    }
+  ])
+
+  const handleDeletePlan = (id: string) => {
+    const plan = plans.find(p => p.id === id)
+    if (confirm(`Are you sure you want to delete the "${plan?.name}" plan? This cannot be undone.`)) {
+      setPlans(plans.filter(p => p.id !== id))
+    }
+  }
+
+  const handleDeleteSubscription = (id: string) => {
+    const sub = subscriptions.find(s => s.id === id)
+    if (confirm(`Are you sure you want to cancel the subscription for "${sub?.customerName}"?`)) {
+      setSubscriptions(subscriptions.filter(s => s.id !== id))
+    }
+  }
+
+  const filteredSubscriptions = subscriptions.filter(s =>
+    s.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.planName.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Subscriptions</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Subscriptions</h1>
           <p className="text-gray-600 mt-1">Manage subscription plans and active subscriptions</p>
         </div>
-        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
-          <span className="text-xl">+</span>
+        <button
+          onClick={() => alert('Plan creation modal would go here')}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-semibold flex items-center gap-2 shadow-sm transition-colors"
+        >
+          <Plus className="w-5 h-5" />
           Create Plan
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-gray-500 text-sm font-medium">Total Plans</h3>
-          <p className="text-3xl font-bold text-gray-900 mt-2">4</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-gray-500 text-sm font-medium">Active Subscriptions</h3>
-          <p className="text-3xl font-bold text-blue-600 mt-2">12</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-gray-500 text-sm font-medium">Monthly Revenue</h3>
-          <p className="text-3xl font-bold text-green-600 mt-2">$1,845</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-gray-500 text-sm font-medium">Churn Rate</h3>
-          <p className="text-3xl font-bold text-orange-600 mt-2">2.3%</p>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard title="Total Plans" value={plans.length.toString()} icon={<CreditCard className="w-6 h-6 text-gray-400" />} />
+        <StatCard title="Active Subscriptions" value={subscriptions.length.toString()} icon={<Users className="w-6 h-6 text-blue-500" />} color="text-blue-600" />
+        <StatCard title="Monthly Revenue" value="$1,845" icon={<BarChart3 className="w-6 h-6 text-green-500" />} color="text-green-600" />
+        <StatCard title="Churn Rate" value="2.3%" icon={<TrendingUp className="w-6 h-6 text-orange-500" />} color="text-orange-600" />
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="border-b">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="border-b bg-gray-50/50">
           <div className="flex">
-            <button
+            <TabButton
+              active={activeTab === 'plans'}
               onClick={() => setActiveTab('plans')}
-              className={`px-6 py-3 font-medium ${
-                activeTab === 'plans'
-                  ? 'border-b-2 border-green-600 text-green-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Subscription Plans
-            </button>
-            <button
+              label="Subscription Plans"
+            />
+            <TabButton
+              active={activeTab === 'active'}
               onClick={() => setActiveTab('active')}
-              className={`px-6 py-3 font-medium ${
-                activeTab === 'active'
-                  ? 'border-b-2 border-green-600 text-green-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Active Subscriptions
-            </button>
+              label="Active Subscriptions"
+            />
           </div>
         </div>
 
-        {/* Plans Tab */}
-        {activeTab === 'plans' && (
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {/* Free Plan */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 hover:border-green-500 transition-colors">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-lg">Free</h3>
-                    <p className="text-gray-500 text-sm">Basic listing</p>
-                  </div>
-                  <button className="text-blue-600 hover:text-blue-800">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">$0</span>
-                  <span className="text-gray-500">/month</span>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 mb-6">
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Basic listing
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Contact information
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-400">
-                    <span>✗</span>
-                    Photos
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-400">
-                    <span>✗</span>
-                    Featured placement
-                  </li>
-                </ul>
-                <div className="text-sm text-gray-500">
-                  <strong>0</strong> active subscriptions
-                </div>
+        {/* Content Area */}
+        <div className="p-6">
+          {activeTab === 'plans' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {plans.map((plan) => (
+                <PlanCard key={plan.id} plan={plan} onDelete={() => handleDeletePlan(plan.id)} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search subscriptions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                />
               </div>
 
-              {/* Basic Plan */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 hover:border-green-500 transition-colors">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-lg">Basic</h3>
-                    <p className="text-gray-500 text-sm">Enhanced listing</p>
-                  </div>
-                  <button className="text-blue-600 hover:text-blue-800">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">$29</span>
-                  <span className="text-gray-500">/month</span>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 mb-6">
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Everything in Free
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Up to 10 photos
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Business hours
-                  </li>
-                  <li className="flex items-center gap-2 text-gray-400">
-                    <span>✗</span>
-                    Featured placement
-                  </li>
-                </ul>
-                <div className="text-sm text-gray-500">
-                  <strong>3</strong> active subscriptions
-                </div>
-              </div>
-
-              {/* Premium Plan */}
-              <div className="border-2 border-green-500 rounded-lg p-6 relative bg-green-50">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full">Most Popular</span>
-                </div>
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-lg">Premium</h3>
-                    <p className="text-gray-500 text-sm">Full features</p>
-                  </div>
-                  <button className="text-blue-600 hover:text-blue-800">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">$79</span>
-                  <span className="text-gray-500">/month</span>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 mb-6">
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Everything in Basic
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Unlimited photos
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Featured placement
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Priority support
-                  </li>
-                </ul>
-                <div className="text-sm text-gray-500">
-                  <strong>7</strong> active subscriptions
-                </div>
-              </div>
-
-              {/* Enterprise Plan */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 hover:border-green-500 transition-colors">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-lg">Enterprise</h3>
-                    <p className="text-gray-500 text-sm">Custom solution</p>
-                  </div>
-                  <button className="text-blue-600 hover:text-blue-800">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">Custom</span>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600 mb-6">
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Everything in Premium
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Multiple locations
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    Custom branding
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    API access
-                  </li>
-                </ul>
-                <div className="text-sm text-gray-500">
-                  <strong>2</strong> active subscriptions
-                </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <TableTh>Customer</TableTh>
+                      <TableTh>Plan</TableTh>
+                      <TableTh>Status</TableTh>
+                      <TableTh>Start Date</TableTh>
+                      <TableTh>Next Billing</TableTh>
+                      <TableTh>Revenue</TableTh>
+                      <TableTh>Actions</TableTh>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredSubscriptions.map((sub) => (
+                      <SubscriptionRow key={sub.id} sub={sub} onDelete={() => handleDeleteSubscription(sub.id)} />
+                    ))}
+                    {filteredSubscriptions.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                          No subscriptions found matching your search.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Active Subscriptions Tab */}
-        {activeTab === 'active' && (
-          <div className="p-6">
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search subscriptions..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Next Billing</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="font-medium text-gray-900">Toronto Archery Range</div>
-                      <div className="text-sm text-gray-500">john@torontoarchery.com</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded">Premium</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">Active</span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">1/15/2024</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">4/15/2024</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">$79/mo</td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button className="text-blue-600 hover:text-blue-800">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button>
-                      <button className="text-red-600 hover:text-red-800">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="font-medium text-gray-900">Vancouver Archery Club</div>
-                      <div className="text-sm text-gray-500">info@vancouverarchery.ca</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">Basic</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">Active</span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">2/1/2024</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">5/1/2024</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">$29/mo</td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button className="text-blue-600 hover:text-blue-800">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button>
-                      <button className="text-red-600 hover:text-red-800">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
+  )
+}
+
+function StatCard({ title, value, icon, color = 'text-gray-900' }: { title: string, value: string, icon: React.ReactNode, color?: string }) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex justify-between items-start">
+      <div>
+        <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
+        <p className={`text-3xl font-bold mt-2 ${color}`}>{value}</p>
+      </div>
+      <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+        {icon}
+      </div>
+    </div>
+  )
+}
+
+function TabButton({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-8 py-4 font-semibold text-sm transition-all relative ${active
+          ? 'text-green-600'
+          : 'text-gray-500 hover:text-gray-700'
+        }`}
+    >
+      {label}
+      {active && <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-600 rounded-t-full" />}
+    </button>
+  )
+}
+
+function TableTh({ children }: { children: React.ReactNode }) {
+  return (
+    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest leading-none">
+      {children}
+    </th>
+  )
+}
+
+function PlanCard({ plan, onDelete }: { plan: SubscriptionPlan, onDelete: () => void }) {
+  const isPremium = plan.id === '3' || plan.id === '4'; // Silver or Gold
+
+  return (
+    <div className={`
+      relative border-2 rounded-2xl p-6 transition-all duration-300 flex flex-col h-full
+      ${isPremium ? 'border-emerald-500 bg-emerald-50/30' : 'border-gray-200 hover:border-emerald-400 bg-white'}
+    `}>
+      {plan.id === '3' && (
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+          <span className="bg-emerald-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
+            Most Popular
+          </span>
+        </div>
+      )}
+
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex-1">
+          <h3 className="font-bold text-xl text-gray-900 leading-tight">{plan.name}</h3>
+          <p className="text-gray-500 text-sm mt-0.5">{plan.description}</p>
+        </div>
+        <div className="flex gap-2">
+          <button className="text-gray-400 hover:text-blue-600 transition-colors">
+            <Edit className="w-5 h-5" />
+          </button>
+          <button onClick={onDelete} className="text-gray-400 hover:text-red-600 transition-colors">
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {plan.badgeImage && (
+        <div className="mb-4 bg-gray-50 rounded-xl p-3 flex justify-center items-center border border-gray-100">
+          <img src={plan.badgeImage} alt={plan.name} className="h-16 w-auto object-contain drop-shadow-md" />
+        </div>
+      )}
+
+      <div className="mb-6">
+        <span className="text-4xl font-black text-gray-900">{plan.price}</span>
+        {plan.price !== 'Custom' && <span className="text-gray-500 font-medium ml-1">/{plan.interval}</span>}
+      </div>
+
+      <ul className="space-y-3 text-sm text-gray-600 mb-8 flex-1">
+        {plan.features.map((feature, idx) => (
+          <li key={idx} className="flex items-center gap-2.5">
+            {feature.startsWith('✓') ? (
+              <span className="flex-shrink-0 w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-bold">✓</span>
+            ) : feature.startsWith('✗') ? (
+              <span className="flex-shrink-0 w-4 h-4 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-[10px] font-bold">✕</span>
+            ) : (
+              <span className="text-emerald-500 font-bold">✓</span>
+            )}
+            <span className={feature.startsWith('✗') ? 'text-gray-400' : 'text-gray-700 font-medium'}>
+              {feature.replace(/^[✓✗] /, '')}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+        <span className="text-sm font-semibold text-gray-900">{plan.activeCount} active users</span>
+        <button className="text-emerald-600 hover:text-emerald-700 text-xs font-bold uppercase tracking-widest">
+          View Users
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function SubscriptionRow({ sub, onDelete }: { sub: ActiveSubscription, onDelete: () => void }) {
+  const getPlanBadgeStyle = (name: string) => {
+    if (name.includes('Premium')) return 'bg-blue-50 text-blue-700 border-blue-200'
+    if (name.includes('Pro')) return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    return 'bg-amber-50 text-amber-700 border-amber-200'
+  }
+
+  return (
+    <tr className="hover:bg-gray-50/80 transition-colors group">
+      <td className="px-6 py-4">
+        <div>
+          <div className="font-bold text-gray-900 group-hover:text-green-700 transition-colors">{sub.customerName}</div>
+          <div className="text-sm text-gray-500 font-medium">{sub.email}</div>
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-widest border rounded-full ${getPlanBadgeStyle(sub.planName)} shadow-sm`}>
+          {sub.planName}
+        </span>
+      </td>
+      <td className="px-6 py-4">
+        <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-800 rounded-full">
+          {sub.status}
+        </span>
+      </td>
+      <td className="px-6 py-4 text-sm font-medium text-gray-600">{sub.startDate}</td>
+      <td className="px-6 py-4 text-sm font-medium text-gray-600">{sub.nextBilling}</td>
+      <td className="px-6 py-4 text-sm font-black text-gray-900">{sub.revenue}</td>
+      <td className="px-6 py-4">
+        <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button className="text-gray-400 hover:text-blue-600 transition-colors">
+            <Eye className="w-5 h-5" />
+          </button>
+          <button onClick={onDelete} className="text-gray-400 hover:text-red-600 transition-colors">
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
+      </td>
+    </tr>
   )
 }
