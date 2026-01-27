@@ -29,6 +29,42 @@ interface PageProps {
   };
 }
 
+// Helper to normalize post_images/video_urls to always be an array
+function normalizeToArray(value: string | string[] | null | undefined): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    // Check if it's a PostgreSQL array format: {"/path/to/image.jpg","/another.jpg"}
+    if (value.startsWith('{') && value.endsWith('}')) {
+      // Remove curly braces and split by comma
+      const inner = value.slice(1, -1);
+      if (!inner) return [];
+      // Handle quoted strings in PostgreSQL array format
+      const items = inner.split(',').map(item => {
+        // Remove surrounding quotes if present
+        const trimmed = item.trim();
+        if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+          return trimmed.slice(1, -1);
+        }
+        return trimmed;
+      }).filter(Boolean);
+      return items;
+    }
+    // Check if it's a JSON array string
+    if (value.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [value];
+      } catch {
+        return [value];
+      }
+    }
+    // Single string path
+    return [value];
+  }
+  return [];
+}
+
 async function getRange(provinceSlug: string, citySlug: string, rangeSlug: string): Promise<Range | null> {
   const supabase = await createClient();
 
@@ -177,8 +213,8 @@ export default async function RangeDetailPage({ params }: PageProps) {
         {/* Hero Section with Media */}
         <section className="relative">
           <MediaSection
-            images={range.post_images || []}
-            videos={range.video_urls || []}
+            images={normalizeToArray(range.post_images)}
+            videos={normalizeToArray(range.video_urls)}
             rangeName={range.name}
             tier={range.subscription_tier}
             showCarousel={showCarousel}

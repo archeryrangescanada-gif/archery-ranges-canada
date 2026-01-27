@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const supabase = await createClient()
 
-    // Get all ranges with their city/province relationships
+    // Get all ranges with their city/province relationships and image data
     const { data: ranges, error } = await supabase
       .from('ranges')
       .select(`
@@ -13,6 +13,7 @@ export async function GET() {
         name,
         slug,
         city_id,
+        post_images,
         cities (
           id,
           name,
@@ -40,6 +41,7 @@ export async function GET() {
       city_id: string | null
       cityName: string | null
       provinceName: string | null
+      post_images: any
     }> = []
 
     const healthy: Array<{
@@ -48,7 +50,16 @@ export async function GET() {
       slug: string
       cityName: string
       provinceName: string
+      post_images: any
     }> = []
+
+    // Image path stats
+    const imageStats = {
+      noImages: 0,
+      stringImages: 0,
+      arrayImages: 0,
+      uniquePaths: new Set<string>(),
+    }
 
     for (const range of ranges || []) {
       const rangeIssues: string[] = []
@@ -74,6 +85,22 @@ export async function GET() {
         }
       }
 
+      // Track image stats
+      if (!range.post_images) {
+        imageStats.noImages++
+      } else if (typeof range.post_images === 'string') {
+        imageStats.stringImages++
+        // Extract the folder path
+        const match = range.post_images.match(/^\/([^/]+)\//)
+        if (match) imageStats.uniquePaths.add(match[1])
+      } else if (Array.isArray(range.post_images)) {
+        imageStats.arrayImages++
+        range.post_images.forEach((img: string) => {
+          const match = img.match(/^\/([^/]+)\//)
+          if (match) imageStats.uniquePaths.add(match[1])
+        })
+      }
+
       if (rangeIssues.length > 0) {
         issues.push({
           id: range.id,
@@ -83,6 +110,7 @@ export async function GET() {
           city_id: range.city_id,
           cityName: city?.name || null,
           provinceName: city?.provinces?.name || null,
+          post_images: range.post_images,
         })
       } else {
         healthy.push({
@@ -91,6 +119,7 @@ export async function GET() {
           slug: range.slug,
           cityName: city.name,
           provinceName: city.provinces.name,
+          post_images: range.post_images,
         })
       }
     }
@@ -100,6 +129,12 @@ export async function GET() {
       healthy: healthy.length,
       issues: issues.length,
       issuesList: issues,
+      imageStats: {
+        noImages: imageStats.noImages,
+        stringImages: imageStats.stringImages,
+        arrayImages: imageStats.arrayImages,
+        uniqueImageFolders: Array.from(imageStats.uniquePaths),
+      },
       summary: {
         missingCityId: issues.filter(i => i.issue.includes('Missing city_id')).length,
         noLinkedCity: issues.filter(i => i.issue.includes('No linked city record')).length,
