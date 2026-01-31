@@ -7,6 +7,7 @@ import {
   welcomeEmail,
   archerWelcomeEmail,
   inquiryNotificationEmail,
+  rangeSubmissionNotificationEmail,
 } from './templates'
 
 export interface SendEmailParams {
@@ -278,6 +279,32 @@ export class EmailService {
 
     return this.sendEmail({
       to: params.to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
+    })
+  }
+
+  /**
+   * Send notification to admin about a new range submission
+   */
+  static async sendRangeSubmissionNotification(params: {
+    rangeName: string
+    address: string
+    submittedByEmail: string | null
+    phone: string | null
+    website: string | null
+    socials: string | null
+  }) {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const dashboardLink = `${baseUrl}/admin/submissions`
+    const template = rangeSubmissionNotificationEmail({
+      ...params,
+      dashboardLink,
+    })
+
+    return this.sendEmail({
+      to: process.env.RESEND_REPLY_TO_EMAIL || 'archeryrangescanada@gmail.com',
       subject: template.subject,
       html: template.html,
       text: template.text,

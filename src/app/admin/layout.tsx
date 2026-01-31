@@ -60,6 +60,7 @@ export default function AdminLayout({
     { name: 'Ads', href: '/admin/ads', icon: Megaphone },
     { name: 'Announcements', href: '/admin/announcements', icon: FileText },
     { name: 'Emails', href: '/admin/emails', icon: Mail },
+    { name: 'Submissions', href: '/admin/submissions', icon: FileText },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },

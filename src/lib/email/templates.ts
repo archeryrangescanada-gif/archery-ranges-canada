@@ -480,3 +480,93 @@ Archery Ranges Canada - Find the perfect archery range near you
     text,
   }
 }
+// Range Submission Notification Email (To Admin)
+export const rangeSubmissionNotificationEmail = (params: {
+  rangeName: string
+  address: string
+  submittedByEmail: string | null
+  phone: string | null
+  website: string | null
+  socials: string | null
+  dashboardLink: string
+}): EmailTemplate => {
+  const html = emailWrapper(`
+    <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px;">New Range Reported 🎯</h2>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      Hello Admin,
+    </p>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      A user has reported a missing archery range that isn't currently listed on the website.
+    </p>
+
+    <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+      <p style="margin: 0 0 10px 0; color: #111827; font-weight: 600;">Range Details:</p>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280; width: 100px;">Name:</td>
+          <td style="padding: 4px 0; color: #111827; font-weight: 600;">${params.rangeName || 'N/A'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280;">Address:</td>
+          <td style="padding: 4px 0; color: #111827;">${params.address || 'N/A'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280;">Contact Email:</td>
+          <td style="padding: 4px 0; color: #111827;">${params.submittedByEmail || 'N/A'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280;">Phone:</td>
+          <td style="padding: 4px 0; color: #111827;">${params.phone || 'N/A'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280;">Website:</td>
+          <td style="padding: 4px 0; color: #111827;">${params.website || 'N/A'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280;">Socials:</td>
+          <td style="padding: 4px 0; color: #111827;">${params.socials || 'N/A'}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${params.dashboardLink}"
+         style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: 600; font-size: 16px;">
+        View in Dashboard
+      </a>
+    </div>
+
+    <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
+      This submission is currently marked as <strong>Pending</strong>. Please review and approve it to list it on the site.
+    </p>
+  `)
+
+  const text = `
+New Range Reported 🎯
+
+Hello Admin,
+
+A user has reported a missing archery range.
+
+Details:
+Name: ${params.rangeName || 'N/A'}
+Address: ${params.address || 'N/A'}
+Contact Email: ${params.submittedByEmail || 'N/A'}
+Phone: ${params.phone || 'N/A'}
+Website: ${params.website || 'N/A'}
+Socials: ${params.socials || 'N/A'}
+
+View in dashboard: ${params.dashboardLink}
+
+---
+Archery Ranges Canada
+`
+
+  return {
+    subject: `New Range Submission: ${params.rangeName || 'Unnamed Range'}`,
+    html,
+    text,
+  }
+}

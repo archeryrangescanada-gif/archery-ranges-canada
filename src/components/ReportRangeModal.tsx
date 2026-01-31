@@ -25,20 +25,18 @@ export default function ReportRangeModal({ isOpen, onClose }: ReportRangeModalPr
     setSubmitting(true)
 
     try {
-      const { error } = await supabaseClient
-        .from('range_submissions')
-        .insert([{
-          range_name: formData.range_name || null,
-          address: formData.address || null,
-          email: formData.email || null,
-          phone: formData.phone || null,
-          website: formData.website || null,
-          socials: formData.socials || null,
-          status: 'pending',
-          submitted_at: new Date().toISOString()
-        }])
+      const response = await fetch('/api/submissions/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to submit')
+      }
 
       setSuccess(true)
       setTimeout(() => {
@@ -53,9 +51,9 @@ export default function ReportRangeModal({ isOpen, onClose }: ReportRangeModalPr
         setSuccess(false)
         onClose()
       }, 2000)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting report:', error)
-      alert('Failed to submit. Please try again.')
+      alert(error.message || 'Failed to submit. Please try again.')
     } finally {
       setSubmitting(false)
     }
