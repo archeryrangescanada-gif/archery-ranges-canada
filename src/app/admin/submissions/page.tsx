@@ -15,13 +15,25 @@ export default function SubmissionsPage() {
   }, [])
 
   const fetchSubmissions = async () => {
-    const { data, error } = await supabaseClient
-      .from('range_submissions')
-      .select('*')
-      .order('submitted_at', { ascending: false })
+    try {
+      console.log('[Submissions] Fetching submissions...')
+      const { data, error } = await supabaseClient
+        .from('range_submissions')
+        .select('*')
+        .order('submitted_at', { ascending: false })
 
-    if (data) setSubmissions(data)
-    setLoading(false)
+      if (error) {
+        console.error('[Submissions] Error fetching:', error.message, error.details, error.hint)
+        return
+      }
+
+      console.log('[Submissions] Fetched data:', data)
+      setSubmissions(data || [])
+    } catch (err) {
+      console.error('[Submissions] Unexpected error:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const updateStatus = async (id: string, status: string) => {
@@ -45,6 +57,11 @@ export default function SubmissionsPage() {
 
         {loading ? (
           <p>Loading...</p>
+        ) : submissions.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <p className="text-gray-500">No submissions found.</p>
+            <p className="text-sm text-gray-400 mt-2">Check the browser console for any errors.</p>
+          </div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <table className="w-full">
