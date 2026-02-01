@@ -23,7 +23,7 @@ export default function EmailSettingsPage() {
             const { data } = await supabase.from('email_settings').select('*')
             if (data) {
                 const settingsMap: Record<string, string> = {}
-                data.forEach(row => {
+                data.forEach((row: { setting_key: string; setting_value: string }) => {
                     settingsMap[row.setting_key] = row.setting_value
                 })
                 setSettings({
