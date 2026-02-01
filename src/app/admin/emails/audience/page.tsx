@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Search, Filter, MoreHorizontal, UserPlus, Download, CheckCircle, XCircle, Clock, AlertTriangle, Loader2 } from 'lucide-react'
+import { Search, Filter, MoreHorizontal, UserPlus, Download, CheckCircle, XCircle, Clock, AlertTriangle, Loader2, X } from 'lucide-react'
 
 // DB Type Definition (simplified)
 interface Contact {
@@ -24,6 +24,9 @@ export default function AudiencePage() {
     const [filterStatus, setFilterStatus] = useState('All')
     const [searchQuery, setSearchQuery] = useState('')
     const [page, setPage] = useState(1)
+    const [showAddModal, setShowAddModal] = useState(false)
+    const [addingContact, setAddingContact] = useState(false)
+    const [newContact, setNewContact] = useState({ first_name: '', last_name: '', email: '', tags: '' })
     const PAGE_SIZE = 10
 
     const supabase = createClient()
@@ -65,6 +68,68 @@ export default function AudiencePage() {
         fetchContacts()
     }, [fetchContacts])
 
+    const handleAddContact = async () => {
+        if (!newContact.email) {
+            alert('Email is required')
+            return
+        }
+        setAddingContact(true)
+        try {
+            const tagsArray = newContact.tags ? newContact.tags.split(',').map(t => t.trim()).filter(Boolean) : []
+            const { error } = await supabase
+                .from('email_contacts')
+                .insert([{
+                    email: newContact.email,
+                    first_name: newContact.first_name || null,
+                    last_name: newContact.last_name || null,
+                    tags: tagsArray,
+                    status: 'active',
+                    source: 'manual'
+                }])
+
+            if (error) throw error
+
+            setShowAddModal(false)
+            setNewContact({ first_name: '', last_name: '', email: '', tags: '' })
+            fetchContacts()
+        } catch (err: any) {
+            console.error('Error adding contact:', err)
+            alert(err.message || 'Failed to add contact')
+        } finally {
+            setAddingContact(false)
+        }
+    }
+
+    const handleExport = () => {
+        // Create CSV content
+        const headers = ['Email', 'First Name', 'Last Name', 'Status', 'Source', 'Tags', 'Created At']
+        const csvRows = [headers.join(',')]
+
+        contacts.forEach(contact => {
+            const row = [
+                contact.email,
+                contact.first_name || '',
+                contact.last_name || '',
+                contact.status,
+                contact.source || '',
+                (contact.tags || []).join(';'),
+                contact.created_at
+            ].map(val => `"${String(val).replace(/"/g, '""')}"`)
+            csvRows.push(row.join(','))
+        })
+
+        const csvContent = csvRows.join('\n')
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `audience_export_${new Date().toISOString().split('T')[0]}.csv`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+    }
+
     // Debounce search could be added here, currently triggers on effect dependency
 
     return (
@@ -76,11 +141,18 @@ export default function AudiencePage() {
                     <p className="text-stone-500 mt-2 font-medium">Manage contacts, segments, and tags</p>
                 </div>
                 <div className="flex gap-3">
-                    <button className="bg-white hover:bg-stone-50 text-stone-700 px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-sm border border-stone-200 transition-all">
+                    <button
+                        onClick={handleExport}
+                        disabled={contacts.length === 0}
+                        className="bg-white hover:bg-stone-50 text-stone-700 px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-sm border border-stone-200 transition-all disabled:opacity-50"
+                    >
                         <Download className="w-4 h-4" />
                         Export
                     </button>
-                    <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 transition-all active:scale-95">
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 transition-all active:scale-95"
+                    >
                         <UserPlus className="w-4 h-4 stroke-[3px]" />
                         Add Contact
                     </button>
@@ -216,6 +288,93 @@ export default function AudiencePage() {
                     </div>
                 </div>
             </div>
+
+            {/* Add Contact Modal */}
+            {showAddModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-black text-stone-900">Add New Contact</h2>
+                                <button
+                                    onClick={() => setShowAddModal(false)}
+                                    className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-stone-500" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Email *</label>
+                                    <input
+                                        type="email"
+                                        value={newContact.email}
+                                        onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                        placeholder="email@example.com"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">First Name</label>
+                                        <input
+                                            type="text"
+                                            value={newContact.first_name}
+                                            onChange={(e) => setNewContact({ ...newContact, first_name: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                            placeholder="John"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Last Name</label>
+                                        <input
+                                            type="text"
+                                            value={newContact.last_name}
+                                            onChange={(e) => setNewContact({ ...newContact, last_name: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                            placeholder="Doe"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Tags (comma separated)</label>
+                                    <input
+                                        type="text"
+                                        value={newContact.tags}
+                                        onChange={(e) => setNewContact({ ...newContact, tags: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                        placeholder="newsletter, vip"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 mt-6">
+                                <button
+                                    onClick={() => setShowAddModal(false)}
+                                    className="flex-1 px-6 py-3 border-2 border-stone-200 text-stone-600 rounded-xl font-bold hover:bg-stone-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleAddContact}
+                                    disabled={addingContact}
+                                    className="flex-1 px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {addingContact ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Adding...
+                                        </>
+                                    ) : (
+                                        'Add Contact'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -1,9 +1,73 @@
 'use client'
 
-import { useState } from 'react'
-import { Save, ShieldCheck, Globe, Mail, Bell, Key, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Save, ShieldCheck, Globe, Mail, Bell, Key, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
 
 export default function EmailSettingsPage() {
+    const [saving, setSaving] = useState(false)
+    const [saved, setSaved] = useState(false)
+    const [settings, setSettings] = useState({
+        from_name: 'Josh from Archery Ranges',
+        from_email: 'josh@archeryrangescanada.ca',
+        reply_to: 'support@archeryrangescanada.ca',
+        track_opens: true,
+        track_clicks: true,
+        google_analytics: false
+    })
+
+    const supabase = createClient()
+
+    useEffect(() => {
+        async function loadSettings() {
+            const { data } = await supabase.from('email_settings').select('*')
+            if (data) {
+                const settingsMap: Record<string, string> = {}
+                data.forEach(row => {
+                    settingsMap[row.setting_key] = row.setting_value
+                })
+                setSettings({
+                    from_name: settingsMap.from_name || 'Josh from Archery Ranges',
+                    from_email: settingsMap.from_email || 'josh@archeryrangescanada.ca',
+                    reply_to: settingsMap.reply_to || 'support@archeryrangescanada.ca',
+                    track_opens: settingsMap.track_opens === 'true',
+                    track_clicks: settingsMap.track_clicks === 'true',
+                    google_analytics: settingsMap.google_analytics === 'true'
+                })
+            }
+        }
+        loadSettings()
+    }, [supabase])
+
+    const handleSave = async () => {
+        setSaving(true)
+        setSaved(false)
+        try {
+            const updates = [
+                { setting_key: 'from_name', setting_value: settings.from_name },
+                { setting_key: 'from_email', setting_value: settings.from_email },
+                { setting_key: 'reply_to', setting_value: settings.reply_to },
+                { setting_key: 'track_opens', setting_value: String(settings.track_opens) },
+                { setting_key: 'track_clicks', setting_value: String(settings.track_clicks) },
+                { setting_key: 'google_analytics', setting_value: String(settings.google_analytics) }
+            ]
+
+            for (const update of updates) {
+                await supabase
+                    .from('email_settings')
+                    .upsert(update, { onConflict: 'setting_key' })
+            }
+
+            setSaved(true)
+            setTimeout(() => setSaved(false), 3000)
+        } catch (err) {
+            console.error('Error saving settings:', err)
+            alert('Failed to save settings')
+        } finally {
+            setSaving(false)
+        }
+    }
+
     return (
         <div className="p-8 space-y-8 max-w-5xl">
             <div>
@@ -25,16 +89,31 @@ export default function EmailSettingsPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">From Name</label>
-                                    <input type="text" defaultValue="Josh from Archery Ranges" className="w-full px-4 py-2 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none" />
+                                    <input
+                                        type="text"
+                                        value={settings.from_name}
+                                        onChange={(e) => setSettings({ ...settings, from_name: e.target.value })}
+                                        className="w-full px-4 py-2 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">From Email</label>
-                                    <input type="email" defaultValue="josh@archeryrangescanada.ca" className="w-full px-4 py-2 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none" />
+                                    <input
+                                        type="email"
+                                        value={settings.from_email}
+                                        onChange={(e) => setSettings({ ...settings, from_email: e.target.value })}
+                                        className="w-full px-4 py-2 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                    />
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Reply-To Email</label>
-                                <input type="email" defaultValue="support@archeryrangescanada.ca" className="w-full px-4 py-2 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none" />
+                                <input
+                                    type="email"
+                                    value={settings.reply_to}
+                                    onChange={(e) => setSettings({ ...settings, reply_to: e.target.value })}
+                                    className="w-full px-4 py-2 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                />
                             </div>
                         </div>
                     </section>
@@ -84,9 +163,24 @@ export default function EmailSettingsPage() {
                             Tracking
                         </h2>
                         <div className="space-y-4">
-                            <Toggle label="Track Opens" description="Insert invisible pixel to track read rates" defaultChecked />
-                            <Toggle label="Track Clicks" description="Rewrite links to measure CTR" defaultChecked />
-                            <Toggle label="Google Analytics" description="Add UTM parameters automatically" />
+                            <Toggle
+                                label="Track Opens"
+                                description="Insert invisible pixel to track read rates"
+                                checked={settings.track_opens}
+                                onChange={(val) => setSettings({ ...settings, track_opens: val })}
+                            />
+                            <Toggle
+                                label="Track Clicks"
+                                description="Rewrite links to measure CTR"
+                                checked={settings.track_clicks}
+                                onChange={(val) => setSettings({ ...settings, track_clicks: val })}
+                            />
+                            <Toggle
+                                label="Google Analytics"
+                                description="Add UTM parameters automatically"
+                                checked={settings.google_analytics}
+                                onChange={(val) => setSettings({ ...settings, google_analytics: val })}
+                            />
                         </div>
                     </section>
 
@@ -109,9 +203,27 @@ export default function EmailSettingsPage() {
             </div>
 
             <div className="flex justify-end pt-6 border-t border-stone-200">
-                <button className="bg-stone-900 hover:bg-black text-white px-8 py-4 rounded-xl font-black flex items-center gap-2 shadow-lg transition-all active:scale-95">
-                    <Save className="w-5 h-5" />
-                    Save Changes
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-stone-900 hover:bg-black text-white px-8 py-4 rounded-xl font-black flex items-center gap-2 shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                >
+                    {saving ? (
+                        <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Saving...
+                        </>
+                    ) : saved ? (
+                        <>
+                            <CheckCircle className="w-5 h-5" />
+                            Saved!
+                        </>
+                    ) : (
+                        <>
+                            <Save className="w-5 h-5" />
+                            Save Changes
+                        </>
+                    )}
                 </button>
             </div>
 
@@ -119,10 +231,9 @@ export default function EmailSettingsPage() {
     )
 }
 
-function Toggle({ label, description, defaultChecked }: { label: string, description?: string, defaultChecked?: boolean }) {
-    const [checked, setChecked] = useState(defaultChecked || false)
+function Toggle({ label, description, checked, onChange }: { label: string, description?: string, checked: boolean, onChange: (val: boolean) => void }) {
     return (
-        <div className="flex items-start justify-between cursor-pointer" onClick={() => setChecked(!checked)}>
+        <div className="flex items-start justify-between cursor-pointer" onClick={() => onChange(!checked)}>
             <div>
                 <div className="text-sm font-bold text-stone-900">{label}</div>
                 {description && <div className="text-xs text-stone-500 leading-snug mt-0.5">{description}</div>}

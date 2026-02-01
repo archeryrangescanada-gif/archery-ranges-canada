@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, Search, MoreHorizontal, Edit, Copy, Trash2, FileText, Loader2 } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, Edit, Copy, Trash2, FileText, Loader2, X } from 'lucide-react'
 
 // DB Type Definition
 interface Template {
@@ -23,6 +23,9 @@ export default function TemplatesPage() {
     const [loading, setLoading] = useState(true)
     const [activeCategory, setActiveCategory] = useState('All')
     const [searchQuery, setSearchQuery] = useState('')
+    const [showCreateModal, setShowCreateModal] = useState(false)
+    const [creating, setCreating] = useState(false)
+    const [newTemplate, setNewTemplate] = useState({ name: '', subject: '', preheader: '', category: 'Newsletter', body_html: '' })
 
     const supabase = createClient()
 
@@ -63,6 +66,68 @@ export default function TemplatesPage() {
         return matchesSearch
     })
 
+    const handleCreateTemplate = async () => {
+        if (!newTemplate.name) {
+            alert('Template name is required')
+            return
+        }
+        setCreating(true)
+        try {
+            const { error } = await supabase
+                .from('email_templates')
+                .insert([{
+                    name: newTemplate.name,
+                    subject: newTemplate.subject || null,
+                    preheader: newTemplate.preheader || null,
+                    category: newTemplate.category,
+                    body_html: newTemplate.body_html || null,
+                    status: 'draft'
+                }])
+
+            if (error) throw error
+
+            setShowCreateModal(false)
+            setNewTemplate({ name: '', subject: '', preheader: '', category: 'Newsletter', body_html: '' })
+            fetchTemplates()
+        } catch (err: any) {
+            console.error('Error creating template:', err)
+            alert(err.message || 'Failed to create template')
+        } finally {
+            setCreating(false)
+        }
+    }
+
+    const handleDeleteTemplate = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this template?')) return
+        try {
+            const { error } = await supabase.from('email_templates').delete().eq('id', id)
+            if (error) throw error
+            fetchTemplates()
+        } catch (err: any) {
+            console.error('Error deleting template:', err)
+            alert(err.message || 'Failed to delete template')
+        }
+    }
+
+    const handleDuplicateTemplate = async (template: Template) => {
+        try {
+            const { error } = await supabase
+                .from('email_templates')
+                .insert([{
+                    name: `${template.name} (Copy)`,
+                    subject: template.subject,
+                    preheader: template.preheader,
+                    category: template.category,
+                    status: 'draft'
+                }])
+            if (error) throw error
+            fetchTemplates()
+        } catch (err: any) {
+            console.error('Error duplicating template:', err)
+            alert(err.message || 'Failed to duplicate template')
+        }
+    }
+
     return (
         <div className="p-8 space-y-8">
             {/* Header */}
@@ -71,7 +136,10 @@ export default function TemplatesPage() {
                     <h1 className="text-3xl font-black text-stone-900">Templates</h1>
                     <p className="text-stone-500 mt-2 font-medium">Manage and build your email layouts</p>
                 </div>
-                <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 transition-all active:scale-95">
+                <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 transition-all active:scale-95"
+                >
                     <Plus className="w-5 h-5 stroke-[3px]" />
                     Create Template
                 </button>
@@ -165,10 +233,18 @@ export default function TemplatesPage() {
                                         Edited {new Date(template.updated_at).toLocaleDateString()}
                                     </span>
                                     <div className="flex gap-1">
-                                        <button className="p-2 text-stone-400 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors" title="Duplicate">
+                                        <button
+                                            onClick={() => handleDuplicateTemplate(template)}
+                                            className="p-2 text-stone-400 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors"
+                                            title="Duplicate"
+                                        >
                                             <Copy className="w-4 h-4" />
                                         </button>
-                                        <button className="p-2 text-stone-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Delete">
+                                        <button
+                                            onClick={() => handleDeleteTemplate(template.id)}
+                                            className="p-2 text-stone-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                                            title="Delete"
+                                        >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                         <button className="px-3 py-1.5 bg-stone-900 text-white text-xs font-bold rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-1">
@@ -179,6 +255,103 @@ export default function TemplatesPage() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Create Template Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-black text-stone-900">Create New Template</h2>
+                                <button
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-stone-500" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Template Name *</label>
+                                    <input
+                                        type="text"
+                                        value={newTemplate.name}
+                                        onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                        placeholder="e.g. Welcome Email"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Subject Line</label>
+                                    <input
+                                        type="text"
+                                        value={newTemplate.subject}
+                                        onChange={(e) => setNewTemplate({ ...newTemplate, subject: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                        placeholder="e.g. Welcome to Archery Ranges Canada!"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Preheader</label>
+                                    <input
+                                        type="text"
+                                        value={newTemplate.preheader}
+                                        onChange={(e) => setNewTemplate({ ...newTemplate, preheader: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                        placeholder="Preview text shown in inbox"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Category</label>
+                                    <select
+                                        value={newTemplate.category}
+                                        onChange={(e) => setNewTemplate({ ...newTemplate, category: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl font-medium text-stone-900 focus:border-emerald-500 outline-none"
+                                    >
+                                        {categories.filter(c => c !== 'All').map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Email Body (HTML)</label>
+                                    <textarea
+                                        value={newTemplate.body_html}
+                                        onChange={(e) => setNewTemplate({ ...newTemplate, body_html: e.target.value })}
+                                        rows={6}
+                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl font-mono text-sm text-stone-900 focus:border-emerald-500 outline-none"
+                                        placeholder="<h1>Hello!</h1><p>Your email content...</p>"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 mt-6">
+                                <button
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="flex-1 px-6 py-3 border-2 border-stone-200 text-stone-600 rounded-xl font-bold hover:bg-stone-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleCreateTemplate}
+                                    disabled={creating}
+                                    className="flex-1 px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {creating ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Creating...
+                                        </>
+                                    ) : (
+                                        'Create Template'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
