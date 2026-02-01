@@ -29,6 +29,17 @@ CREATE POLICY "Allow public inserts" ON range_submissions
     FOR INSERT
     WITH CHECK (true);
 
+-- Policy: Allow authenticated users to read submissions (for admin dashboard)
+CREATE POLICY "Allow authenticated read access" ON range_submissions
+    FOR SELECT TO authenticated
+    USING (true);
+
+-- Policy: Allow authenticated users to update submissions (for admin actions)
+CREATE POLICY "Allow authenticated update access" ON range_submissions
+    FOR UPDATE TO authenticated
+    USING (true)
+    WITH CHECK (true);
+
 -- Policy: Allow service role full access (for admin operations)
 CREATE POLICY "Allow service role full access" ON range_submissions
     FOR ALL
