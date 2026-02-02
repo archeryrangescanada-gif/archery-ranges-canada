@@ -1,6 +1,5 @@
-'use client'
-
 import { useState } from 'react'
+import { trackFilterApplied } from '@/lib/analytics'
 
 interface FilterState {
   rangeType: string[]
@@ -45,13 +44,16 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
   const handleToggle = (category: keyof FilterState, value: string) => {
     const newFilters = { ...filters }
     const index = newFilters[category].indexOf(value)
-    
+
     if (index > -1) {
       newFilters[category].splice(index, 1)
+      // Track filter removal as well if desired, or just application
+      trackFilterApplied(category, `remove:${value}`)
     } else {
       newFilters[category].push(value)
+      trackFilterApplied(category, value)
     }
-    
+
     setFilters(newFilters)
     onFilterChange(newFilters)
   }
@@ -66,9 +68,9 @@ export default function SearchFilters({ onFilterChange }: SearchFiltersProps) {
     onFilterChange(emptyFilters)
   }
 
-  const activeFilterCount = 
-    filters.rangeType.length + 
-    filters.amenities.length + 
+  const activeFilterCount =
+    filters.rangeType.length +
+    filters.amenities.length +
     filters.priceRange.length
 
   return (

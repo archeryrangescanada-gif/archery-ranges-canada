@@ -17,6 +17,7 @@ import { MapSection } from '@/components/listing/MapSection';
 import { SubscriptionBadge } from '@/components/listing/SubscriptionBadge';
 import { BreadcrumbNav } from '@/components/listing/BreadcrumbNav';
 import { UpgradeCTA } from '@/components/listing/UpgradeCTA';
+import { RangeAnalyticsProvider } from '@/components/RangeAnalyticsProvider';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -219,235 +220,250 @@ export default async function RangeDetailPage({ params }: PageProps) {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
-        {/* Breadcrumb Navigation */}
-        <BreadcrumbNav
-          province={{ name: range.cities?.provinces?.name || range.province, slug: params.province }}
-          city={{ name: range.cities?.name || range.city, slug: params.city }}
-          rangeName={range.name}
-        />
-
-        {/* Hero Section with Media */}
-        <section className="relative">
-          <MediaSection
-            images={normalizeToArray(range.post_images)}
-            videos={normalizeToArray(range.video_urls)}
+      <RangeAnalyticsProvider
+        rangeId={range.id}
+        rangeName={range.name}
+        province={range.cities?.provinces?.name || range.province}
+        city={range.cities?.name || range.city}
+      >
+        <main className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
+          {/* Breadcrumb Navigation */}
+          <BreadcrumbNav
+            province={{ name: range.cities?.provinces?.name || range.province, slug: params.province }}
+            city={{ name: range.cities?.name || range.city, slug: params.city }}
             rangeName={range.name}
-            tier={range.subscription_tier}
-            showCarousel={showCarousel}
-            showVideo={showVideo}
           />
 
-          {badgeType && (
-            <div className="absolute top-4 right-4 z-10">
-              <SubscriptionBadge type={badgeType} />
-            </div>
-          )}
-        </section>
+          {/* Hero Section with Media */}
+          <section className="relative">
+            <MediaSection
+              images={normalizeToArray(range.post_images)}
+              videos={normalizeToArray(range.video_urls)}
+              rangeName={range.name}
+              tier={range.subscription_tier}
+              showCarousel={showCarousel}
+              showVideo={showVideo}
+            />
 
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Header */}
-              <RangeHeader
-                name={range.name}
-                address={range.address}
-                city={range.cities?.name || range.city}
-                province={range.cities?.provinces?.name || range.province}
-                postalCode={range.postal_code}
-                facilityType={range.facility_type}
-                rating={reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null}
-                reviewCount={reviews.length}
-              />
+            {badgeType && (
+              <div className="absolute top-4 right-4 z-10">
+                <SubscriptionBadge type={badgeType} />
+              </div>
+            )}
+          </section>
 
-              {/* Social Links */}
-              {(range.facebook_url || range.instagram_url || range.youtube_url || range.twitter_url) && (
-                <SocialLinks
-                  facebook={range.facebook_url}
-                  instagram={range.instagram_url}
-                  youtube={range.youtube_url}
-                  twitter={range.twitter_url}
-                />
-              )}
-
-              {/* Description */}
-              {range.post_content && (
-                <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-                  <h2 className="text-xl font-semibold text-stone-800 mb-4 flex items-center gap-2">
-                    <span className="w-1 h-6 bg-emerald-500 rounded-full"></span>
-                    About {range.name}
-                  </h2>
-                  <div className="text-stone-600 leading-relaxed whitespace-pre-line">
-                    {range.post_content}
-                  </div>
-
-                  {range.post_tags && (
-                    (() => {
-                      // Handle post_tags as either array or JSON string
-                      const tags = Array.isArray(range.post_tags)
-                        ? range.post_tags
-                        : typeof range.post_tags === 'string'
-                          ? (() => { try { return JSON.parse(range.post_tags); } catch { return []; } })()
-                          : [];
-                      return tags.length > 0 ? (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {tags.map((tag: string, index: number) => (
-                            <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null;
-                    })()
-                  )}
-                </section>
-              )}
-
-              {/* Range Specifications */}
-              <RangeSpecifications
-                lengthYards={range.range_length_yards}
-                numberOfLanes={range.number_of_lanes ?? undefined}
-                facilityType={range.facility_type}
-                bowTypesAllowed={range.bow_types_allowed}
-                maxDrawWeight={range.max_draw_weight}
-              />
-
-              {/* Amenities */}
-              <AmenitiesGrid
-                hasProShop={range.has_pro_shop}
-                has3dCourse={range.has_3d_course}
-                hasFieldCourse={range.has_field_course}
-                equipmentRental={range.equipment_rental_available}
-                lessonsAvailable={range.lessons_available}
-                parkingAvailable={range.parking_available}
-                accessibility={range.accessibility}
-              />
-
-              {/* Pricing */}
-              <PricingInfo
-                membershipRequired={range.membership_required}
-                membershipPrice={range.membership_price_adult}
-                dropInPrice={range.drop_in_price}
-                lessonPriceRange={range.lesson_price_range}
-              />
-
-              {/* Reviews (Pro/Premium) */}
-              {tierLimits.hasReviews && (
-                <ReviewsSection reviews={reviews} rangeId={range.id} rangeName={range.name} />
-              )}
-
-              {/* Events (Pro/Premium) */}
-              {tierLimits.hasEvents && events.length > 0 && (
-                <EventsSection events={events} rangeName={range.name} />
-              )}
-
-              {/* Map */}
-              {range.latitude && range.longitude && (
-                <MapSection
-                  latitude={range.latitude}
-                  longitude={range.longitude}
+          {/* Main Content */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column - Main Content */}
+              <div className="lg:col-span-2 space-y-8">
+                {/* Header */}
+                <RangeHeader
                   name={range.name}
                   address={range.address}
+                  city={range.cities?.name || range.city}
+                  province={range.cities?.provinces?.name || range.province}
+                  postalCode={range.postal_code}
+                  facilityType={range.facility_type}
+                  rating={reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null}
+                  reviewCount={reviews.length}
                 />
-              )}
 
-              {/* FAQ Section for SEO */}
-              <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-                <h2 className="text-xl font-semibold text-stone-800 mb-6">
-                  Frequently Asked Questions about {range.name}
-                </h2>
+                {/* Social Links */}
+                {(range.facebook_url || range.instagram_url || range.youtube_url || range.twitter_url) && (
+                  <SocialLinks
+                    facebook={range.facebook_url}
+                    instagram={range.instagram_url}
+                    youtube={range.youtube_url}
+                    twitter={range.twitter_url}
+                  />
+                )}
 
-                <div className="space-y-4">
-                  <div className="border-b border-stone-100 pb-4">
-                    <h3 className="font-medium text-stone-800 mb-2">Where is {range.name} located?</h3>
-                    <p className="text-stone-600 text-sm">
-                      {range.name} is located at {range.address || range.city}, {range.province}, Canada.
-                      {range.latitude && range.longitude && ' View the map above for exact directions.'}
-                    </p>
+                {/* Description */}
+                {range.post_content && (
+                  <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+                    <h2 className="text-xl font-semibold text-stone-800 mb-4 flex items-center gap-2">
+                      <span className="w-1 h-6 bg-emerald-500 rounded-full"></span>
+                      About {range.name}
+                    </h2>
+                    <div className="text-stone-600 leading-relaxed whitespace-pre-line">
+                      {range.post_content}
+                    </div>
+
+                    {range.post_tags && (
+                      (() => {
+                        // Handle post_tags as either array or JSON string
+                        const tags = Array.isArray(range.post_tags)
+                          ? range.post_tags
+                          : typeof range.post_tags === 'string'
+                            ? (() => { try { return JSON.parse(range.post_tags); } catch { return []; } })()
+                            : [];
+                        return tags.length > 0 ? (
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {tags.map((tag: string, index: number) => (
+                              <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null;
+                      })()
+                    )}
+                  </section>
+                )}
+
+                {/* Range Specifications */}
+                <RangeSpecifications
+                  lengthYards={range.range_length_yards}
+                  numberOfLanes={range.number_of_lanes ?? undefined}
+                  facilityType={range.facility_type}
+                  bowTypesAllowed={range.bow_types_allowed}
+                  maxDrawWeight={range.max_draw_weight}
+                />
+
+                {/* Amenities */}
+                <AmenitiesGrid
+                  hasProShop={range.has_pro_shop}
+                  has3dCourse={range.has_3d_course}
+                  hasFieldCourse={range.has_field_course}
+                  equipmentRental={range.equipment_rental_available}
+                  lessonsAvailable={range.lessons_available}
+                  parkingAvailable={range.parking_available}
+                  accessibility={range.accessibility}
+                />
+
+                {/* Pricing */}
+                <PricingInfo
+                  membershipRequired={range.membership_required}
+                  membershipPrice={range.membership_price_adult}
+                  dropInPrice={range.drop_in_price}
+                  lessonPriceRange={range.lesson_price_range}
+                />
+
+                {/* Reviews (Pro/Premium) */}
+                {tierLimits.hasReviews && (
+                  <ReviewsSection reviews={reviews} rangeId={range.id} rangeName={range.name} />
+                )}
+
+                {/* Events (Pro/Premium) */}
+                {tierLimits.hasEvents && events.length > 0 && (
+                  <EventsSection events={events} rangeName={range.name} />
+                )}
+
+                {/* Map */}
+                {range.latitude && range.longitude && (
+                  <MapSection
+                    latitude={range.latitude}
+                    longitude={range.longitude}
+                    name={range.name}
+                    address={range.address}
+                    rangeId={range.id}
+                    rangeName={range.name}
+                  />
+                )}
+
+                {/* FAQ Section for SEO */}
+                <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+                  <h2 className="text-xl font-semibold text-stone-800 mb-6">
+                    Frequently Asked Questions about {range.name}
+                  </h2>
+
+                  <div className="space-y-4">
+                    <div className="border-b border-stone-100 pb-4">
+                      <h3 className="font-medium text-stone-800 mb-2">Where is {range.name} located?</h3>
+                      <p className="text-stone-600 text-sm">
+                        {range.name} is located at {range.address || range.city}, {range.province}, Canada.
+                        {range.latitude && range.longitude && ' View the map above for exact directions.'}
+                      </p>
+                    </div>
+
+                    {range.facility_type && (
+                      <div className="border-b border-stone-100 pb-4">
+                        <h3 className="font-medium text-stone-800 mb-2">Is {range.name} an indoor or outdoor range?</h3>
+                        <p className="text-stone-600 text-sm">
+                          {range.name} is {range.facility_type === 'both' ? 'both an indoor and outdoor' : `an ${range.facility_type}`} archery facility.
+                        </p>
+                      </div>
+                    )}
+
+                    {range.lessons_available && (
+                      <div className="border-b border-stone-100 pb-4">
+                        <h3 className="font-medium text-stone-800 mb-2">Does {range.name} offer archery lessons?</h3>
+                        <p className="text-stone-600 text-sm">
+                          Yes! {range.name} offers archery lessons for beginners and experienced archers.
+                          {range.lesson_price_range && ` Lesson prices range from ${range.lesson_price_range}.`}
+                        </p>
+                      </div>
+                    )}
+
+                    {range.equipment_rental_available && (
+                      <div className="border-b border-stone-100 pb-4">
+                        <h3 className="font-medium text-stone-800 mb-2">Can I rent equipment at {range.name}?</h3>
+                        <p className="text-stone-600 text-sm">
+                          Yes, {range.name} offers equipment rental so you can try archery without owning your own gear.
+                        </p>
+                      </div>
+                    )}
+
+                    <div>
+                      <h3 className="font-medium text-stone-800 mb-2">How do I contact {range.name}?</h3>
+                      <p className="text-stone-600 text-sm">
+                        You can contact {range.name} {range.phone_number ? `by phone at ${range.phone_number}` : ''}
+                        {range.email ? `${range.phone_number ? ' or' : ''} by email at ${range.email}` : ''}.
+                        {range.website && ' Visit their website for more information.'}
+                      </p>
+                    </div>
                   </div>
+                </section>
 
-                  {range.facility_type && (
-                    <div className="border-b border-stone-100 pb-4">
-                      <h3 className="font-medium text-stone-800 mb-2">Is {range.name} an indoor or outdoor range?</h3>
-                      <p className="text-stone-600 text-sm">
-                        {range.name} is {range.facility_type === 'both' ? 'both an indoor and outdoor' : `an ${range.facility_type}`} archery facility.
-                      </p>
-                    </div>
-                  )}
+                {/* Related Ranges CTA */}
+                <section className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200">
+                  <h3 className="font-semibold text-stone-800 mb-2">Looking for more options?</h3>
+                  <p className="text-stone-600 text-sm mb-4">
+                    Explore all archery ranges in {range.city} to find the perfect fit for you.
+                  </p>
+                  <Link
+                    href={`/${params.province}/${params.city}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+                  >
+                    View All Ranges in {range.city} →
+                  </Link>
+                </section>
+              </div>
 
-                  {range.lessons_available && (
-                    <div className="border-b border-stone-100 pb-4">
-                      <h3 className="font-medium text-stone-800 mb-2">Does {range.name} offer archery lessons?</h3>
-                      <p className="text-stone-600 text-sm">
-                        Yes! {range.name} offers archery lessons for beginners and experienced archers.
-                        {range.lesson_price_range && ` Lesson prices range from ${range.lesson_price_range}.`}
-                      </p>
-                    </div>
-                  )}
+              {/* Right Column - Sidebar */}
+              <div className="space-y-6">
+                {/* Contact Card */}
+                <ContactSection
+                  phone={range.phone_number}
+                  email={range.email}
+                  website={range.website}
+                  rangeId={range.id}
+                  rangeName={range.name}
+                />
 
-                  {range.equipment_rental_available && (
-                    <div className="border-b border-stone-100 pb-4">
-                      <h3 className="font-medium text-stone-800 mb-2">Can I rent equipment at {range.name}?</h3>
-                      <p className="text-stone-600 text-sm">
-                        Yes, {range.name} offers equipment rental so you can try archery without owning your own gear.
-                      </p>
-                    </div>
-                  )}
+                {/* Business Hours */}
+                {range.business_hours && (
+                  <BusinessHoursDisplay hours={range.business_hours} />
+                )}
 
-                  <div>
-                    <h3 className="font-medium text-stone-800 mb-2">How do I contact {range.name}?</h3>
-                    <p className="text-stone-600 text-sm">
-                      You can contact {range.name} {range.phone_number ? `by phone at ${range.phone_number}` : ''}
-                      {range.email ? `${range.phone_number ? ' or' : ''} by email at ${range.email}` : ''}.
-                      {range.website && ' Visit their website for more information.'}
-                    </p>
-                  </div>
-                </div>
-              </section>
+                {/* Contact Form (Basic+) */}
+                {tierLimits.hasContactForm && (
+                  <ContactForm rangeId={range.id} rangeName={range.name} />
+                )}
 
-              {/* Related Ranges CTA */}
-              <section className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200">
-                <h3 className="font-semibold text-stone-800 mb-2">Looking for more options?</h3>
-                <p className="text-stone-600 text-sm mb-4">
-                  Explore all archery ranges in {range.city} to find the perfect fit for you.
-                </p>
-                <Link
-                  href={`/${params.province}/${params.city}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
-                >
-                  View All Ranges in {range.city} →
-                </Link>
-              </section>
-            </div>
-
-            {/* Right Column - Sidebar */}
-            <div className="space-y-6">
-              {/* Contact Card */}
-              <ContactSection
-                phone={range.phone_number}
-                email={range.email}
-                website={range.website}
-                rangeId={range.id}
-              />
-
-              {/* Business Hours */}
-              {range.business_hours && (
-                <BusinessHoursDisplay hours={range.business_hours} />
-              )}
-
-              {/* Contact Form (Basic+) */}
-              {tierLimits.hasContactForm && (
-                <ContactForm rangeId={range.id} rangeName={range.name} />
-              )}
-
-              {/* Upgrade CTA for free tier */}
-              {range.subscription_tier === 'free' && <UpgradeCTA />}
+                {/* Upgrade CTA for free tier */}
+                {range.subscription_tier === 'free' && (
+                  <UpgradeCTA
+                    rangeId={range.id}
+                    rangeName={range.name}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </RangeAnalyticsProvider>
       <Footer />
     </>
   );

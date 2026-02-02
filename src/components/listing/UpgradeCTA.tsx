@@ -1,7 +1,25 @@
+'use client';
+
 import Link from 'next/link';
 import { Sparkles, Check, ArrowRight } from 'lucide-react';
+import { trackClaimListingClick, RangeContext } from '@/lib/analytics';
 
-export function UpgradeCTA() {
+interface UpgradeCTAProps {
+  rangeId?: string;
+  rangeName?: string;
+}
+
+export function UpgradeCTA({ rangeId, rangeName }: UpgradeCTAProps) {
+  const handleClaimClick = () => {
+    if (rangeId && rangeName) {
+      const rangeContext: RangeContext = {
+        range_id: rangeId,
+        range_name: rangeName,
+      };
+      trackClaimListingClick(rangeContext);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg shadow-emerald-500/20 p-6 text-white overflow-hidden relative">
       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/20 rounded-bl-full" />
@@ -26,7 +44,11 @@ export function UpgradeCTA() {
           ))}
         </ul>
 
-        <Link href="/pricing" className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white hover:bg-stone-50 text-emerald-600 font-semibold rounded-xl transition-colors shadow-sm">
+        <Link
+          href="/pricing"
+          onClick={handleClaimClick}
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white hover:bg-stone-50 text-emerald-600 font-semibold rounded-xl transition-colors shadow-sm"
+        >
           Claim Your Listing
           <ArrowRight className="w-4 h-4" />
         </Link>

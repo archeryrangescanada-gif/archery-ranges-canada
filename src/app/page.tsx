@@ -8,6 +8,7 @@ import SearchFilters from '@/components/SearchFilters'
 import ReportRangeModal from '@/components/ReportRangeModal'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { trackSearch, trackProvinceSelected } from '@/lib/analytics'
 import { Province, City } from '@/types/database'
 
 interface Range {
@@ -72,6 +73,17 @@ export default function Home() {
   const [searchLocation, setSearchLocation] = useState<{ lat: number; lon: number; name: string } | null>(null)
   const [showReportModal, setShowReportModal] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
+
+  // Track search performed with debounce
+  useEffect(() => {
+    if (!searchQuery.trim()) return
+
+    const timer = setTimeout(() => {
+      trackSearch(searchQuery.trim())
+    }, 1000) // Track after 1 second of inactivity
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371
@@ -594,6 +606,11 @@ export default function Home() {
                 {searchResults.map((result) => (
                   <Link
                     key={result.type + '-' + result.id}
+                    onClick={() => {
+                      if (result.type === 'province') {
+                        trackProvinceSelected(result.name)
+                      }
+                    }}
                     href={
                       result.type === 'province'
                         ? '/' + result.slug
@@ -680,6 +697,7 @@ export default function Home() {
                   <Link
                     key={province.id}
                     href={'/' + province.slug}
+                    onClick={() => trackProvinceSelected(province.name)}
                     className="group bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-green-500 hover:shadow-xl transition-all duration-300"
                   >
                     <div className="flex items-center justify-between mb-3">

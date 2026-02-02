@@ -5,6 +5,7 @@ import { MapPin, Navigation, ExternalLink } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { trackGetDirectionsClick, trackAppleMapsClick, RangeContext } from '@/lib/analytics';
 
 // Dynamically import react-leaflet components to avoid SSR issues
 const MapContainer = dynamic(
@@ -40,12 +41,27 @@ interface MapSectionProps {
   longitude: number;
   name: string;
   address: string;
+  rangeId: string;
+  rangeName: string;
 }
 
-export function MapSection({ latitude, longitude, name, address }: MapSectionProps) {
+export function MapSection({ latitude, longitude, name, address, rangeId, rangeName }: MapSectionProps) {
   const [isClient, setIsClient] = useState(false);
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
   const appleMapsUrl = `https://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=d`;
+
+  const rangeContext: RangeContext = {
+    range_id: rangeId,
+    range_name: rangeName,
+  };
+
+  const handleDirectionsClick = () => {
+    trackGetDirectionsClick(rangeContext);
+  };
+
+  const handleAppleMapsClick = () => {
+    trackAppleMapsClick(rangeContext);
+  };
 
   useEffect(() => {
     setIsClient(true);
@@ -98,6 +114,7 @@ export function MapSection({ latitude, longitude, name, address }: MapSectionPro
           href={directionsUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleDirectionsClick}
           className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl transition-colors min-w-[200px]"
         >
           <Navigation className="w-5 h-5" />
@@ -108,6 +125,7 @@ export function MapSection({ latitude, longitude, name, address }: MapSectionPro
           href={appleMapsUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleAppleMapsClick}
           className="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-stone-100 text-stone-700 font-medium rounded-xl border border-stone-300 transition-colors"
         >
           <ExternalLink className="w-5 h-5" />
