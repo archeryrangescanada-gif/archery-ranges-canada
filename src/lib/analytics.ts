@@ -49,6 +49,32 @@ export interface RangeContext {
 }
 
 // -----------------------------------------------------------------------------
+// Backend Analytics API
+// -----------------------------------------------------------------------------
+
+/**
+ * Send analytics event to our backend API for storage in database
+ * This allows us to show analytics in the dashboard
+ */
+async function sendToBackend(rangeId: string, eventType: string): Promise<void> {
+    try {
+        await fetch('/api/analytics/track', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                rangeId,
+                eventType,
+            }),
+        });
+    } catch (error) {
+        // Silently fail - don't block user interaction
+        console.log('[Analytics] Backend tracking failed:', error);
+    }
+}
+
+// -----------------------------------------------------------------------------
 // Core gtag Wrapper
 // -----------------------------------------------------------------------------
 
@@ -112,6 +138,8 @@ export function trackPhoneClick(rangeContext: RangeContext, phoneNumber: string)
         ...rangeContext,
         phone_number: phoneNumber,
     });
+    // Also send to backend for dashboard analytics
+    sendToBackend(rangeContext.range_id, 'phone_click');
 }
 
 export function trackEmailClick(rangeContext: RangeContext, email: string): void {
@@ -119,6 +147,8 @@ export function trackEmailClick(rangeContext: RangeContext, email: string): void
         ...rangeContext,
         email_address: email,
     });
+    // Also send to backend for dashboard analytics
+    sendToBackend(rangeContext.range_id, 'email_click');
 }
 
 export function trackWebsiteClick(rangeContext: RangeContext, websiteUrl: string): void {
@@ -126,18 +156,26 @@ export function trackWebsiteClick(rangeContext: RangeContext, websiteUrl: string
         ...rangeContext,
         website_url: websiteUrl,
     });
+    // Also send to backend for dashboard analytics
+    sendToBackend(rangeContext.range_id, 'website_click');
 }
 
 export function trackGetDirectionsClick(rangeContext: RangeContext): void {
     trackEvent('get_directions_click', rangeContext);
+    // Also send to backend for dashboard analytics
+    sendToBackend(rangeContext.range_id, 'get_directions_click');
 }
 
 export function trackAppleMapsClick(rangeContext: RangeContext): void {
     trackEvent('apple_maps_click', rangeContext);
+    // Also send to backend for dashboard analytics
+    sendToBackend(rangeContext.range_id, 'apple_maps_click');
 }
 
 export function trackClaimListingClick(rangeContext: RangeContext): void {
     trackEvent('claim_listing_click', rangeContext);
+    // Also send to backend for dashboard analytics
+    sendToBackend(rangeContext.range_id, 'claim_listing_click');
 }
 
 // -----------------------------------------------------------------------------

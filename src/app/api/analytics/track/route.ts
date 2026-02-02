@@ -12,7 +12,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const validEventTypes = ['view', 'click', 'inquiry', 'phone_click', 'email_click', 'website_click'];
+    const validEventTypes = [
+      'view', 'click', 'inquiry',
+      'phone_click', 'email_click', 'website_click',
+      'get_directions_click', 'apple_maps_click', 'claim_listing_click'
+    ];
     if (!validEventTypes.includes(eventType)) {
       return NextResponse.json({ error: 'Invalid event type' }, { status: 400 });
     }
