@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import { Search, Filter, Plus, Edit, Trash2, Eye, Star, Upload, FileUp } from 'lucide-react'
+import { Search, Filter, Plus, Edit, Trash2, Eye, Star, Upload, FileUp, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
 import Papa from 'papaparse'
 import { createClient } from '@/lib/supabase/client'
@@ -716,20 +716,30 @@ export default function ListingsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <Link
+                        href={`/admin/listings/${listing.id}/analytics`}
+                        className="text-green-600 hover:text-green-900"
+                        title="View Analytics"
+                      >
+                        <BarChart3 className="w-4 h-4" />
+                      </Link>
+                      <Link
                         href={`/admin/listings/${listing.id}/edit`}
                         className="text-blue-600 hover:text-blue-900"
+                        title="Edit Listing"
                       >
                         <Edit className="w-4 h-4" />
                       </Link>
                       <button
                         onClick={() => toggleFeatured(listing.id)}
                         className={listing.is_featured ? 'text-yellow-600' : 'text-gray-400 hover:text-yellow-600'}
+                        title={listing.is_featured ? 'Remove Featured' : 'Mark as Featured'}
                       >
                         <Star className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(listing.id)}
                         className="text-red-600 hover:text-red-900"
+                        title="Delete Listing"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
