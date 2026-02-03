@@ -66,18 +66,35 @@ export default function AdminRangeAnalyticsPage() {
         setLoading(true)
 
         // Fetch range info (admin can view any range)
-        const { data: rangeData } = await supabase
+        const { data: rangeData, error: rangeError } = await supabase
             .from('ranges')
-            .select('id, name, slug, city, province, view_count, click_count, inquiry_count, subscription_tier, owner_id')
+            .select('*')
             .eq('id', rangeId)
             .single()
 
+        if (rangeError) {
+            console.error('Error fetching range:', rangeError)
+        }
+
         if (!rangeData) {
+            console.log('No range data found for ID:', rangeId)
             setLoading(false)
             return
         }
 
-        setRange(rangeData)
+        // Map the data to our expected format
+        setRange({
+            id: rangeData.id,
+            name: rangeData.name,
+            slug: rangeData.slug || '',
+            city: rangeData.city || '',
+            province: rangeData.province || '',
+            view_count: rangeData.view_count || 0,
+            click_count: rangeData.click_count || 0,
+            inquiry_count: rangeData.inquiry_count || 0,
+            subscription_tier: rangeData.subscription_tier || 'free',
+            owner_id: rangeData.owner_id
+        })
 
         // Calculate date range
         const now = new Date()
