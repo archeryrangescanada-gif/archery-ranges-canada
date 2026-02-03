@@ -59,42 +59,52 @@ export default function AdminRangeAnalyticsPage() {
     const [dateRange, setDateRange] = useState('30days')
 
     useEffect(() => {
-        loadData()
+        if (rangeId) {
+            loadData()
+        }
     }, [rangeId, dateRange])
 
     const loadData = async () => {
         setLoading(true)
 
-        // Fetch range info (admin can view any range)
-        const { data: rangeData, error: rangeError } = await supabase
-            .from('ranges')
-            .select('*')
-            .eq('id', rangeId)
-            .single()
+        try {
+            // Fetch range info (admin can view any range)
+            const { data: rangeData, error: rangeError } = await supabase
+                .from('ranges')
+                .select('id, name, slug, city, province, view_count, click_count, inquiry_count, subscription_tier, owner_id')
+                .eq('id', rangeId)
+                .maybeSingle()
 
-        if (rangeError) {
-            console.error('Error fetching range:', rangeError)
-        }
+            if (rangeError) {
+                console.error('Error fetching range:', rangeError)
+                setLoading(false)
+                return
+            }
 
-        if (!rangeData) {
-            console.log('No range data found for ID:', rangeId)
+            if (!rangeData) {
+                console.log('No range data found for ID:', rangeId)
+                setLoading(false)
+                return
+            }
+
+            // Map the data to our expected format
+            setRange({
+                id: rangeData.id,
+                name: rangeData.name,
+                slug: rangeData.slug || '',
+                city: rangeData.city || '',
+                province: rangeData.province || '',
+                view_count: rangeData.view_count || 0,
+                click_count: rangeData.click_count || 0,
+                inquiry_count: rangeData.inquiry_count || 0,
+                subscription_tier: rangeData.subscription_tier || 'free',
+                owner_id: rangeData.owner_id
+            })
+        } catch (err) {
+            console.error('Exception fetching range:', err)
             setLoading(false)
             return
         }
-
-        // Map the data to our expected format
-        setRange({
-            id: rangeData.id,
-            name: rangeData.name,
-            slug: rangeData.slug || '',
-            city: rangeData.city || '',
-            province: rangeData.province || '',
-            view_count: rangeData.view_count || 0,
-            click_count: rangeData.click_count || 0,
-            inquiry_count: rangeData.inquiry_count || 0,
-            subscription_tier: rangeData.subscription_tier || 'free',
-            owner_id: rangeData.owner_id
-        })
 
         // Calculate date range
         const now = new Date()
