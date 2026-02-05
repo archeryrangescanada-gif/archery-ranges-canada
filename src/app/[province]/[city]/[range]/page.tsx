@@ -10,7 +10,8 @@ import { RangeSpecifications } from '@/components/listing/RangeSpecifications';
 import { AmenitiesGrid } from '@/components/listing/AmenitiesGrid';
 import { PricingInfo } from '@/components/listing/PricingInfo';
 import { SocialLinks } from '@/components/listing/SocialLinks';
-import { ReviewsSection } from '@/components/listing/ReviewsSection';
+import { ReviewSection } from '@/components/listing/ReviewSection';
+import { FavoriteButton } from '@/components/listing/FavoriteButton';
 import { EventsSection } from '@/components/listing/EventsSection';
 import { ContactForm } from '@/components/listing/ContactForm';
 import { MapSection } from '@/components/listing/MapSection';
@@ -142,10 +143,15 @@ async function getReviews(rangeId: string) {
   const supabase = await createClient();
 
   const { data } = await supabase
-    .from('range_reviews')
-    .select('*')
-    .eq('range_id', rangeId)
-    .eq('is_approved', true)
+    .from('reviews')
+    .select(`
+      *,
+      profiles (
+        full_name,
+        avatar_url
+      )
+    `)
+    .eq('listing_id', rangeId)
     .order('created_at', { ascending: false })
     .limit(10);
 
@@ -214,8 +220,25 @@ export default async function RangeDetailPage({ params }: PageProps) {
   const showCarousel = canShowCarousel(range.subscription_tier);
   const showVideo = canShowVideo(range.subscription_tier);
 
+  // Note: We need to use 'reviews' table instead of 'range_reviews' for the new system if we migrated completely
+  // But getReviews function above was updated to use 'reviews' table? 
+  // Wait, I updated getReviews block in this file content to use 'reviews' table and join 'profiles'.
   const reviews = tierLimits.hasReviews ? await getReviews(range.id) : [];
   const events = tierLimits.hasEvents ? await getEvents(range.id) : [];
+
+  // Check user and favorite status
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  let isFavorited = false;
+  if (user) {
+    const { data } = await supabase
+      .from('favorites')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('listing_id', range.id)
+      .single();
+    isFavorited = !!data;
+  }
 
   return (
     <>
@@ -260,13 +283,14 @@ export default async function RangeDetailPage({ params }: PageProps) {
                 {/* Header */}
                 <RangeHeader
                   name={range.name}
-                  address={range.address}
+                  address={range.address || ''}
                   city={range.cities?.name || range.city}
                   province={range.cities?.provinces?.name || range.province}
-                  postalCode={range.postal_code}
+                  postalCode={range.postal_code || ''}
                   facilityType={range.facility_type}
-                  rating={reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null}
+                  rating={reviews.length > 0 ? reviews.reduce((sum: any, r: any) => sum + r.rating, 0) / reviews.length : null}
                   reviewCount={reviews.length}
+                  action={<FavoriteButton listingId={range.id} initialIsFavorited={isFavorited} />}
                 />
 
                 {/* Social Links */}
@@ -340,12 +364,12 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   lessonPriceRange={range.lesson_price_range}
                 />
 
-                {/* Reviews (Pro/Premium) */}
+                {/* Reviews */}
                 {tierLimits.hasReviews && (
-                  <ReviewsSection reviews={reviews} rangeId={range.id} rangeName={range.name} />
+                  <ReviewSection listingId={range.id} initialReviews={reviews} />
                 )}
 
-                {/* Events (Pro/Premium) */}
+                {/* Events */}
                 {tierLimits.hasEvents && events.length > 0 && (
                   <EventsSection events={events} rangeName={range.name} />
                 )}
@@ -356,13 +380,13 @@ export default async function RangeDetailPage({ params }: PageProps) {
                     latitude={range.latitude}
                     longitude={range.longitude}
                     name={range.name}
-                    address={range.address}
+                    address={range.address || ''}
                     rangeId={range.id}
                     rangeName={range.name}
                   />
                 )}
 
-                {/* FAQ Section for SEO */}
+                {/* FAQ Section */}
                 <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
                   <h2 className="text-xl font-semibold text-stone-800 mb-6">
                     Frequently Asked Questions about {range.name}

@@ -1,120 +1,37 @@
-// src/middleware.ts
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
 
-  // Check if the route is an admin route
-  if (pathname.startsWith('/admin')) {
-    // Allow access to login page without authentication
-    if (pathname === '/admin/login') {
-      return NextResponse.next()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  // Protect /account routes
+  if (req.nextUrl.pathname.startsWith('/account')) {
+    if (!session) {
+      const redirectUrl = req.nextUrl.clone()
+      redirectUrl.pathname = '/auth/login'
+      redirectUrl.searchParams.set('redirect', req.nextUrl.pathname)
+      return NextResponse.redirect(redirectUrl)
     }
-
-    // Create Supabase client for middleware
-    let response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    })
-
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return request.cookies.get(name)?.value
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            request.cookies.set({
-              name,
-              value,
-              ...options,
-            })
-            response = NextResponse.next({
-              request: {
-                headers: request.headers,
-              },
-            })
-            response.cookies.set({
-              name,
-              value,
-              ...options,
-            })
-          },
-          remove(name: string, options: CookieOptions) {
-            request.cookies.set({
-              name,
-              value: '',
-              ...options,
-            })
-            response = NextResponse.next({
-              request: {
-                headers: request.headers,
-              },
-            })
-            response.cookies.set({
-              name,
-              value: '',
-              ...options,
-            })
-          },
-        },
-      }
-    )
-
-    // Check if user is authenticated
-    const { data: { user } } = await supabase.auth.getUser()
-
-    // Fallback: Check for demo/legacy admin cookie
-    const adminToken = request.cookies.get('admin-token')?.value
-
-    if (!user && adminToken !== 'valid-token') {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
-    }
-
-    // If using demo cookie (no real user), allow access
-    if (!user && adminToken === 'valid-token') {
-      return response
-    }
-
-    // At this point, user must exist (otherwise would have been caught above)
-    if (!user) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
-    }
-
-    // Check if user has admin role in profiles table
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    // If profiles table doesn't exist yet or query fails, allow access (dev mode)
-    if (error) {
-      console.warn('Profile check failed - allowing access:', error.message)
-      return response
-    }
-
-    // Check if user has admin role
-    if (profile?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/admin/unauthorized', request.url))
-    }
-
-    return response
   }
 
-  return NextResponse.next()
+  // Protect /admin routes (basic check, role check should happen in layout/page)
+  if (req.nextUrl.pathname.startsWith('/admin')) {
+    if (!session) {
+      const redirectUrl = req.nextUrl.clone()
+      redirectUrl.pathname = '/auth/login'
+      return NextResponse.redirect(redirectUrl)
+    }
+  }
+
+  return res
 }
 
-// Configure which routes use this middleware
 export const config = {
-  matcher: [
-    '/admin/:path*',
-    '/dashboard/:path*',
-    '/auth/:path*'
-  ],
+  matcher: ['/account/:path*', '/admin/:path*'],
 }

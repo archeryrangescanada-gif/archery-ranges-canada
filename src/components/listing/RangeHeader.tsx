@@ -10,6 +10,7 @@ interface RangeHeaderProps {
   facilityType?: FacilityType | string;
   rating: number | null;
   reviewCount: number;
+  action?: React.ReactNode;
 }
 
 const facilityIcons: Record<FacilityType, React.ReactNode> = {
@@ -33,11 +34,18 @@ export function RangeHeader({
   facilityType,
   rating,
   reviewCount,
+  action,
 }: RangeHeaderProps) {
   const fullAddress = [address, city, province, postalCode].filter(Boolean).join(', ');
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8">
+    <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8 relative">
+      {action && (
+        <div className="absolute top-6 right-6 z-10">
+          {action}
+        </div>
+      )}
+
       {facilityType && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 text-stone-600 text-sm font-medium mb-4">
           {facilityIcons[facilityType as FacilityType] || <Building2 className="w-4 h-4" />}

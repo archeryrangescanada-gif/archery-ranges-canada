@@ -2,10 +2,33 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { User } from '@supabase/supabase-js'
+import UserProfileMenu from './UserProfileMenu'
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [user, setUser] = useState<User | null>(null)
+    const [loading, setLoading] = useState(true)
+    const supabase = createClientComponentClient()
+
+    useEffect(() => {
+        async function getUser() {
+            const { data: { user } } = await supabase.auth.getUser()
+            setUser(user)
+            setLoading(false)
+        }
+
+        getUser()
+
+        // Subscribe to auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null)
+        })
+
+        return () => subscription.unsubscribe()
+    }, [supabase])
 
     const toggleMenu = useCallback(() => {
         setIsMenuOpen(prev => !prev)
@@ -40,36 +63,52 @@ export default function Header() {
                     <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
                         Pricing
                     </Link>
+
                     <div className="border-l border-green-600 pl-6 flex items-center space-x-3">
-                        <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium">
-                            Sign In
-                        </Link>
-                        <Link href="/auth/signup" className="bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors">
-                            Sign Up
-                        </Link>
+                        {loading ? (
+                            <div className="w-9 h-9 rounded-full bg-white/20 animate-pulse"></div>
+                        ) : user ? (
+                            <UserProfileMenu user={user} />
+                        ) : (
+                            <>
+                                <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium">
+                                    Sign In
+                                </Link>
+                                <Link href="/auth/signup" className="bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors">
+                                    Sign Up
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </nav>
 
                 {/* Mobile menu button */}
-                <button
-                    type="button"
-                    className="md:hidden text-white p-3 min-w-[48px] min-h-[48px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded-lg active:bg-emerald-900 touch-manipulation relative z-50"
-                    onClick={toggleMenu}
-                    onTouchEnd={(e) => {
-                        e.preventDefault()
-                        toggleMenu()
-                    }}
-                    aria-label="Toggle menu"
-                    aria-expanded={isMenuOpen}
-                >
-                    <svg className="w-7 h-7 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        {isMenuOpen ? (
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        ) : (
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                        )}
-                    </svg>
-                </button>
+                <div className="flex items-center gap-4 md:hidden">
+                    {/* Show profile menu on mobile outside the hamburger if logged in, or inside? Usually easier inside or separate. Let's keep it consistent with desktop for now but maybe just show it. */}
+                    {!loading && user && (
+                        <UserProfileMenu user={user} />
+                    )}
+
+                    <button
+                        type="button"
+                        className="text-white p-3 min-w-[48px] min-h-[48px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded-lg active:bg-emerald-900 touch-manipulation relative z-50"
+                        onClick={toggleMenu}
+                        onTouchEnd={(e) => {
+                            e.preventDefault()
+                            toggleMenu()
+                        }}
+                        aria-label="Toggle menu"
+                        aria-expanded={isMenuOpen}
+                    >
+                        <svg className="w-7 h-7 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {isMenuOpen ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            )}
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             {/* Mobile Navigation */}
@@ -87,13 +126,18 @@ export default function Header() {
                     <Link href="/pricing" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
                         Pricing
                     </Link>
-                    <hr className="border-green-600" />
-                    <Link href="/auth/login" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
-                        Sign In
-                    </Link>
-                    <Link href="/auth/signup" onClick={closeMenu} className="block bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors text-center">
-                        Sign Up
-                    </Link>
+
+                    {!user && (
+                        <>
+                            <hr className="border-green-600" />
+                            <Link href="/auth/login" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
+                                Sign In
+                            </Link>
+                            <Link href="/auth/signup" onClick={closeMenu} className="block bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors text-center">
+                                Sign Up
+                            </Link>
+                        </>
+                    )}
                 </nav>
             )}
         </header>
