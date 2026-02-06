@@ -5,13 +5,13 @@ import { InviteUserModal } from '@/components/admin/InviteUserModal'
 
 interface User {
   id: string
-  email: string
-  full_name: string
-  phone?: string
-  company_name?: string
+  email: string | null
+  full_name: string | null
+  phone?: string | null
+  company_name?: string | null
   role: 'user' | 'business_owner' | 'admin' | 'super_admin' | 'admin_employee'
   status: 'active' | 'suspended' | 'invited'
-  avatar_url?: string
+  avatar_url?: string | null
   created_at: string
   last_sign_in?: string
   listings_count?: number
@@ -157,8 +157,8 @@ export default function UsersPage() {
 
   const filteredUsers = users.filter(user => {
     const matchesSearch =
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      (user.email?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
 
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
 
@@ -278,11 +278,11 @@ export default function UsersPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <div className="h-10 w-10 min-w-[2.5rem] rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                        {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                        {user.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || '?'}
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">{user.full_name || 'N/A'}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="text-sm text-gray-500">{user.email || 'N/A'}</div>
                       </div>
                     </div>
                   </td>
@@ -314,9 +314,9 @@ export default function UsersPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2 items-center">
-                      {user.status === 'invited' && (
+                      {user.status === 'invited' && user.email && (
                         <button
-                          onClick={() => handleResendInvite(user.email, user.role)}
+                          onClick={() => handleResendInvite(user.email!, user.role)}
                           className="text-emerald-600 hover:text-emerald-900 p-1 rounded hover:bg-emerald-50"
                           title="Resend Invite"
                         >
