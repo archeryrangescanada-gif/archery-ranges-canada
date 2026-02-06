@@ -349,15 +349,21 @@ export default function Home() {
 
     filteredRanges.forEach(range => {
       if (!query || fuzzyMatch(range.name, query)) {
-        results.push({
-          type: 'range',
-          id: range.id,
-          name: range.name,
-          slug: range.slug,
-          parentName: range.city?.name ? `${range.city.name}, ${range.city.province?.name || ''}` : undefined,
-          provinceSlug: range.city?.province?.slug,
-          citySlug: range.city?.slug,
-        })
+        // Only include ranges that have valid city/province slugs for proper URL generation
+        const provinceSlug = range.city?.province?.slug
+        const citySlug = range.city?.slug
+
+        if (provinceSlug && citySlug) {
+          results.push({
+            type: 'range',
+            id: range.id,
+            name: range.name,
+            slug: range.slug,
+            parentName: range.city?.name ? `${range.city.name}, ${range.city.province?.name || ''}` : undefined,
+            provinceSlug,
+            citySlug,
+          })
+        }
       }
     })
 
