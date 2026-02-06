@@ -20,11 +20,13 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Protect /admin routes (basic check, role check should happen in layout/page)
-  if (req.nextUrl.pathname.startsWith('/admin')) {
-    if (!session) {
+  // Protect /admin routes
+  // Allow /admin/login to be accessed without a session
+  if (req.nextUrl.pathname.startsWith('/admin') && !req.nextUrl.pathname.startsWith('/admin/login')) {
+    const adminToken = req.cookies.get('admin-token')
+    if (!session && !adminToken) {
       const redirectUrl = req.nextUrl.clone()
-      redirectUrl.pathname = '/auth/login'
+      redirectUrl.pathname = '/admin/login' // Redirect to admin-specific login
       return NextResponse.redirect(redirectUrl)
     }
   }
