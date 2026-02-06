@@ -5,16 +5,27 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Link from 'next/link';
 import { Star, Edit, Trash2 } from 'lucide-react';
 
+interface RangeInfo {
+    name: string;
+    slug: string;
+}
+
 interface Review {
     id: string;
     rating: number;
     comment: string;
     created_at: string;
     listing_id: string;
-    ranges: {
-        name: string;
-        slug: string;
-    }
+    ranges: RangeInfo;
+}
+
+interface ReviewQueryResult {
+    id: string;
+    rating: number;
+    comment: string;
+    created_at: string;
+    listing_id: string;
+    ranges: RangeInfo | RangeInfo[] | null;
 }
 
 export default function ReviewsPage() {
@@ -49,7 +60,15 @@ export default function ReviewsPage() {
         `)
                 .eq('user_id', user.id);
 
-            setReviews(data || []);
+            // Transform the data to handle Supabase's foreign key array response
+            const transformedReviews: Review[] = (data as ReviewQueryResult[] || [])
+                .filter(review => review.ranges !== null)
+                .map(review => ({
+                    ...review,
+                    ranges: Array.isArray(review.ranges) ? review.ranges[0] : review.ranges
+                })) as Review[];
+
+            setReviews(transformedReviews);
             setLoading(false);
         }
 
