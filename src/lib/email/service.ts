@@ -8,6 +8,8 @@ import {
   archerWelcomeEmail,
   inquiryNotificationEmail,
   rangeSubmissionNotificationEmail,
+  claimReceivedEmail,
+  adminClaimNotificationEmail,
 } from './templates'
 
 export interface SendEmailParams {

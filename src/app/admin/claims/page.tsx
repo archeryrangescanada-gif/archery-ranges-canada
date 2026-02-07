@@ -364,7 +364,7 @@ export default function ClaimsPage() {
           <tbody className="divide-y divide-stone-100">
             {requests.map((request) => (
               <tr key={request.id} className="hover:bg-stone-50 transition-colors">
-                <td className="px-6 py-6 font-bold text-stone-800">{request.range?.name || 'Unknown Range'}</td>
+                <td className="px-6 py-6 font-bold text-stone-800">{request.listing?.name || 'Unknown Range'}</td>
                 <td className="px-6 py-6">
                   <div className="text-stone-700">
                     {request.first_name} {request.last_name}
