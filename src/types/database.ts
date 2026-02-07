@@ -119,9 +119,12 @@ export interface Claim {
   created_at: string
   updated_at: string
   // Optional relations
-  range?: {
+  listing?: {
     id: string
     name: string
+    phone_number?: string | null
+    website?: string | null
+    address?: string | null
   }
   user?: {
     id: string
