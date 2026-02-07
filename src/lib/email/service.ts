@@ -310,4 +310,51 @@ export class EmailService {
       text: template.text,
     })
   }
+
+  /**
+   * Send claim received acknowledgment to user
+   */
+  static async sendClaimReceivedEmail(params: {
+    to: string
+    firstName: string
+    rangeName: string
+  }) {
+    const template = claimReceivedEmail({
+      firstName: params.firstName,
+      rangeName: params.rangeName,
+    })
+
+    return this.sendEmail({
+      to: params.to,
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
+    })
+  }
+
+  /**
+   * Send new claim notification to admin
+   */
+  static async sendAdminClaimNotificationEmail(params: {
+    firstName: string
+    lastName: string
+    rangeName: string
+    role: string
+    phone: string
+    email: string
+  }) {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const dashboardLink = `${baseUrl}/admin/claims`
+    const template = adminClaimNotificationEmail({
+      ...params,
+      dashboardLink,
+    })
+
+    return this.sendEmail({
+      to: process.env.RESEND_REPLY_TO_EMAIL || 'archeryrangescanada@gmail.com',
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
+    })
+  }
 }

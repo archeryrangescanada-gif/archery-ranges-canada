@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { FileText, UserPlus, CreditCard, Search, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { VerificationRequest } from '@/types/database'
+import { Claim } from '@/types/database'
 
 interface RangeBasic {
   id: string
@@ -22,14 +22,12 @@ interface UserBasic {
 
 export default function ClaimsPage() {
   const supabase = createClient()
-  const [requests, setRequests] = useState<VerificationRequest[]>([])
+  const [requests, setRequests] = useState<Claim[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null)
+  const [selectedRequest, setSelectedRequest] = useState<Claim | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
   const [processing, setProcessing] = useState(false)
-  const [licenseUrl, setLicenseUrl] = useState<string | null>(null)
-  const [insuranceUrl, setInsuranceUrl] = useState<string | null>(null)
 
   // Transfer Claim State
   const [showTransferModal, setShowTransferModal] = useState(false)
@@ -65,12 +63,6 @@ export default function ClaimsPage() {
   useEffect(() => {
     fetchRequests()
   }, [])
-
-  useEffect(() => {
-    if (selectedRequest && showModal) {
-      fetchDocumentUrls()
-    }
-  }, [selectedRequest, showModal])
 
   // Fetch ranges and users when transfer modal opens
   useEffect(() => {
@@ -114,38 +106,19 @@ export default function ClaimsPage() {
     }
   }
 
-  const fetchDocumentUrls = async () => {
-    if (!selectedRequest) return
-
-    try {
-      const { data: licenseData } = await supabase.storage
-        .from('verification-documents')
-        .createSignedUrl(selectedRequest.business_license_url, 3600)
-
-      const { data: insuranceData } = await supabase.storage
-        .from('verification-documents')
-        .createSignedUrl(selectedRequest.insurance_certificate_url, 3600)
-
-      setLicenseUrl(licenseData?.signedUrl || null)
-      setInsuranceUrl(insuranceData?.signedUrl || null)
-    } catch (err) {
-      console.error('Error fetching document URLs:', err)
-    }
-  }
-
   const fetchRequests = async () => {
     setLoading(true)
     try {
       const { data, error } = await supabase
-        .from('verification_requests')
+        .from('claims')
         .select(`
           *,
-          range:ranges(name)
+          listing:ranges(id, name, phone_number, website, address)
         `)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setRequests((data as VerificationRequest[]) || [])
+      setRequests((data as Claim[]) || [])
     } catch (err) {
       console.error('Error fetching requests:', err)
     } finally {
@@ -153,39 +126,28 @@ export default function ClaimsPage() {
     }
   }
 
-  const handleApprove = async (request: VerificationRequest) => {
-    if (!confirm('Are you sure you want to approve this claim? This will set the owner and mark the range as claimed.')) return
+  const handleApprove = async (request: Claim) => {
+    if (!confirm('Are you sure you want to approve this claim? This will set the owner, upgrade their role, and mark the range as claimed.')) return
 
     setProcessing(true)
     try {
-      const { error: reqError } = await supabase
-        .from('verification_requests')
-        .update({ status: 'approved' })
-        .eq('id', request.id)
+      const { data: { user: adminUser } } = await supabase.auth.getUser()
 
-      if (reqError) throw reqError
+      const response = await fetch('/api/admin/claims/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          claimId: request.id,
+          adminId: adminUser?.id
+        }),
+      })
 
-      const { error: rangeError } = await supabase
-        .from('ranges')
-        .update({
-          owner_id: request.user_id,
-          is_claimed: true
-        })
-        .eq('id', request.range_id)
-
-      if (rangeError) throw rangeError
-
-      try {
-        await fetch('/api/admin/emails/verification-approved', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ requestId: request.id }),
-        })
-      } catch (emailErr) {
-        console.error('Failed to send approval email:', emailErr)
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.error || 'Failed to approve claim')
       }
 
-      alert('Claim approved successfully! Confirmation email sent.')
+      alert('Claim approved successfully! Role upgraded and range claimed.')
       fetchRequests()
       setShowModal(false)
     } catch (err: any) {
@@ -203,27 +165,21 @@ export default function ClaimsPage() {
 
     setProcessing(true)
     try {
-      const { error } = await supabase
-        .from('verification_requests')
-        .update({
-          status: 'rejected',
-          rejection_reason: rejectionReason
-        })
-        .eq('id', selectedRequest.id)
+      const { data: { user: adminUser } } = await supabase.auth.getUser()
 
-      if (error) throw error
+      const response = await fetch('/api/admin/claims/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          claimId: selectedRequest.id,
+          adminId: adminUser?.id,
+          reason: rejectionReason
+        }),
+      })
 
-      try {
-        await fetch('/api/admin/emails/verification-rejected', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            requestId: selectedRequest.id,
-            reason: rejectionReason,
-          }),
-        })
-      } catch (emailErr) {
-        console.error('Failed to send rejection email:', emailErr)
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.error || 'Failed to reject claim')
       }
 
       alert('Claim denied. Notification email sent.')
@@ -416,8 +372,8 @@ export default function ClaimsPage() {
                 </td>
                 <td className="px-6 py-6">
                   <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-tight ${request.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
-                      request.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                        'bg-amber-100 text-amber-700'
+                    request.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                      'bg-amber-100 text-amber-700'
                     }`}>
                     {request.status}
                   </span>
@@ -437,92 +393,149 @@ export default function ClaimsPage() {
         </table>
       </div>
 
-      {/* Review Claim Modal */}
+// Review Claim Modal
       {showModal && selectedRequest && (
         <div className="fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-3xl font-black text-stone-900 mb-6">Review Claim</h2>
-
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-black text-stone-400 uppercase mb-1">Range</label>
-                  <p className="text-xl font-bold text-stone-900">{selectedRequest.range?.name}</p>
-                </div>
-                <div>
-                  <label className="block text-xs font-black text-stone-400 uppercase mb-1">Applicant</label>
-                  <p className="text-xl font-bold text-stone-900">{selectedRequest.first_name} {selectedRequest.last_name}</p>
-                </div>
-              </div>
-
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-6">
               <div>
-                <label className="block text-xs font-black text-stone-400 uppercase mb-1">GST Number</label>
-                <p className="text-lg font-mono font-bold text-stone-900">{selectedRequest.gst_number}</p>
+                <h2 className="text-3xl font-black text-stone-900">Verify Claim</h2>
+                <p className="text-stone-500 font-medium">Claim request for {selectedRequest.listing?.name}</p>
               </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-2 hover:bg-stone-100 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-stone-400" />
+              </button>
+            </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-black text-stone-400 uppercase mb-2">Business License</label>
-                  {licenseUrl ? (
-                    <a
-                      href={licenseUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border-2 border-emerald-200 text-emerald-700 font-bold rounded-lg hover:bg-emerald-100 transition-colors"
-                    >
-                      <FileText className="w-5 h-5" />
-                      View Document
-                    </a>
-                  ) : (
-                    <p className="text-sm text-stone-500">Loading...</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs font-black text-stone-400 uppercase mb-2">Insurance Certificate</label>
-                  {insuranceUrl ? (
-                    <a
-                      href={insuranceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border-2 border-blue-200 text-blue-700 font-bold rounded-lg hover:bg-blue-100 transition-colors"
-                    >
-                      <FileText className="w-5 h-5" />
-                      View Document
-                    </a>
-                  ) : (
-                    <p className="text-sm text-stone-500">Loading...</p>
-                  )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              {/* Claimant Information */}
+              <div className="space-y-6">
+                <h3 className="text-sm font-black text-stone-400 uppercase tracking-widest border-b border-stone-100 pb-2">Claimant Info</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-400 uppercase">Name</label>
+                    <p className="text-lg font-bold text-stone-900">{selectedRequest.first_name} {selectedRequest.last_name}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-400 uppercase">Role at Range</label>
+                    <p className="text-lg font-bold text-emerald-600 bg-emerald-50 inline-block px-2 py-0.5 rounded">{selectedRequest.role_at_range}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-400 uppercase">Email Address</label>
+                    <p className="text-lg font-bold text-stone-900">{selectedRequest.email_address}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-400 uppercase">Phone Number</label>
+                    <p className="text-2xl font-black text-stone-900 tracking-tight">{selectedRequest.phone_number}</p>
+                  </div>
                 </div>
               </div>
 
-              {selectedRequest.status === 'pending' && (
-                <div className="pt-6 border-t border-stone-100">
-                  <label className="block text-sm font-bold text-stone-700 mb-3">Rejection Reason (only for Denial)</label>
+              {/* Range Contact Information (For Verification) */}
+              <div className="space-y-6 bg-stone-50 p-6 rounded-2xl border border-stone-200">
+                <h3 className="text-sm font-black text-stone-600 uppercase tracking-widest border-b border-stone-200 pb-2">Range Official Contact</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-400 uppercase">Official Phone</label>
+                    <p className="text-lg font-bold text-stone-900">{selectedRequest.listing?.phone_number || 'No phone on file'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-400 uppercase">Official Website</label>
+                    <p className="text-lg font-bold text-blue-600 hover:underline">
+                      {selectedRequest.listing?.website ? (
+                        <a href={selectedRequest.listing.website} target="_blank" rel="noopener noreferrer">{selectedRequest.listing.website}</a>
+                      ) : 'No website on file'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-400 uppercase">Address</label>
+                    <p className="text-sm font-medium text-stone-600">{selectedRequest.listing?.address || 'No address on file'}</p>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(selectedRequest.listing?.name || '')}`, '_blank')}
+                      className="text-xs font-bold text-stone-400 hover:text-stone-600 uppercase flex items-center gap-1"
+                    >
+                      <Search className="w-3 h-3" />
+                      Search for updated contact info
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Notes / Rejection Reason */}
+            <div className="space-y-4 mb-8">
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">Admin Notes (Internal)</label>
+                <textarea
+                  value={selectedRequest.admin_notes || ''}
+                  onChange={(e) => {
+                    const updated = { ...selectedRequest, admin_notes: e.target.value };
+                    setSelectedRequest(updated);
+                  }}
+                  className="w-full p-4 border-2 border-stone-100 rounded-2xl focus:border-emerald-500 outline-none text-stone-900"
+                  placeholder="Logs of contact attempts, verification details..."
+                  rows={2}
+                />
+              </div>
+
+              {(selectedRequest.status === 'pending' || selectedRequest.status === 'contacted') && (
+                <div>
+                  <label className="block text-sm font-bold text-stone-700 mb-2">Rejection Reason (only for Denial)</label>
                   <textarea
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
-                    className="w-full p-4 border-2 border-stone-100 rounded-2xl focus:border-emerald-500 focus:ring-0 outline-none transition-all text-stone-900"
+                    className="w-full p-4 border-2 border-stone-100 rounded-2xl focus:border-red-500 outline-none text-stone-900"
                     placeholder="Tell the user why you're denying their claim..."
-                    rows={3}
+                    rows={2}
                   />
                 </div>
               )}
             </div>
 
-            <div className="mt-10 flex gap-4">
+            <div className="flex flex-wrap gap-4">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 py-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-2xl transition-all"
+                className="px-6 py-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-2xl transition-all"
               >
                 Close
               </button>
 
-              {selectedRequest.status === 'pending' && (
+              {(selectedRequest.status === 'pending' || selectedRequest.status === 'contacted') && (
                 <>
+                  <button
+                    onClick={async () => {
+                      setProcessing(true);
+                      try {
+                        const response = await fetch('/api/admin/claims/contacted', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            claimId: selectedRequest.id,
+                            notes: selectedRequest.admin_notes
+                          }),
+                        });
+                        if (!response.ok) throw new Error('Failed to update');
+                        alert('Marked as contacted');
+                        fetchRequests();
+                      } catch (err: any) {
+                        alert(err.message);
+                        setProcessing(false);
+                      }
+                    }}
+                    disabled={processing}
+                    className="px-6 py-4 bg-amber-100 hover:bg-amber-200 text-amber-700 font-black rounded-2xl transition-all disabled:opacity-50"
+                  >
+                    MARK AS CONTACTED
+                  </button>
                   <button
                     onClick={() => handleDeny()}
                     disabled={processing}
-                    className="flex-1 py-4 bg-red-100 hover:bg-red-200 text-red-700 font-black rounded-2xl transition-all disabled:opacity-50"
+                    className="px-6 py-4 bg-red-100 hover:bg-red-200 text-red-700 font-black rounded-2xl transition-all disabled:opacity-50"
                   >
                     DENY CLAIM
                   </button>
@@ -531,7 +544,7 @@ export default function ClaimsPage() {
                     disabled={processing}
                     className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-emerald-200 transition-all disabled:opacity-50"
                   >
-                    ACCEPT CLAIM
+                    APPROVE CLAIM
                   </button>
                 </>
               )}
@@ -573,9 +586,8 @@ export default function ClaimsPage() {
             <div className="flex items-center gap-2 mb-8">
               {[1, 2, 3].map((step) => (
                 <div key={step} className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                    transferStep >= step ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-500'
-                  }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${transferStep >= step ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-500'
+                    }`}>
                     {step}
                   </div>
                   {step < 3 && <div className={`w-12 h-1 ${transferStep > step ? 'bg-emerald-500' : 'bg-stone-200'}`} />}
@@ -606,9 +618,8 @@ export default function ClaimsPage() {
                       <button
                         key={range.id}
                         onClick={() => setSelectedRangeId(range.id)}
-                        className={`w-full px-4 py-3 text-left hover:bg-stone-50 transition-colors ${
-                          selectedRangeId === range.id ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''
-                        }`}
+                        className={`w-full px-4 py-3 text-left hover:bg-stone-50 transition-colors ${selectedRangeId === range.id ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''
+                          }`}
                       >
                         <div className="font-medium text-stone-900">{range.name}</div>
                         <div className="text-sm text-stone-500">
@@ -650,17 +661,15 @@ export default function ClaimsPage() {
                 <div className="flex gap-2 p-1 bg-stone-100 rounded-xl">
                   <button
                     onClick={() => { setCreateNewUser(true); setSelectedUserId(''); }}
-                    className={`flex-1 py-2 px-4 rounded-lg font-bold transition-all ${
-                      createNewUser ? 'bg-white shadow text-stone-900' : 'text-stone-500'
-                    }`}
+                    className={`flex-1 py-2 px-4 rounded-lg font-bold transition-all ${createNewUser ? 'bg-white shadow text-stone-900' : 'text-stone-500'
+                      }`}
                   >
                     Create New Account
                   </button>
                   <button
                     onClick={() => setCreateNewUser(false)}
-                    className={`flex-1 py-2 px-4 rounded-lg font-bold transition-all ${
-                      !createNewUser ? 'bg-white shadow text-stone-900' : 'text-stone-500'
-                    }`}
+                    className={`flex-1 py-2 px-4 rounded-lg font-bold transition-all ${!createNewUser ? 'bg-white shadow text-stone-900' : 'text-stone-500'
+                      }`}
                   >
                     Select Existing User
                   </button>
@@ -738,9 +747,8 @@ export default function ClaimsPage() {
                         <button
                           key={user.id}
                           onClick={() => setSelectedUserId(user.id)}
-                          className={`w-full px-4 py-3 text-left hover:bg-stone-50 transition-colors ${
-                            selectedUserId === user.id ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''
-                          }`}
+                          className={`w-full px-4 py-3 text-left hover:bg-stone-50 transition-colors ${selectedUserId === user.id ? 'bg-emerald-50 border-l-4 border-emerald-500' : ''
+                            }`}
                         >
                           <div className="font-medium text-stone-900">{user.email}</div>
                           <div className="text-sm text-stone-500">{user.first_name} {user.last_name}</div>
@@ -855,11 +863,10 @@ export default function ClaimsPage() {
                       <button
                         key={plan.id}
                         onClick={() => setTransferPlan(plan.id)}
-                        className={`p-4 rounded-xl border-2 transition-all ${
-                          transferPlan === plan.id
-                            ? 'border-emerald-500 bg-emerald-50'
-                            : 'border-stone-200 hover:border-stone-300'
-                        }`}
+                        className={`p-4 rounded-xl border-2 transition-all ${transferPlan === plan.id
+                          ? 'border-emerald-500 bg-emerald-50'
+                          : 'border-stone-200 hover:border-stone-300'
+                          }`}
                       >
                         <div className="font-black text-stone-900">{plan.name}</div>
                         <div className="text-sm text-stone-500">{plan.price}</div>
@@ -1010,8 +1017,8 @@ export default function ClaimsPage() {
                       key={plan.id}
                       onClick={() => setPaymentPlan(plan.id)}
                       className={`p-4 rounded-xl border-2 transition-all ${paymentPlan === plan.id
-                          ? 'border-emerald-500 bg-emerald-50'
-                          : 'border-stone-200 hover:border-stone-300'
+                        ? 'border-emerald-500 bg-emerald-50'
+                        : 'border-stone-200 hover:border-stone-300'
                         }`}
                     >
                       <div className="font-black text-stone-900">{plan.name}</div>

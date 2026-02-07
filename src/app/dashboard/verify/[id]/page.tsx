@@ -25,9 +25,10 @@ export default function VerificationPage() {
     // Form data
     const [firstName, setFirstName] = useState('')
     const [lastName, setLastName] = useState('')
-    const [gstNumber, setGstNumber] = useState('')
-    const [businessLicense, setBusinessLicense] = useState<File | null>(null)
-    const [insurance, setInsurance] = useState<File | null>(null)
+    const [phoneNumber, setPhoneNumber] = useState('')
+    const [emailAddress, setEmailAddress] = useState('')
+    const [roleAtRange, setRoleAtRange] = useState('Owner')
+    const [certified, setCertified] = useState(false)
 
     useEffect(() => {
         async function fetchRange() {
@@ -52,6 +53,11 @@ export default function VerificationPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (!certified) {
+            setError('Please certify that you are an authorized representative.')
+            return
+        }
+
         setSubmitting(true)
         setError('')
 
@@ -63,53 +69,37 @@ export default function VerificationPage() {
                 return
             }
 
-            // Validate required fields
-            if (!firstName || !lastName || !gstNumber || !businessLicense || !insurance) {
-                setError('Please fill in all required fields and upload all documents')
-                setSubmitting(false)
-                return
-            }
-
-            // Upload business license
-            const licenseExt = businessLicense.name.split('.').pop()
-            const licensePath = `${user.id}/${id}/license-${Date.now()}.${licenseExt}`
-            const { error: licenseError } = await supabase.storage
-                .from('verification-documents')
-                .upload(licensePath, businessLicense)
-
-            if (licenseError) {
-                console.error('License upload error:', licenseError)
-                throw new Error(`Failed to upload business license: ${licenseError.message}`)
-            }
-
-            // Upload insurance certificate
-            const insuranceExt = insurance.name.split('.').pop()
-            const insurancePath = `${user.id}/${id}/insurance-${Date.now()}.${insuranceExt}`
-            const { error: insuranceError } = await supabase.storage
-                .from('verification-documents')
-                .upload(insurancePath, insurance)
-
-            if (insuranceError) {
-                console.error('Insurance upload error:', insuranceError)
-                throw new Error(`Failed to upload insurance certificate: ${insuranceError.message}`)
-            }
-
-            // Create verification request
-            const { error: verificationError } = await supabase
-                .from('verification_requests')
+            // Create verification request in claims table
+            const { error: claimError } = await supabase
+                .from('claims')
                 .insert({
-                    range_id: id,
+                    listing_id: id,
                     user_id: user.id,
                     first_name: firstName,
                     last_name: lastName,
-                    gst_number: gstNumber,
-                    business_license_url: licensePath,
-                    insurance_certificate_url: insurancePath,
+                    phone_number: phoneNumber,
+                    email_address: emailAddress || user.email,
+                    role_at_range: roleAtRange,
                     status: 'pending',
                     submitted_at: new Date().toISOString()
                 })
 
-            if (verificationError) throw verificationError
+            if (claimError) throw claimError
+
+            // Send notification to admin (Optional but recommended)
+            try {
+                await fetch('/api/emails/claim-received', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName,
+                        rangeName: range?.name,
+                        claimId: id // or the returned ID
+                    }),
+                })
+            } catch (err) {
+                console.error('Failed to send claim received email:', err)
+            }
 
             setSuccess(true)
         } catch (err: any) {
@@ -132,25 +122,25 @@ export default function VerificationPage() {
         return (
             <div className="min-h-screen bg-stone-50 py-12 px-4">
                 <div className="max-w-2xl mx-auto">
-                    <div className="bg-white rounded-2xl shadow-lg border border-stone-200 p-10">
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <CheckCircle2 className="w-12 h-12 text-emerald-600" />
-                            </div>
-                            <h2 className="text-3xl font-bold text-stone-900 mb-4">Verification Submitted!</h2>
-                            <p className="text-lg text-stone-600 mb-8">
-                                Thank you for submitting your verification documents. Our team will review your claim within 2-3 business days.
-                            </p>
-                            <p className="text-stone-500 mb-8">
-                                You'll receive an email notification once your claim has been approved or if we need any additional information.
-                            </p>
-                            <button
-                                onClick={() => router.push('/dashboard')}
-                                className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors"
-                            >
-                                Return to Dashboard
-                            </button>
+                    <div className="bg-white rounded-2xl shadow-lg border border-stone-200 p-10 text-center">
+                        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <ShieldCheck className="w-12 h-12 text-emerald-600" />
                         </div>
+                        <h2 className="text-3xl font-bold text-stone-900 mb-2">Verification in Progress</h2>
+                        <h3 className="text-xl text-stone-700 mb-6">Application Received</h3>
+
+                        <p className="text-lg text-stone-600 mb-8 leading-relaxed">
+                            Thanks, {firstName}! To keep our directory accurate, we manually verify every claim.
+                            We will be reaching out to the official contact on file for <strong>{range?.name}</strong> to confirm your role.
+                            Expect an update within 2-3 business days.
+                        </p>
+
+                        <button
+                            onClick={() => router.push('/dashboard')}
+                            className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors shadow-md"
+                        >
+                            Return to Dashboard
+                        </button>
                     </div>
                 </div>
             </div>
@@ -169,26 +159,25 @@ export default function VerificationPage() {
                         <ArrowLeft className="w-6 h-6 text-stone-600" />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-bold text-stone-900">Verify Your Business</h1>
+                        <h1 className="text-3xl font-bold text-stone-900">Verify Your Identity</h1>
                         <p className="text-stone-600 mt-1">Claiming: {range?.name}</p>
                     </div>
                 </div>
 
                 {/* Form */}
                 <div className="bg-white rounded-2xl shadow-lg border border-stone-200 p-8">
-                    <div className="flex items-start gap-4 mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <ShieldCheck className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                    <div className="flex items-start gap-4 mb-8 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <ShieldCheck className="w-6 h-6 text-emerald-600 flex-shrink-0 mt-1" />
                         <div>
-                            <h3 className="font-semibold text-blue-900 mb-1">Business Verification Required</h3>
-                            <p className="text-sm text-blue-700">
-                                To ensure the accuracy of our directory, we need to verify that you are the authorized representative of this archery range.
-                                Please provide the following information and documents.
+                            <h3 className="font-semibold text-emerald-900 mb-1">Contact-Based Verification</h3>
+                            <p className="text-sm text-emerald-700">
+                                Please provide your contact information. We manually verify every claim by contacting the range directly to confirm your relationship.
                             </p>
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Personal Information */}
+                        {/* Name Section */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-stone-700 mb-2">
@@ -218,92 +207,70 @@ export default function VerificationPage() {
                             </div>
                         </div>
 
-                        {/* GST Number */}
+                        {/* Contact Info */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-stone-700 mb-2">
+                                    Phone Number <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    required
+                                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-stone-900"
+                                    placeholder="(555) 000-0000"
+                                />
+                                <p className="mt-1 text-xs text-stone-500 italic">"We will use this to verify your identity with the range."</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-stone-700 mb-2">
+                                    Preferred Email Address <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    value={emailAddress}
+                                    onChange={(e) => setEmailAddress(e.target.value)}
+                                    required
+                                    className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-stone-900"
+                                    placeholder="john@example.com"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Role Selection */}
                         <div>
                             <label className="block text-sm font-medium text-stone-700 mb-2">
-                                GST Number <span className="text-red-500">*</span>
+                                Your Role at the Range <span className="text-red-500">*</span>
                             </label>
-                            <input
-                                type="text"
-                                value={gstNumber}
-                                onChange={(e) => setGstNumber(e.target.value)}
+                            <select
+                                value={roleAtRange}
+                                onChange={(e) => setRoleAtRange(e.target.value)}
                                 required
-                                className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-stone-900"
-                                placeholder="123456789RT0001"
+                                className="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-stone-900 bg-white"
+                            >
+                                <option value="Owner">Owner</option>
+                                <option value="Manager">Manager</option>
+                                <option value="President">President</option>
+                                <option value="Board Member">Board Member</option>
+                                <option value="Volunteer">Volunteer</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        {/* Certification */}
+                        <div className="flex items-start gap-3 p-4 bg-stone-50 rounded-xl border border-stone-200">
+                            <input
+                                type="checkbox"
+                                id="certify"
+                                checked={certified}
+                                onChange={(e) => setCertified(e.target.checked)}
+                                className="mt-1 h-5 w-5 text-emerald-600 border-stone-300 rounded focus:ring-emerald-500"
+                                required
                             />
-                            <p className="mt-1 text-sm text-stone-500">Your business GST/HST registration number</p>
-                        </div>
-
-                        {/* Business License Upload */}
-                        <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">
-                                Master Business License <span className="text-red-500">*</span>
+                            <label htmlFor="certify" className="text-sm text-stone-700 leading-relaxed">
+                                I certify that I am an authorized representative of this range and understand that Archery Ranges Canada will contact the range directly to verify my identity.
                             </label>
-                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-stone-300 border-dashed rounded-lg hover:border-emerald-500 transition-colors">
-                                <div className="space-y-1 text-center">
-                                    <FileText className="mx-auto h-12 w-12 text-stone-400" />
-                                    <div className="flex text-sm text-stone-600">
-                                        <label
-                                            htmlFor="business-license"
-                                            className="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500 focus-within:outline-none"
-                                        >
-                                            <span>Upload a file</span>
-                                            <input
-                                                id="business-license"
-                                                name="business-license"
-                                                type="file"
-                                                className="sr-only"
-                                                accept=".pdf,.jpg,.jpeg,.png,.txt"
-                                                onChange={(e) => setBusinessLicense(e.target.files?.[0] || null)}
-                                                required
-                                            />
-                                        </label>
-                                        <p className="pl-1">or drag and drop</p>
-                                    </div>
-                                    <p className="text-xs text-stone-500">PDF, PNG, JPG up to 10MB</p>
-                                    {businessLicense && (
-                                        <p className="text-sm text-emerald-600 font-medium mt-2">
-                                            ✓ {businessLicense.name}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Insurance Certificate Upload */}
-                        <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-2">
-                                Certificate of Insurance <span className="text-red-500">*</span>
-                            </label>
-                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-stone-300 border-dashed rounded-lg hover:border-emerald-500 transition-colors">
-                                <div className="space-y-1 text-center">
-                                    <Building2 className="mx-auto h-12 w-12 text-stone-400" />
-                                    <div className="flex text-sm text-stone-600">
-                                        <label
-                                            htmlFor="insurance"
-                                            className="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500 focus-within:outline-none"
-                                        >
-                                            <span>Upload a file</span>
-                                            <input
-                                                id="insurance"
-                                                name="insurance"
-                                                type="file"
-                                                className="sr-only"
-                                                accept=".pdf,.jpg,.jpeg,.png,.txt"
-                                                onChange={(e) => setInsurance(e.target.files?.[0] || null)}
-                                                required
-                                            />
-                                        </label>
-                                        <p className="pl-1">or drag and drop</p>
-                                    </div>
-                                    <p className="text-xs text-stone-500">PDF, PNG, JPG up to 10MB</p>
-                                    {insurance && (
-                                        <p className="text-sm text-emerald-600 font-medium mt-2">
-                                            ✓ {insurance.name}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
                         </div>
 
                         {/* Error Message */}
@@ -324,23 +291,38 @@ export default function VerificationPage() {
                             </button>
                             <button
                                 type="submit"
-                                disabled={submitting}
-                                className="flex-1 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-400 text-white font-semibold rounded-lg transition-colors"
+                                disabled={submitting || !certified}
+                                className="flex-1 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-400 text-white font-semibold rounded-lg transition-colors shadow-sm"
                             >
-                                {submitting ? 'Submitting...' : 'Submit for Verification'}
+                                {submitting ? 'Submitting...' : 'Submit Claim'}
                             </button>
                         </div>
                     </form>
                 </div>
 
                 {/* Info Box */}
-                <div className="mt-6 p-4 bg-stone-100 rounded-lg border border-stone-200">
-                    <h4 className="font-semibold text-stone-900 mb-2">What happens next?</h4>
-                    <ul className="space-y-1 text-sm text-stone-600">
-                        <li>• Our team will review your documents within 2-3 business days</li>
-                        <li>• You'll receive an email notification once approved</li>
-                        <li>• If approved, you'll get full access to manage your listing</li>
-                        <li>• We may contact you if additional information is needed</li>
+                <div className="mt-6 p-6 bg-stone-100 rounded-2xl border border-stone-200">
+                    <h4 className="font-bold text-stone-900 mb-3 flex items-center gap-2">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                        What happens next?
+                    </h4>
+                    <ul className="space-y-3 text-sm text-stone-600">
+                        <li className="flex gap-2">
+                            <span className="font-bold text-stone-400">1.</span>
+                            Our admin team receives your claim request and contact details.
+                        </li>
+                        <li className="flex gap-2">
+                            <span className="font-bold text-stone-400">2.</span>
+                            We will call or email the range's official contact information to verify your role.
+                        </li>
+                        <li className="flex gap-2">
+                            <span className="font-bold text-stone-400">3.</span>
+                            Once confirmed, your account will be upgraded to <strong>Business Owner</strong> status.
+                        </li>
+                        <li className="flex gap-2">
+                            <span className="font-bold text-stone-400">4.</span>
+                            You will receive an email notification and full access to manage your listing.
+                        </li>
                     </ul>
                 </div>
             </div>

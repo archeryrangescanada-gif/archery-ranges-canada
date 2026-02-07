@@ -103,11 +103,32 @@ export interface Profile {
 
 export interface Claim {
   id: string
-  range_id: string
   user_id: string
-  status: 'pending' | 'approved' | 'rejected'
+  listing_id: string
+  status: 'pending' | 'approved' | 'rejected' | 'contacted'
+  first_name: string
+  last_name: string
+  phone_number: string
+  email_address: string
+  role_at_range: string
+  submitted_at: string
+  admin_notes?: string
+  reviewed_at?: string
+  reviewed_by?: string
+  rejection_reason?: string
   created_at: string
   updated_at: string
+  // Optional relations
+  range?: {
+    id: string
+    name: string
+  }
+  user?: {
+    id: string
+    email: string
+    full_name: string | null
+    phone?: string | null
+  }
 }
 
 // API Response types

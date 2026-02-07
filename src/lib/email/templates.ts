@@ -570,3 +570,134 @@ Archery Ranges Canada
     text,
   }
 }
+// Claim Received Email (To User)
+export const claimReceivedEmail = (params: {
+  firstName: string
+  rangeName: string
+}): EmailTemplate => {
+  const html = emailWrapper(`
+    <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px;">Application Received 🎯</h2>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      Hello <strong>${params.firstName}</strong>,
+    </p>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      Thanks for submitting your claim for <strong>${params.rangeName}</strong> on Archery Ranges Canada!
+    </p>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      To keep our directory accurate, we manually verify every claim. We will be reaching out to the official contact on file for the range to confirm your role.
+    </p>
+
+    <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0;">
+      <p style="margin: 0; color: #166534; font-size: 14px; line-height: 1.6;">
+        <strong>What's next:</strong><br>
+        • Our team reviews your request within 2-3 business days.<br>
+        • We may contact the range directly for verification.<br>
+        • You'll receive an email as soon as your account is upgraded.
+      </p>
+    </div>
+
+    <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
+      If you have any questions, simply reply to this email.
+    </p>
+  `)
+
+  const text = `
+Application Received 🎯
+
+Hello ${params.firstName},
+
+Thanks for submitting your claim for ${params.rangeName} on Archery Ranges Canada!
+
+To keep our directory accurate, we manually verify every claim. We will be reaching out to the official contact on file for the range to confirm your role.
+
+What's next:
+• Our team reviews your request within 2-3 business days.
+• We may contact the range directly for verification.
+• You'll receive an email as soon as your account is upgraded.
+
+If you have any questions, simply reply to this email.
+
+---
+Archery Ranges Canada
+`
+
+  return {
+    subject: `Application Received: ${params.rangeName}`,
+    html,
+    text,
+  }
+}
+
+// Admin Claim Notification Email
+export const adminClaimNotificationEmail = (params: {
+  firstName: string
+  lastName: string
+  rangeName: string
+  role: string
+  phone: string
+  email: string
+  dashboardLink: string
+}): EmailTemplate => {
+  const html = emailWrapper(`
+    <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px;">New Verification Claim 🛡️</h2>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      A new user has claimed <strong>${params.rangeName}</strong>.
+    </p>
+
+    <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+      <p style="margin: 0 0 10px 0; color: #111827; font-weight: 600;">Claimant Details:</p>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280; width: 100px;">Name:</td>
+          <td style="padding: 4px 0; color: #111827; font-weight: 600;">${params.firstName} ${params.lastName}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280;">Role:</td>
+          <td style="padding: 4px 0; color: #111827;">${params.role}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280;">Phone:</td>
+          <td style="padding: 4px 0; color: #111827;"><strong>${params.phone}</strong></td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280;">Email:</td>
+          <td style="padding: 4px 0; color: #111827;">${params.email}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${params.dashboardLink}"
+         style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 6px; font-weight: 600; font-size: 16px;">
+        Review Claim in Admin Panel
+      </a>
+    </div>
+  `)
+
+  const text = `
+New Verification Claim 🛡️
+
+A new user has claimed ${params.rangeName}.
+
+Claimant Details:
+Name: ${params.firstName} ${params.lastName}
+Role: ${params.role}
+Phone: ${params.phone}
+Email: ${params.email}
+
+Review in Admin Panel: ${params.dashboardLink}
+
+---
+Archery Ranges Canada
+`
+
+  return {
+    subject: `NEW CLAIM: ${params.rangeName} by ${params.firstName} ${params.lastName}`,
+    html,
+    text,
+  }
+}

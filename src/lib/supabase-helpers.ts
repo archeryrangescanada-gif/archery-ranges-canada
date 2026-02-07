@@ -1,6 +1,7 @@
-// src/lib/supabase-admin.ts
-import 'server-only'
+// src/lib/supabase-helpers.ts
 import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from './supabase-admin'
+import { EmailService } from './email/service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -68,10 +69,10 @@ export const listingsAPI = {
 export const claimsAPI = {
   async getAll(status?: string) {
     let query = supabaseAdmin
-      .from('listing_claims')
+      .from('claims')
       .select(`
         *,
-        listing:business_listings(name),
+        listing:ranges(id, name, phone_number, website, address),
         user:profiles(full_name, email, phone)
       `)
 
@@ -84,16 +85,16 @@ export const claimsAPI = {
 
   async approve(claimId: string, adminId: string) {
     const { data: claim, error: claimError } = await supabaseAdmin
-      .from('listing_claims')
-      .select('*, listing_id, user_id')
+      .from('claims')
+      .select('*, listing:ranges(id, name), user:profiles(id, email, full_name)')
       .eq('id', claimId)
       .single()
 
-    if (claimError) throw claimError
+    if (claimError) return { error: claimError }
 
     // Update claim status
-    await supabaseAdmin
-      .from('listing_claims')
+    const { error: updateError } = await supabaseAdmin
+      .from('claims')
       .update({
         status: 'approved',
         reviewed_by: adminId,
@@ -101,24 +102,54 @@ export const claimsAPI = {
       })
       .eq('id', claimId)
 
-    // Update listing
-    await supabaseAdmin
-      .from('business_listings')
+    if (updateError) return { error: updateError }
+
+    // Update range/listing
+    const { error: rangeError } = await supabaseAdmin
+      .from('ranges')
       .update({
-        claimed: true,
-        claimed_at: new Date().toISOString(),
-        owner_id: claim.user_id
+        is_claimed: true,
+        owner_id: claim.user_id,
+        status: 'active'
       })
       .eq('id', claim.listing_id)
 
-    // TODO: Send approval email
+    if (rangeError) return { error: rangeError }
+
+    // Update user profile role
+    const { error: roleError } = await supabaseAdmin
+      .from('profiles')
+      .update({ role: 'owner' })
+      .eq('id', claim.user_id)
+
+    if (roleError) return { error: roleError }
+
+    // Send approval email
+    try {
+      await EmailService.sendVerificationApprovedEmail({
+        to: claim.email_address || claim.user.email,
+        businessName: claim.first_name || claim.user.full_name || claim.listing.name,
+        rangeName: claim.listing.name,
+        rangeId: claim.listing_id
+      })
+    } catch (emailErr) {
+      console.error('Failed to send approval email:', emailErr)
+    }
 
     return { success: true }
   },
 
   async reject(claimId: string, adminId: string, reason: string) {
-    await supabaseAdmin
-      .from('listing_claims')
+    const { data: claim, error: claimError } = await supabaseAdmin
+      .from('claims')
+      .select('*, listing:ranges(id, name), user:profiles(id, email, full_name)')
+      .eq('id', claimId)
+      .single()
+
+    if (claimError) return { error: claimError }
+
+    const { error: updateError } = await supabaseAdmin
+      .from('claims')
       .update({
         status: 'rejected',
         reviewed_by: adminId,
@@ -127,9 +158,33 @@ export const claimsAPI = {
       })
       .eq('id', claimId)
 
-    // TODO: Send rejection email
+    if (updateError) return { error: updateError }
+
+    // Send rejection email
+    try {
+      await EmailService.sendVerificationRejectedEmail({
+        to: claim.email_address || claim.user.email,
+        businessName: claim.first_name || claim.user.full_name || claim.listing.name,
+        rangeName: claim.listing.name,
+        reason: reason
+      })
+    } catch (emailErr) {
+      console.error('Failed to send rejection email:', emailErr)
+    }
 
     return { success: true }
+  },
+
+  async markAsContacted(claimId: string, adminId: string, notes?: string) {
+    return supabaseAdmin
+      .from('claims')
+      .update({
+        status: 'contacted',
+        admin_notes: notes,
+        reviewed_by: adminId,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', claimId)
   }
 }
 
