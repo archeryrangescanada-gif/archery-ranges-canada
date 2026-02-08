@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { User } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/client';
 import { LogOut, Settings, Heart, Star, MapPin, BarChart3, ClipboardList } from 'lucide-react';
 
 interface UserProfileMenuProps {
@@ -21,7 +21,7 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [profile, setProfile] = useState<Profile | null>(null);
     const menuRef = useRef<HTMLDivElement>(null);
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
 
     // Fetch profile data
     useEffect(() => {

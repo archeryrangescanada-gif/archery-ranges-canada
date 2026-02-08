@@ -3,15 +3,15 @@
 
 import Link from 'next/link'
 import { useState, useCallback, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { User } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 import UserProfileMenu from './UserProfileMenu'
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
-    const supabase = createClientComponentClient()
+    const supabase = createClient()
 
     useEffect(() => {
         async function getUser() {
