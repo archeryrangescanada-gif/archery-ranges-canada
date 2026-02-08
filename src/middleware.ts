@@ -6,6 +6,7 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
+  // Refresh session on every matched route so auth state is available
   const {
     data: { session },
   } = await supabase.auth.getSession()
@@ -26,7 +27,7 @@ export async function middleware(req: NextRequest) {
     const adminToken = req.cookies.get('admin-token')
     if (!session && !adminToken) {
       const redirectUrl = req.nextUrl.clone()
-      redirectUrl.pathname = '/admin/login' // Redirect to admin-specific login
+      redirectUrl.pathname = '/admin/login'
       return NextResponse.redirect(redirectUrl)
     }
   }
@@ -35,5 +36,14 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/account/:path*', '/admin/:path*'],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization)
+     * - favicon.ico (browser icon)
+     * - public files (images, etc.)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+  ],
 }
