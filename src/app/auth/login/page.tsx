@@ -39,19 +39,8 @@ export default function LoginPage() {
     if (error) {
       setError(error.message)
     } else {
-      // Check if user has any listings
-      const { data: ranges } = await supabase
-        .from('ranges')
-        .select('id')
-        .eq('owner_id', data.user.id)
-        .limit(1)
-
-      // Redirect based on whether they have listings
-      if (!ranges || ranges.length === 0) {
-        router.push('/dashboard/onboarding')
-      } else {
-        router.push('/dashboard')
-      }
+      // Redirect to home page after successful login
+      router.push('/')
       router.refresh()
     }
   } catch (err: any) {

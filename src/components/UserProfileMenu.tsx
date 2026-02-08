@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { User } from '@supabase/supabase-js';
-import { LogOut, User as UserIcon, Settings, Heart, Star } from 'lucide-react';
+import { LogOut, Settings, Heart, Star, MapPin, BarChart3, ClipboardList } from 'lucide-react';
 
 interface UserProfileMenuProps {
     user: User;
@@ -122,30 +122,12 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
 
                     <div className="py-1">
                         <Link
-                            href="/account"
-                            onClick={() => setIsOpen(false)}
-                            className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
-                        >
-                            <UserIcon className="w-4 h-4 mr-3 text-stone-500" />
-                            Account Overview
-                        </Link>
-                        {profile?.role === 'business_owner' && (
-                            <Link
-                                href="/account/listings"
-                                onClick={() => setIsOpen(false)}
-                                className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
-                            >
-                                <Settings className="w-4 h-4 mr-3 text-stone-500" />
-                                My Listings
-                            </Link>
-                        )}
-                        <Link
                             href="/account/favorites"
                             onClick={() => setIsOpen(false)}
                             className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
                         >
                             <Heart className="w-4 h-4 mr-3 text-stone-500" />
-                            My Favorites
+                            Favorites
                         </Link>
                         <Link
                             href="/account/reviews"
@@ -153,15 +135,47 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
                             className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
                         >
                             <Star className="w-4 h-4 mr-3 text-stone-500" />
-                            My Reviews
+                            Reviews
                         </Link>
+                        <Link
+                            href="/dashboard/onboarding"
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                        >
+                            <ClipboardList className="w-4 h-4 mr-3 text-stone-500" />
+                            Claim a Listing
+                        </Link>
+
+                        {profile?.role === 'business_owner' && (
+                            <>
+                                <div className="border-t border-stone-100 my-1" />
+                                <Link
+                                    href="/account/listings"
+                                    onClick={() => setIsOpen(false)}
+                                    className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                                >
+                                    <MapPin className="w-4 h-4 mr-3 text-stone-500" />
+                                    My Listing
+                                </Link>
+                                <Link
+                                    href="/dashboard"
+                                    onClick={() => setIsOpen(false)}
+                                    className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                                >
+                                    <BarChart3 className="w-4 h-4 mr-3 text-stone-500" />
+                                    Analytics
+                                </Link>
+                            </>
+                        )}
+
+                        <div className="border-t border-stone-100 my-1" />
                         <Link
                             href="/account/settings"
                             onClick={() => setIsOpen(false)}
                             className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
                         >
                             <Settings className="w-4 h-4 mr-3 text-stone-500" />
-                            Account Settings
+                            Settings
                         </Link>
                     </div>
 

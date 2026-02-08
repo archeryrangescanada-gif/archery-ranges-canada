@@ -71,16 +71,9 @@ export async function GET(request: Request) {
           }
         }
 
-        // Redirect based on user status
-        if (hasRanges) {
-          console.log('↗️ Redirecting to dashboard (existing user)')
-          return NextResponse.redirect(`${origin}/dashboard`)
-        } else {
-          console.log('↗️ Redirecting to onboarding (new user)')
-          const redirectUrl = new URL(`${origin}/dashboard/onboarding`)
-          if (plan) redirectUrl.searchParams.set('plan', plan)
-          return NextResponse.redirect(redirectUrl)
-        }
+        // Redirect to home page - user will see their profile in the header
+        console.log('↗️ Redirecting to home page')
+        return NextResponse.redirect(`${origin}/`)
       }
     } catch (err) {
       console.error('❌ Unexpected error:', err)
