@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { Star, Edit, Trash2 } from 'lucide-react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Star, Edit, Trash2, Compass } from 'lucide-react';
 
 interface RangeInfo {
     name: string;
@@ -38,7 +40,7 @@ export default function ReviewsPage() {
     const [comment, setComment] = useState('');
     const [saving, setSaving] = useState(false);
 
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
 
     useEffect(() => {
         async function getReviews() {
@@ -73,7 +75,8 @@ export default function ReviewsPage() {
         }
 
         getReviews();
-    }, [supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleEditClick = (review: Review) => {
         setEditingId(review.id);
@@ -129,105 +132,130 @@ export default function ReviewsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-stone-50 py-12">
-            <div className="container mx-auto px-4 max-w-4xl">
-                <h1 className="text-3xl font-bold text-stone-900 mb-8">My Reviews</h1>
+        <>
+            <Header />
+            <div className="min-h-screen bg-stone-50 py-12">
+                <div className="container mx-auto px-4 max-w-4xl">
+                    <h1 className="text-3xl font-bold text-stone-900 mb-8">My Reviews</h1>
 
-                {loading ? (
-                    <div className="text-center py-12">Loading...</div>
-                ) : reviews.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-xl border border-stone-100">
-                        <Star className="w-12 h-12 text-stone-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-stone-900">No reviews yet</h3>
-                        <p className="text-stone-500 mb-6">You haven't customized any reviews yet.</p>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {reviews.map((review) => (
-                            <div key={review.id} className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm">
+                    {loading ? (
+                        <div className="space-y-4">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="bg-white p-6 rounded-xl border border-stone-100 animate-pulse">
+                                    <div className="flex justify-between mb-3">
+                                        <div className="h-5 bg-stone-200 rounded w-1/3" />
+                                        <div className="h-4 bg-stone-100 rounded w-20" />
+                                    </div>
+                                    <div className="flex gap-1 mb-3">
+                                        {[1, 2, 3, 4, 5].map(s => (
+                                            <div key={s} className="w-4 h-4 bg-stone-200 rounded" />
+                                        ))}
+                                    </div>
+                                    <div className="h-4 bg-stone-100 rounded w-full mb-2" />
+                                    <div className="h-4 bg-stone-100 rounded w-2/3" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : reviews.length === 0 ? (
+                        <div className="text-center py-16 bg-white rounded-xl border border-stone-100">
+                            <Star className="w-14 h-14 text-stone-300 mx-auto mb-4" />
+                            <h3 className="text-xl font-semibold text-stone-900 mb-2">No reviews yet</h3>
+                            <p className="text-stone-500 mb-6 max-w-md mx-auto">
+                                You haven&apos;t written any reviews yet. Visit a range and share your experience to help other archers.
+                            </p>
+                            <Link href="/" className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-colors">
+                                <Compass className="w-5 h-5" />
+                                Explore Ranges
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {reviews.map((review) => (
+                                <div key={review.id} className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm">
 
-                                {editingId === review.id ? (
-                                    <form onSubmit={handleUpdate} className="space-y-4">
-                                        <h3 className="font-bold">Edit Review for {review.ranges.name}</h3>
-                                        <div className="flex gap-2">
-                                            {[1, 2, 3, 4, 5].map((star) => (
+                                    {editingId === review.id ? (
+                                        <form onSubmit={handleUpdate} className="space-y-4">
+                                            <h3 className="font-bold">Edit Review for {review.ranges.name}</h3>
+                                            <div className="flex gap-2">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <button
+                                                        key={star}
+                                                        type="button"
+                                                        onClick={() => setRating(star)}
+                                                        className={`p-1 focus:outline-none ${rating >= star ? 'text-yellow-400' : 'text-stone-300'}`}
+                                                    >
+                                                        <Star className={`w-8 h-8 ${rating >= star ? 'fill-current' : ''}`} />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <textarea
+                                                value={comment}
+                                                onChange={(e) => setComment(e.target.value)}
+                                                className="w-full px-4 py-3 rounded-lg border border-stone-300 outline-none focus:ring-2 focus:ring-emerald-500"
+                                                rows={3}
+                                            />
+                                            <div className="flex gap-2 justify-end">
                                                 <button
-                                                    key={star}
                                                     type="button"
-                                                    onClick={() => setRating(star)}
-                                                    className={`p-1 focus:outline-none ${rating >= star ? 'text-yellow-400' : 'text-stone-300'}`}
+                                                    onClick={handleCancelEdit}
+                                                    className="px-4 py-2 text-stone-500 hover:bg-stone-100 rounded-lg"
                                                 >
-                                                    <Star className={`w-8 h-8 ${rating >= star ? 'fill-current' : ''}`} />
+                                                    Cancel
                                                 </button>
-                                            ))}
-                                        </div>
-                                        <textarea
-                                            value={comment}
-                                            onChange={(e) => setComment(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-lg border border-stone-300 outline-none focus:ring-2 focus:ring-emerald-500"
-                                            rows={3}
-                                        />
-                                        <div className="flex gap-2 justify-end">
-                                            <button
-                                                type="button"
-                                                onClick={handleCancelEdit}
-                                                className="px-4 py-2 text-stone-500 hover:bg-stone-100 rounded-lg"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                disabled={saving}
-                                                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium"
-                                            >
-                                                {saving ? 'Saving...' : 'Update'}
-                                            </button>
-                                        </div>
-                                    </form>
-                                ) : (
-                                    <>
-                                        <div className="flex justify-between items-start mb-2">
-                                            <Link href={`/${review.ranges.slug}`} className="font-bold text-lg text-stone-900 hover:text-emerald-600">
-                                                {review.ranges.name}
-                                            </Link>
-                                            <span className="text-sm text-stone-400">
-                                                {new Date(review.created_at).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                        <div className="flex mb-3">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star
-                                                    type="button"
-                                                    key={i}
-                                                    className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-stone-300'}`}
-                                                />
-                                            ))}
-                                        </div>
-                                        <p className="text-stone-600 mb-4">{review.comment}</p>
+                                                <button
+                                                    type="submit"
+                                                    disabled={saving}
+                                                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium"
+                                                >
+                                                    {saving ? 'Saving...' : 'Update'}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    ) : (
+                                        <>
+                                            <div className="flex justify-between items-start mb-2">
+                                                <Link href={`/${review.ranges.slug}`} className="font-bold text-lg text-stone-900 hover:text-emerald-600">
+                                                    {review.ranges.name}
+                                                </Link>
+                                                <span className="text-sm text-stone-400">
+                                                    {new Date(review.created_at).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <div className="flex mb-3">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star
+                                                        key={i}
+                                                        className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-stone-300'}`}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <p className="text-stone-600 mb-4">{review.comment}</p>
 
-                                        <div className="flex gap-3 pt-3 border-t border-stone-100">
-                                            <button
-                                                onClick={() => handleEditClick(review)}
-                                                className="flex items-center text-sm font-medium text-stone-500 hover:text-emerald-600 transition-colors"
-                                            >
-                                                <Edit className="w-4 h-4 mr-1.5" />
-                                                Edit Review
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(review.id)}
-                                                className="flex items-center text-sm font-medium text-stone-500 hover:text-red-600 transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4 mr-1.5" />
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                )}
+                                            <div className="flex gap-3 pt-3 border-t border-stone-100">
+                                                <button
+                                                    onClick={() => handleEditClick(review)}
+                                                    className="flex items-center text-sm font-medium text-stone-500 hover:text-emerald-600 transition-colors"
+                                                >
+                                                    <Edit className="w-4 h-4 mr-1.5" />
+                                                    Edit Review
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(review.id)}
+                                                    className="flex items-center text-sm font-medium text-stone-500 hover:text-red-600 transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4 mr-1.5" />
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+            <Footer />
+        </>
     );
 }

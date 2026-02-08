@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import AvatarUpload from '@/components/AvatarUpload';
 import { LogOut, Trash2, Key, AlertTriangle } from 'lucide-react';
 
@@ -27,7 +29,7 @@ export default function SettingsPage() {
 
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
     const router = useRouter();
 
     useEffect(() => {
@@ -127,9 +129,17 @@ export default function SettingsPage() {
         }
     };
 
-    if (loading) return <div className="p-8 text-center bg-stone-50 min-h-screen pt-20">Loading...</div>;
+    if (loading) return (
+        <>
+            <Header />
+            <div className="p-8 text-center bg-stone-50 min-h-screen pt-20">Loading...</div>
+            <Footer />
+        </>
+    );
 
     return (
+        <>
+        <Header />
         <div className="min-h-screen bg-stone-50 py-12">
             <div className="container mx-auto px-4 max-w-2xl">
                 <h1 className="text-3xl font-bold text-stone-900 mb-8">Account Settings</h1>
@@ -293,5 +303,7 @@ export default function SettingsPage() {
                 </div>
             </div>
         </div>
+        <Footer />
+        </>
     );
 }

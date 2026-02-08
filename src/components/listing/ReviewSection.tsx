@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import { Star, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -34,7 +34,7 @@ export function ReviewSection({ listingId, initialReviews = [] }: ReviewSectionP
     const [comment, setComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
     const router = useRouter();
 
     useEffect(() => {
@@ -69,7 +69,7 @@ export function ReviewSection({ listingId, initialReviews = [] }: ReviewSectionP
                 if (data) {
                     setReviews(data);
                     if (user) {
-                        const myReview = data.find(r => r.user_id === user.id);
+                        const myReview = data.find((r: Review) => r.user_id === user.id);
                         if (myReview) {
                             setUserReview(myReview);
                             setRating(myReview.rating);

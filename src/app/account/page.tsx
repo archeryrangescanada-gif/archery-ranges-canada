@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import Link from 'next/link';
@@ -32,7 +32,7 @@ export default function DashboardPage() {
         totalReviews: 0,
     });
 
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
     const router = useRouter();
 
     useEffect(() => {
@@ -78,7 +78,7 @@ export default function DashboardPage() {
             setListings(userListings);
 
             // Calculate stats (mocked for now until we have real analytics aggregation)
-            const views = userListings.reduce((acc, curr) => acc + (curr.views_count || 0), 0);
+            const views = userListings.reduce((acc: number, curr: any) => acc + (curr.views_count || 0), 0);
             setStats({
                 totalViews: views,
                 totalFavorites: 0, // Placeholder

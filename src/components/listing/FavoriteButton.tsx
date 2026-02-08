@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import { Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -13,7 +13,7 @@ interface FavoriteButtonProps {
 export function FavoriteButton({ listingId, initialIsFavorited = false }: FavoriteButtonProps) {
     const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
     const [loading, setLoading] = useState(false);
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
     const router = useRouter();
 
     // If we don't have initial state, we might want to check it on mount? 

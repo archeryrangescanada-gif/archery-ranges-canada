@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { Upload, X, Camera } from 'lucide-react'
 
 interface AvatarUploadProps {
@@ -12,7 +12,7 @@ interface AvatarUploadProps {
 }
 
 export default function AvatarUpload({ uid, url, size = 150, onUpload }: AvatarUploadProps) {
-    const supabase = createClientComponentClient()
+    const supabase = createClient()
     const [uploading, setUploading] = useState(false)
     const [avatarUrl, setAvatarUrl] = useState<string | null>(url)
     const fileInputRef = useRef<HTMLInputElement>(null)
