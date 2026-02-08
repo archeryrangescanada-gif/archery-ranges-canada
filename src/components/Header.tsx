@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { useState, useCallback, useEffect } from 'react'
-import { User } from '@supabase/supabase-js'
+import { User, AuthChangeEvent, Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import UserProfileMenu from './UserProfileMenu'
 
@@ -23,7 +23,7 @@ export default function Header() {
         getUser()
 
         // Subscribe to auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
             setUser(session?.user ?? null)
         })
 
