@@ -15,8 +15,10 @@ import {
     LogOut,
     ExternalLink,
     BarChart3,
-    Star
+    Star,
+    Lock
 } from 'lucide-react'
+import { canAccessAnalytics, getUserSubscriptionTier } from '@/lib/subscription-utils'
 // Custom interface for dashboard (some fields use different names)
 interface Range {
     id: string
@@ -223,13 +225,25 @@ export default function DashboardPage() {
                                         >
                                             <ExternalLink className="w-5 h-5" />
                                         </Link>
-                                        <Link
-                                            href={`/dashboard/analytics/${range.id}`}
-                                            className="p-2 text-stone-400 hover:text-stone-600 transition-colors"
-                                            title="View analytics"
-                                        >
-                                            <BarChart3 className="w-5 h-5" />
-                                        </Link>
+                                        {canAccessAnalytics(getUserSubscriptionTier(range)) ? (
+                                            <Link
+                                                href={`/dashboard/analytics/${range.id}`}
+                                                className="p-2 text-stone-400 hover:text-stone-600 transition-colors"
+                                                title="View analytics"
+                                            >
+                                                <BarChart3 className="w-5 h-5" />
+                                            </Link>
+                                        ) : (
+                                            <div
+                                                className="p-2 text-stone-300 cursor-not-allowed group relative"
+                                                title="Upgrade for Analytics"
+                                            >
+                                                <Lock className="w-4 h-4" />
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">
+                                                    Upgrade to Basic for Analytics
+                                                </div>
+                                            </div>
+                                        )}
                                         <Link
                                             href={`/dashboard/settings/${range.id}`}
                                             className="p-2 text-stone-400 hover:text-stone-600 transition-colors"

@@ -17,27 +17,49 @@ interface Profile {
     role: string;
 }
 
+interface Range {
+    id: string;
+    subscription_tier: string | null;
+}
+
+
 export default function UserProfileMenu({ user }: UserProfileMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [profile, setProfile] = useState<Profile | null>(null);
+    const [userRange, setUserRange] = useState<Range | null>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const supabase = createClient();
 
-    // Fetch profile data
+    // Fetch profile data and user's first range
     useEffect(() => {
-        async function getProfile() {
-            const { data } = await supabase
+        async function getProfileAndRange() {
+            // Fetch profile
+            const { data: profileData } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
                 .single();
 
-            if (data) {
-                setProfile(data);
+            if (profileData) {
+                setProfile(profileData);
+
+                // If user is an owner, fetch their first range
+                if (profileData.role === 'owner' || profileData.role === 'business_owner') {
+                    const { data: rangeData } = await supabase
+                        .from('ranges')
+                        .select('id, subscription_tier')
+                        .eq('owner_id', user.id)
+                        .limit(1)
+                        .single();
+
+                    if (rangeData) {
+                        setUserRange(rangeData);
+                    }
+                }
             }
         }
 
-        getProfile();
+        getProfileAndRange();
     }, [user.id, supabase]);
 
     // Close menu when clicking outside
@@ -137,6 +159,49 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
                             <Star className="w-4 h-4 mr-3 text-stone-500" />
                             Reviews
                         </Link>
+
+                        {/* Show Listings and Analytics for owners */}
+                        {(profile?.role === 'owner' || profile?.role === 'business_owner') && (
+                            <>
+                                <Link
+                                    href="/dashboard"
+                                    onClick={() => setIsOpen(false)}
+                                    className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                                >
+                                    <MapPin className="w-4 h-4 mr-3 text-stone-500" />
+                                    Listings
+                                </Link>
+
+                                {/* Analytics - conditional rendering based on tier */}
+                                {userRange && userRange.subscription_tier && userRange.subscription_tier !== 'free' ? (
+                                    // BASIC tier and above - clickable link
+                                    <Link
+                                        href={`/dashboard/analytics/${userRange.id}`}
+                                        onClick={() => setIsOpen(false)}
+                                        className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                                    >
+                                        <BarChart3 className="w-4 h-4 mr-3 text-stone-500" />
+                                        Analytics
+                                    </Link>
+                                ) : (
+                                    // FREE tier - show with upgrade button
+                                    <div className="flex items-center justify-between px-4 py-2 text-sm">
+                                        <div className="flex items-center text-stone-400">
+                                            <BarChart3 className="w-4 h-4 mr-3" />
+                                            Analytics
+                                        </div>
+                                        <Link
+                                            href="/pricing"
+                                            onClick={() => setIsOpen(false)}
+                                            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors"
+                                        >
+                                            Upgrade
+                                        </Link>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
                         <Link
                             href="/dashboard/onboarding"
                             onClick={() => setIsOpen(false)}
@@ -146,27 +211,7 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
                             Claim a Listing
                         </Link>
 
-                        {profile?.role === 'business_owner' && (
-                            <>
-                                <div className="border-t border-stone-100 my-1" />
-                                <Link
-                                    href="/account/listings"
-                                    onClick={() => setIsOpen(false)}
-                                    className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
-                                >
-                                    <MapPin className="w-4 h-4 mr-3 text-stone-500" />
-                                    My Listing
-                                </Link>
-                                <Link
-                                    href="/dashboard"
-                                    onClick={() => setIsOpen(false)}
-                                    className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
-                                >
-                                    <BarChart3 className="w-4 h-4 mr-3 text-stone-500" />
-                                    Analytics
-                                </Link>
-                            </>
-                        )}
+
 
                         <div className="border-t border-stone-100 my-1" />
                         <Link

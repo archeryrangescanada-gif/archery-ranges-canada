@@ -125,7 +125,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     supportLevel: 'none',
   },
   basic: {
-    maxPhotos: 1,
+    maxPhotos: 3,
     maxVideos: 0,
     hasAnalytics: true,
     hasContactForm: true,

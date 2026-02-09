@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { ArrowLeft, Save, Trash2, MapPin } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, MapPin, Loader2 } from 'lucide-react'
+import { PhotoManager } from '@/components/dashboard/PhotoManager'
+import { SubscriptionTier, getUserSubscriptionTier } from '@/lib/subscription-utils'
 
 interface FormData {
     name: string
@@ -18,6 +20,7 @@ interface FormData {
     hasFieldCourse: boolean
     equipmentRental: boolean
     lessonsAvailable: boolean
+    post_images: string[]
 }
 
 export default function SettingsPage() {
@@ -30,6 +33,7 @@ export default function SettingsPage() {
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
+    const [tier, setTier] = useState<SubscriptionTier>('free')
 
     const [formData, setFormData] = useState<FormData>({
         name: '',
@@ -43,6 +47,7 @@ export default function SettingsPage() {
         hasFieldCourse: false,
         equipmentRental: false,
         lessonsAvailable: false,
+        post_images: []
     })
     const [deleting, setDeleting] = useState(false)
 
@@ -80,14 +85,18 @@ export default function SettingsPage() {
                 hasFieldCourse: rangeData.has_field_course || false,
                 equipmentRental: rangeData.equipment_rental_available || false,
                 lessonsAvailable: rangeData.lessons_available || false,
+                post_images: Array.isArray(rangeData.post_images)
+                    ? rangeData.post_images
+                    : (typeof rangeData.post_images === 'string' ? JSON.parse(rangeData.post_images) : []),
             })
+            setTier(getUserSubscriptionTier(rangeData))
             setLoading(false)
         }
 
         loadData()
     }, [router, supabase, rangeId])
 
-    const updateField = (field: keyof FormData, value: string | boolean) => {
+    const updateField = (field: keyof FormData, value: string | boolean | string[]) => {
         setFormData(prev => ({ ...prev, [field]: value }))
         setSuccess('')
     }
@@ -112,6 +121,7 @@ export default function SettingsPage() {
                     has_field_course: formData.hasFieldCourse,
                     equipment_rental_available: formData.equipmentRental,
                     lessons_available: formData.lessonsAvailable,
+                    post_images: formData.post_images,
                 })
                 .eq('id', rangeId)
 
@@ -305,6 +315,16 @@ export default function SettingsPage() {
                                         <span className="font-medium text-stone-700">{amenity.label}</span>
                                     </label>
                                 ))}
+                            </div>
+                            {/* Photo Management */}
+                            <div className="pt-6 border-t border-stone-200">
+                                <h2 className="text-lg font-semibold text-stone-800 mb-4">Photos</h2>
+                                <PhotoManager
+                                    rangeId={rangeId}
+                                    currentPhotos={formData.post_images}
+                                    tier={tier}
+                                    onPhotosChange={(newPhotos) => updateField('post_images', newPhotos)}
+                                />
                             </div>
                         </div>
                     </div>
