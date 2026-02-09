@@ -246,6 +246,7 @@ export default function PricingPage() {
             {tiers.map((tier) => (
               <div
                 key={tier.id}
+                id={tier.id}
                 className={`relative bg-white rounded-2xl shadow-lg border-2 transition-all hover:shadow-xl ${tier.highlighted
                   ? 'border-green-500 ring-4 ring-green-100'
                   : 'border-stone-200'

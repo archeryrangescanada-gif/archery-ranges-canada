@@ -234,15 +234,23 @@ export default function DashboardPage() {
                                                 <BarChart3 className="w-5 h-5" />
                                             </Link>
                                         ) : (
-                                            <div
-                                                className="p-2 text-stone-300 cursor-not-allowed group relative"
-                                                title="Upgrade for Analytics"
-                                            >
-                                                <Lock className="w-4 h-4" />
-                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">
-                                                    Upgrade to Basic for Analytics
+                                            <>
+                                                <div
+                                                    className="p-2 text-stone-300 cursor-not-allowed group relative"
+                                                    title="Upgrade for Analytics"
+                                                >
+                                                    <Lock className="w-4 h-4" />
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">
+                                                        Upgrade to Basic for Analytics
+                                                    </div>
                                                 </div>
-                                            </div>
+                                                <Link
+                                                    href="/pricing#silver"
+                                                    className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded shadow-sm transition-colors whitespace-nowrap"
+                                                >
+                                                    Upgrade
+                                                </Link>
+                                            </>
                                         )}
                                         <Link
                                             href={`/dashboard/settings/${range.id}`}

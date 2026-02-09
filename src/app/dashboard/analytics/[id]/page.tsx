@@ -273,7 +273,7 @@ export default function AnalyticsPage() {
                             Detailed performance tracking, visitor insights, and review management are available on our paid plans. Upgrade to Basic to see your views and reviews.
                         </p>
                         <Link
-                            href="/pricing"
+                            href="/pricing#silver"
                             className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98]"
                         >
                             Upgrade to Basic
@@ -334,7 +334,7 @@ export default function AnalyticsPage() {
                                 <>
                                     <div className="bg-white rounded-xl p-6 border border-stone-200 opacity-50 relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-stone-50/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Link href="/pricing" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Pro</Link>
+                                            <Link href="/pricing#gold" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Pro</Link>
                                         </div>
                                         <div className="flex items-center gap-3 mb-2">
                                             <MousePointer className="w-5 h-5 text-stone-300" />
@@ -344,7 +344,7 @@ export default function AnalyticsPage() {
                                     </div>
                                     <div className="bg-white rounded-xl p-6 border border-stone-200 opacity-50 relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-stone-50/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Link href="/pricing" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Pro</Link>
+                                            <Link href="/pricing#gold" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Pro</Link>
                                         </div>
                                         <div className="flex items-center gap-3 mb-2">
                                             <Calendar className="w-5 h-5 text-stone-300" />
@@ -562,7 +562,7 @@ export default function AnalyticsPage() {
                                         </p>
                                     </div>
                                     <Link
-                                        href="/pricing"
+                                        href={isBasicTier ? "/pricing#gold" : "/pricing#silver"}
                                         className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors shadow-sm"
                                     >
                                         Upgrade Now
