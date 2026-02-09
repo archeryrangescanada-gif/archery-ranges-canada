@@ -39,7 +39,7 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admins can manage all claims') THEN
         CREATE POLICY "Admins can manage all claims" ON public.claims FOR ALL TO authenticated USING (
-            auth.uid() IN (SELECT id FROM profiles WHERE role IN ('admin', 'super_admin'))
+            auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin')
         );
     END IF;
 END $$;
