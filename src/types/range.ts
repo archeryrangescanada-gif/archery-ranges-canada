@@ -93,6 +93,7 @@ export interface TierLimits {
   maxVideos: number;
   hasAnalytics: boolean;
   hasContactForm: boolean;
+  hasClickableContact: boolean;
   hasReviews: boolean;
   hasEvents: boolean;
   featuredBadge: boolean;
@@ -112,6 +113,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     maxVideos: 0,
     hasAnalytics: false,
     hasContactForm: false,
+    hasClickableContact: false,
     hasReviews: false,
     hasEvents: false,
     featuredBadge: false,
@@ -129,6 +131,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     maxVideos: 0,
     hasAnalytics: true,
     hasContactForm: true,
+    hasClickableContact: true,
     hasReviews: false,
     hasEvents: false,
     featuredBadge: true,
@@ -146,6 +149,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     maxVideos: 1,
     hasAnalytics: true,
     hasContactForm: true,
+    hasClickableContact: true,
     hasReviews: true,
     hasEvents: true,
     featuredBadge: false,
@@ -163,6 +167,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     maxVideos: -1,
     hasAnalytics: true,
     hasContactForm: true,
+    hasClickableContact: true,
     hasReviews: true,
     hasEvents: true,
     featuredBadge: false,

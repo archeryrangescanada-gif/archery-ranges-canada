@@ -432,9 +432,18 @@ export default async function RangeDetailPage({ params }: PageProps) {
                     <div>
                       <h3 className="font-medium text-stone-800 mb-2">How do I contact {range.name}?</h3>
                       <p className="text-stone-600 text-sm">
-                        You can contact {range.name} {range.phone_number ? `by phone at ${range.phone_number}` : ''}
-                        {range.email ? `${range.phone_number ? ' or' : ''} by email at ${range.email}` : ''}.
-                        {range.website && ' Visit their website for more information.'}
+                        {tierLimits.hasClickableContact ? (
+                          <>
+                            You can contact {range.name} {range.phone_number ? `by phone at ${range.phone_number}` : ''}
+                            {range.email ? `${range.phone_number ? ' or' : ''} by email at ${range.email}` : ''}.
+                            {range.website && ' Visit their website for more information.'}
+                          </>
+                        ) : (
+                          <>
+                            Contact details for {range.name} will be available once the owner claims this listing.
+                            {' '}Use the sidebar to claim this range if you are the owner.
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -464,6 +473,7 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   website={range.website}
                   rangeId={range.id}
                   rangeName={range.name}
+                  tier={range.subscription_tier}
                 />
 
                 {/* Business Hours */}

@@ -45,7 +45,7 @@ export function UpgradeCTA({ rangeId, rangeName }: UpgradeCTAProps) {
         </ul>
 
         <Link
-          href="/pricing"
+          href="/dashboard/onboarding"
           onClick={handleClaimClick}
           className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white hover:bg-stone-50 text-emerald-600 font-semibold rounded-xl transition-colors shadow-sm"
         >
@@ -72,7 +72,7 @@ export function UpgradeCTAInline() {
         </div>
       </div>
 
-      <Link href="/pricing" className="flex-shrink-0 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors text-sm">
+      <Link href="/dashboard/onboarding" className="flex-shrink-0 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors text-sm">
         Claim Now
       </Link>
     </div>
