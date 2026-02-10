@@ -1,6 +1,6 @@
 'use client';
 
-import { Phone, Mail, Globe, Lock } from 'lucide-react';
+import { Phone, Mail, Globe } from 'lucide-react';
 import { trackPhoneClick, trackEmailClick, trackWebsiteClick, RangeContext } from '@/lib/analytics';
 import { SubscriptionTier, getTierLimits } from '@/types/range';
 import Link from 'next/link';
@@ -12,30 +12,6 @@ interface ContactSectionProps {
   rangeId: string;
   rangeName: string;
   tier: SubscriptionTier;
-}
-
-function maskValue(value: string, type: 'phone' | 'email' | 'website'): string {
-  if (type === 'phone') {
-    // Show first 6 chars, mask the rest: (905) 55•-••••
-    if (value.length <= 6) return value;
-    return value.slice(0, 6) + value.slice(6).replace(/\d/g, '•');
-  }
-  if (type === 'email') {
-    // Show first 3 chars + domain: joh•••@example.com
-    const atIndex = value.indexOf('@');
-    if (atIndex <= 3) return value.slice(0, 1) + '•••' + value.slice(atIndex);
-    return value.slice(0, 3) + '•••' + value.slice(atIndex);
-  }
-  if (type === 'website') {
-    // Show domain but mask path
-    try {
-      const url = new URL(value.startsWith('http') ? value : `https://${value}`);
-      return url.hostname;
-    } catch {
-      return value.slice(0, 10) + '•••';
-    }
-  }
-  return value;
 }
 
 export function ContactSection({ phone, email, website, rangeId, rangeName, tier }: ContactSectionProps) {
@@ -58,7 +34,7 @@ export function ContactSection({ phone, email, website, rangeId, rangeName, tier
     if (website) trackWebsiteClick(rangeContext, website);
   };
 
-  // Free tier: show masked contact info with upgrade prompt
+  // Free/Bronze tier: show full contact info as plain text (visible but NOT clickable)
   if (!hasClickableContact) {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
@@ -67,46 +43,42 @@ export function ContactSection({ phone, email, website, rangeId, rangeName, tier
         </div>
         <div className="p-6 space-y-4">
           {phone && (
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-stone-50 relative">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-stone-50">
               <Phone className="w-5 h-5 text-stone-400" />
               <div>
                 <p className="text-sm text-stone-500">Phone</p>
-                <p className="font-semibold text-stone-400 select-none">{maskValue(phone, 'phone')}</p>
+                <p className="font-semibold text-stone-800">{phone}</p>
               </div>
-              <Lock className="w-4 h-4 text-stone-300 absolute top-3 right-3" />
             </div>
           )}
           {email && (
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-stone-50 relative">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-stone-50">
               <Mail className="w-5 h-5 text-stone-400" />
               <div>
                 <p className="text-sm text-stone-500">Email</p>
-                <p className="font-semibold text-stone-400 select-none">{maskValue(email, 'email')}</p>
+                <p className="font-semibold text-stone-800">{email}</p>
               </div>
-              <Lock className="w-4 h-4 text-stone-300 absolute top-3 right-3" />
             </div>
           )}
           {website && (
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-stone-50 relative">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-stone-50">
               <Globe className="w-5 h-5 text-stone-400" />
               <div>
                 <p className="text-sm text-stone-500">Website</p>
-                <p className="font-semibold text-stone-400 select-none">{maskValue(website, 'website')}</p>
+                <p className="font-semibold text-stone-800">{website}</p>
               </div>
-              <Lock className="w-4 h-4 text-stone-300 absolute top-3 right-3" />
             </div>
           )}
 
           <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-xs text-amber-700 text-center">
-              <Lock className="w-3 h-3 inline mr-1 -mt-0.5" />
-              Contact details are available when the owner claims this listing.
+              Is this your range? Claim it to unlock clickable contact links.
             </p>
             <Link
               href="/dashboard/onboarding"
               className="block mt-2 text-center text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
             >
-              Is this your range? Claim it now →
+              Claim this listing →
             </Link>
           </div>
         </div>

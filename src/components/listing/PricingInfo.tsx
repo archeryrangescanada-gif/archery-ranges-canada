@@ -1,13 +1,34 @@
-import { DollarSign, Users, Calendar, GraduationCap, AlertCircle } from 'lucide-react';
+import { DollarSign, Users, Calendar, GraduationCap, AlertCircle, Phone } from 'lucide-react';
+import { SubscriptionTier } from '@/types/range';
 
 interface PricingInfoProps {
   membershipRequired?: boolean;
   membershipPrice?: number | string;
   dropInPrice?: number | string;
   lessonPriceRange?: string;
+  tier?: SubscriptionTier;
 }
 
-export function PricingInfo({ membershipRequired, membershipPrice, dropInPrice, lessonPriceRange }: PricingInfoProps) {
+export function PricingInfo({ membershipRequired, membershipPrice, dropInPrice, lessonPriceRange, tier = 'free' }: PricingInfoProps) {
+  // Bronze/free tier: show "Contact range for prices"
+  if (tier === 'free') {
+    return (
+      <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+        <h2 className="text-xl font-semibold text-stone-800 mb-6 flex items-center gap-2">
+          <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
+          Pricing
+        </h2>
+        <div className="flex items-center gap-4 p-5 rounded-xl bg-stone-50 border border-stone-200">
+          <Phone className="w-6 h-6 text-stone-400 flex-shrink-0" />
+          <div>
+            <p className="font-medium text-stone-700">Contact range for prices</p>
+            <p className="text-sm text-stone-500 mt-0.5">Please contact this range directly for current pricing and membership information.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const hasPricing = membershipPrice || dropInPrice || lessonPriceRange || membershipRequired !== undefined;
 
   if (!hasPricing) return null;

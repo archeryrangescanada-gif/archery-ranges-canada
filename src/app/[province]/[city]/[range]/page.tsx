@@ -362,6 +362,7 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   membershipPrice={range.membership_price_adult}
                   dropInPrice={range.drop_in_price}
                   lessonPriceRange={range.lesson_price_range}
+                  tier={range.subscription_tier}
                 />
 
                 {/* Reviews */}
@@ -386,7 +387,8 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   />
                 )}
 
-                {/* FAQ Section */}
+                {/* FAQ Section (Silver/Basic and above only) */}
+                {tierLimits.hasClickableContact && (
                 <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
                   <h2 className="text-xl font-semibold text-stone-800 mb-6">
                     Frequently Asked Questions about {range.name}
@@ -432,22 +434,14 @@ export default async function RangeDetailPage({ params }: PageProps) {
                     <div>
                       <h3 className="font-medium text-stone-800 mb-2">How do I contact {range.name}?</h3>
                       <p className="text-stone-600 text-sm">
-                        {tierLimits.hasClickableContact ? (
-                          <>
-                            You can contact {range.name} {range.phone_number ? `by phone at ${range.phone_number}` : ''}
-                            {range.email ? `${range.phone_number ? ' or' : ''} by email at ${range.email}` : ''}.
-                            {range.website && ' Visit their website for more information.'}
-                          </>
-                        ) : (
-                          <>
-                            Contact details for {range.name} will be available once the owner claims this listing.
-                            {' '}Use the sidebar to claim this range if you are the owner.
-                          </>
-                        )}
+                        You can contact {range.name} {range.phone_number ? `by phone at ${range.phone_number}` : ''}
+                        {range.email ? `${range.phone_number ? ' or' : ''} by email at ${range.email}` : ''}.
+                        {range.website && ' Visit their website for more information.'}
                       </p>
                     </div>
                   </div>
                 </section>
+                )}
 
                 {/* Related Ranges CTA */}
                 <section className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200">
