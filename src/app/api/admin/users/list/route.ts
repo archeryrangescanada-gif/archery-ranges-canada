@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { cookies } from 'next/headers'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     // Check for admin token cookie (legacy/demo auth)
