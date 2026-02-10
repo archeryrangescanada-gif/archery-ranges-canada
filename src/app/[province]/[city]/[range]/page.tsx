@@ -468,6 +468,7 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   rangeId={range.id}
                   rangeName={range.name}
                   tier={range.subscription_tier}
+                  isOwner={!!user && user.id === range.owner_id}
                 />
 
                 {/* Business Hours */}

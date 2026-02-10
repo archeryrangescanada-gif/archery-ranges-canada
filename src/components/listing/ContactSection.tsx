@@ -12,9 +12,10 @@ interface ContactSectionProps {
   rangeId: string;
   rangeName: string;
   tier: SubscriptionTier;
+  isOwner?: boolean;
 }
 
-export function ContactSection({ phone, email, website, rangeId, rangeName, tier }: ContactSectionProps) {
+export function ContactSection({ phone, email, website, rangeId, rangeName, tier, isOwner = false }: ContactSectionProps) {
   const { hasClickableContact } = getTierLimits(tier);
 
   const rangeContext: RangeContext = {
@@ -70,17 +71,19 @@ export function ContactSection({ phone, email, website, rangeId, rangeName, tier
             </div>
           )}
 
-          <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-xs text-amber-700 text-center">
-              Is this your range? Claim it to unlock clickable contact links.
-            </p>
-            <Link
-              href="/dashboard/onboarding"
-              className="block mt-2 text-center text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
-            >
-              Claim this listing →
-            </Link>
-          </div>
+          {isOwner && (
+            <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-700 text-center">
+                Upgrade to Silver to make your contact info clickable for visitors.
+              </p>
+              <Link
+                href="/dashboard"
+                className="block mt-2 text-center text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                Upgrade to Silver →
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     );
