@@ -1,5 +1,5 @@
-
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Footer() {
     return (
@@ -7,9 +7,11 @@ export default function Footer() {
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     <div>
-                        <img
+                        <Image
                             src="/logo.png?v=2"
                             alt="Archery Ranges Canada"
+                            width={143}
+                            height={80}
                             className="h-20 w-auto object-contain mb-4"
                         />
                         <p className="text-green-100">

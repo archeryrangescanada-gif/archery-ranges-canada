@@ -2,6 +2,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useCallback, useEffect } from 'react'
 import { User, AuthChangeEvent, Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
@@ -41,11 +42,14 @@ export default function Header() {
     return (
         <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg relative z-50">
             <div className="container mx-auto px-4 flex items-center justify-between relative">
-                <Link href="/" className="hover:opacity-90 transition-opacity">
-                    <img
+                <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
+                    <Image
                         src="/logo.png?v=2"
                         alt="Archery Ranges Canada"
+                        width={200}
+                        height={112}
                         className="h-28 w-auto object-contain"
+                        priority
                     />
                 </Link>
 

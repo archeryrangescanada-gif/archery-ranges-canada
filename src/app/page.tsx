@@ -2,6 +2,7 @@
 
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import { supabaseClient } from '@/lib/auth'
 import SearchFilters from '@/components/SearchFilters'
@@ -397,10 +398,13 @@ export default function Home() {
 
       <section className="relative text-white">
         <div className="absolute inset-0">
-          <img
+          <Image
             src="/hero-bg.png?v=1"
             alt="Archery background"
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-black opacity-60"></div>
         </div>
@@ -659,11 +663,13 @@ export default function Home() {
 
         {(searchQuery.trim() === '' && !hasActiveFilters) && (
           <section className="mb-16">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <img
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[400px]">
+              <Image
                 src="/hero-banner.png?v=1"
                 alt="Most Accurate Archery Directory in Canada"
-                className="w-full h-[400px] object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1280px) 100vw, 1280px"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center">
                 <div className="container mx-auto px-8">
