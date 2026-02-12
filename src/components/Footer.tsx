@@ -23,8 +23,7 @@ export default function Footer() {
                         <ul className="space-y-2 text-green-100">
                             <li><Link href="/" className="hover:text-white">Home</Link></li>
                             <li><Link href="/about" className="hover:text-white">About</Link></li>
-                            <li><Link href="/claim" className="hover:text-white">Claim Your Listing</Link></li>
-                            <li><Link href="/premium" className="hover:text-white">Premium Features</Link></li>
+                            <li><Link href="/dashboard/onboarding" className="hover:text-white">Claim Your Listing</Link></li>
                         </ul>
                     </div>
                     <div>
