@@ -1,18 +1,9 @@
 // src/lib/supabase-helpers.ts
-import { createClient } from '@supabase/supabase-js'
 import { getSupabaseAdmin } from './supabase-admin'
 import { EmailService } from '@/lib/email/service'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
 // Admin client with service role (bypasses RLS)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-})
+const supabaseAdmin = getSupabaseAdmin()
 
 // Listings Operations
 export const listingsAPI = {
@@ -97,7 +88,7 @@ export const claimsAPI = {
     }
 
     // 2. Update claim status
-    const { error: updateError } = await supabaseAdmin
+    const { data: updatedClaim, error: updateError } = await supabaseAdmin
       .from('claims')
       .update({
         status: 'approved',
@@ -105,14 +96,16 @@ export const claimsAPI = {
         reviewed_at: new Date().toISOString()
       })
       .eq('id', claimId)
+      .select()
+      .single()
 
-    if (updateError) {
+    if (updateError || !updatedClaim) {
       console.error('approve step 2 (update claim status) failed:', updateError)
-      return { error: updateError }
+      return { error: updateError || new Error('Failed to update claim status') }
     }
 
     // 3. Update range/listing
-    const { error: rangeError } = await supabaseAdmin
+    const { data: updatedRange, error: rangeError } = await supabaseAdmin
       .from('ranges')
       .update({
         is_claimed: true,
@@ -120,21 +113,25 @@ export const claimsAPI = {
         status: 'active'
       })
       .eq('id', claim.listing_id)
+      .select()
+      .single()
 
-    if (rangeError) {
+    if (rangeError || !updatedRange) {
       console.error('approve step 3 (update range) failed:', rangeError)
-      return { error: rangeError }
+      return { error: rangeError || new Error('Failed to update range ownership') }
     }
 
     // 4. Update user profile role
-    const { error: roleError } = await supabaseAdmin
+    const { data: updatedProfile, error: roleError } = await supabaseAdmin
       .from('profiles')
       .update({ role: 'owner' })
       .eq('id', claim.user_id)
+      .select()
+      .single()
 
-    if (roleError) {
+    if (roleError || !updatedProfile) {
       console.error('approve step 4 (update profile role) failed:', roleError)
-      return { error: roleError }
+      return { error: roleError || new Error('Failed to update user profile role') }
     }
 
     // 5. Send approval email
@@ -189,7 +186,7 @@ export const claimsAPI = {
   },
 
   async markAsContacted(claimId: string, adminId: string, notes?: string) {
-    return supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('claims')
       .update({
         status: 'contacted',
@@ -198,6 +195,15 @@ export const claimsAPI = {
         updated_at: new Date().toISOString()
       })
       .eq('id', claimId)
+      .select()
+      .single()
+
+    if (error || !data) {
+      console.error('markAsContacted failed:', error)
+      return { error: error || new Error('Failed to update claim status to contacted') }
+    }
+
+    return { success: true, data }
   },
 
   async revoke(claimId: string, adminId: string, reason: string) {
