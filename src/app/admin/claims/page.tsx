@@ -59,10 +59,21 @@ export default function ClaimsPage() {
   const [paymentEmail, setPaymentEmail] = useState('')
   const [processingPayment, setProcessingPayment] = useState(false)
   const [paymentLink, setPaymentLink] = useState<string | null>(null)
+  const [adminUser, setAdminUser] = useState<any>(null)
 
   useEffect(() => {
     fetchRequests()
+    fetchAdminUser()
   }, [])
+
+  const fetchAdminUser = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      setAdminUser(user)
+    } catch (err) {
+      console.error('Error fetching admin user:', err)
+    }
+  }
 
   // Fetch ranges and users when transfer modal opens
   useEffect(() => {
@@ -77,6 +88,14 @@ export default function ClaimsPage() {
       fetchRanges()
     }
   }, [showPaymentModal])
+
+  // Safety: Reset processing state and reason when modal closes
+  useEffect(() => {
+    if (!showModal) {
+      setProcessing(false)
+      setRejectionReason('')
+    }
+  }, [showModal])
 
   const fetchRanges = async () => {
     const { data } = await supabase
@@ -125,12 +144,19 @@ export default function ClaimsPage() {
   const handleApprove = async (request: Claim) => {
     if (!confirm('Are you sure you want to approve this claim? This will set the owner, upgrade their role, and mark the range as claimed.')) return
 
+    console.log('Starting approval for claim:', request.id)
     setProcessing(true)
     try {
-      const { data: { user: adminUser }, error: authError } = await supabase.auth.getUser()
+      let currentAdmin = adminUser
+      if (!currentAdmin) {
+        console.log('No cached admin user, fetching...')
+        const { data: { user } } = await supabase.auth.getUser()
+        currentAdmin = user
+        setAdminUser(user)
+      }
 
-      if (authError || !adminUser?.id) {
-        throw new Error(`Auth failed: ${authError?.message || 'No user found'}. Please log in again.`)
+      if (!currentAdmin?.id) {
+        throw new Error('Authentication failed. Please log in again.')
       }
 
       const response = await fetch('/api/admin/claims/approve', {
@@ -138,22 +164,22 @@ export default function ClaimsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           claimId: request.id,
-          adminId: adminUser.id
+          adminId: currentAdmin.id
         }),
       })
 
       const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Failed to approve claim')
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to approve claim')
-      }
-
-      alert('Claim approved successfully! Role upgraded and range claimed.')
-      await fetchRequests()
+      console.log('Approval successful')
+      alert('Claim approved successfully!')
       setShowModal(false)
+      await fetchRequests()
     } catch (err: any) {
+      console.error('Approval error:', err)
       alert('Error approving claim: ' + err.message)
     } finally {
+      console.log('Resetting processing state')
       setProcessing(false)
     }
   }
@@ -164,16 +190,22 @@ export default function ClaimsPage() {
       return
     }
 
+    console.log('Starting denial for claim:', selectedRequest.id)
     setProcessing(true)
     try {
-      const { data: { user: adminUser } } = await supabase.auth.getUser()
+      let currentAdmin = adminUser
+      if (!currentAdmin) {
+        const { data: { user } } = await supabase.auth.getUser()
+        currentAdmin = user
+        setAdminUser(user)
+      }
 
       const response = await fetch('/api/admin/claims/reject', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           claimId: selectedRequest.id,
-          adminId: adminUser?.id,
+          adminId: currentAdmin?.id,
           reason: rejectionReason
         }),
       })
@@ -183,11 +215,13 @@ export default function ClaimsPage() {
         throw new Error(err.error || 'Failed to reject claim')
       }
 
-      alert('Claim denied. Notification email sent.')
-      await fetchRequests()
+      console.log('Denial successful')
+      alert('Claim denied.')
       setShowModal(false)
       setRejectionReason('')
+      await fetchRequests()
     } catch (err: any) {
+      console.error('Denial error:', err)
       alert('Error: ' + err.message)
     } finally {
       setProcessing(false)
@@ -236,15 +270,22 @@ export default function ClaimsPage() {
   const handleMarkContacted = async () => {
     if (!selectedRequest) return
 
+    console.log('Marking as contacted:', selectedRequest.id)
     setProcessing(true)
     try {
-      const { data: { user: adminUser } } = await supabase.auth.getUser()
+      let currentAdmin = adminUser
+      if (!currentAdmin) {
+        const { data: { user } } = await supabase.auth.getUser()
+        currentAdmin = user
+        setAdminUser(user)
+      }
+
       const response = await fetch('/api/admin/claims/contacted', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           claimId: selectedRequest.id,
-          adminId: adminUser?.id,
+          adminId: currentAdmin?.id,
           notes: selectedRequest.admin_notes
         }),
       })
@@ -254,9 +295,11 @@ export default function ClaimsPage() {
         throw new Error(err.error || 'Failed to update')
       }
 
+      console.log('Contacted update successful')
       alert('Marked as contacted')
       await fetchRequests()
     } catch (err: any) {
+      console.error('Contacted error:', err)
       alert('Error: ' + err.message)
     } finally {
       setProcessing(false)
