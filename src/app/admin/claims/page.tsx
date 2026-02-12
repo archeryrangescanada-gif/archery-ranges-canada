@@ -555,19 +555,24 @@ export default function ClaimsPage() {
                     onClick={async () => {
                       setProcessing(true);
                       try {
+                        const { data: { user: adminUser } } = await supabase.auth.getUser()
                         const response = await fetch('/api/admin/claims/contacted', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({
                             claimId: selectedRequest.id,
+                            adminId: adminUser?.id,
                             notes: selectedRequest.admin_notes
                           }),
                         });
-                        if (!response.ok) throw new Error('Failed to update');
+                        if (!response.ok) {
+                          const err = await response.json();
+                          throw new Error(err.error || 'Failed to update');
+                        }
                         alert('Marked as contacted');
                         fetchRequests();
                       } catch (err: any) {
-                        alert(err.message);
+                        alert('Error: ' + err.message);
                         setProcessing(false);
                       }
                     }}
