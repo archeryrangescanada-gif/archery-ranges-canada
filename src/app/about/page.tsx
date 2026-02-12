@@ -90,7 +90,7 @@ export default function AboutPage() {
               We're here to help you connect with more archers in your community. Our platform showcases what makes your facility special and helps you reach people actively searching for archery opportunities.
             </p>
             <p className="text-gray-700 mt-4">
-              From basic free listings to premium enhanced profiles, we offer tools to increase your visibility and attract new members or customers. <Link href="/premium" className="text-green-600 hover:underline">Learn more about premium listings</Link>.
+              We offer a range of features designed to increase your visibility and help you attract new members or customers.
             </p>
 
             <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">To the Sport of Archery in Canada</h3>
