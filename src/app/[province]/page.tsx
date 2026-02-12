@@ -128,13 +128,25 @@ export default async function ProvincePage({ params }: PageProps) {
   const { cities, rangeCounts, totalRanges } = await getCitiesWithRangeCounts(province.id)
   const info = provinceInfo[provinceSlug] || provinceInfo['default']
 
-  // Sort cities by range count (most ranges first)
+  // Sort cities alphabetically
   const sortedCities = [...cities].sort((a, b) =>
-    (rangeCounts[b.id] || 0) - (rangeCounts[a.id] || 0)
+    a.name.localeCompare(b.name)
   )
 
   const citiesWithRanges = sortedCities.filter(city => rangeCounts[city.id] > 0)
   const citiesWithoutRanges = sortedCities.filter(city => !rangeCounts[city.id])
+
+  // Group cities by first letter for Ontario (or if there are many cities)
+  const cityGroups: Record<string, City[]> = {}
+  if (provinceSlug === 'ontario' || citiesWithRanges.length > 20) {
+    citiesWithRanges.forEach(city => {
+      const firstLetter = city.name.charAt(0).toUpperCase()
+      if (!cityGroups[firstLetter]) cityGroups[firstLetter] = []
+      cityGroups[firstLetter].push(city)
+    })
+  }
+
+  const sortedLetters = Object.keys(cityGroups).sort()
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
@@ -201,30 +213,61 @@ export default async function ProvincePage({ params }: PageProps) {
               Cities with Archery Ranges
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {citiesWithRanges.map((city: City) => (
-                <Link
-                  key={city.id}
-                  href={`/${provinceSlug}/${city.slug}`}
-                  className="group block p-6 bg-white rounded-xl shadow-sm border border-stone-200 hover:shadow-lg hover:border-emerald-300 transition-all duration-300"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-semibold text-stone-800 group-hover:text-emerald-600 transition-colors">
-                      {city.name}
-                    </h3>
-                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-full">
-                      {rangeCounts[city.id]} {rangeCounts[city.id] === 1 ? 'range' : 'ranges'}
-                    </span>
+            {sortedLetters.length > 0 ? (
+              <div className="space-y-12">
+                {sortedLetters.map(letter => (
+                  <div key={letter} className="relative">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="bg-stone-800 text-white w-10 h-10 rounded-lg flex items-center justify-center text-xl font-bold shadow-sm">
+                        {letter}
+                      </div>
+                      <div className="h-px flex-1 bg-stone-200"></div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {cityGroups[letter].map((city: City) => (
+                        <Link
+                          key={city.id}
+                          href={`/${provinceSlug}/${city.slug}`}
+                          className="group flex justify-between items-center p-4 bg-white rounded-xl border border-stone-200 hover:border-emerald-500 hover:shadow-lg transition-all duration-200"
+                        >
+                          <span className="font-semibold text-stone-700 group-hover:text-emerald-700 truncate pr-2">
+                            {city.name}
+                          </span>
+                          <span className="shrink-0 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-100">
+                            {rangeCounts[city.id]}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                  <p className="text-stone-500 text-sm mb-3">
-                    Find archery ranges, lessons & pro shops
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-emerald-600 font-medium text-sm group-hover:gap-2 transition-all">
-                    View ranges <ArrowRight className="w-4 h-4" />
-                  </span>
-                </Link>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {citiesWithRanges.map((city: City) => (
+                  <Link
+                    key={city.id}
+                    href={`/${provinceSlug}/${city.slug}`}
+                    className="group block p-6 bg-white rounded-xl shadow-sm border border-stone-200 hover:shadow-lg hover:border-emerald-300 transition-all duration-300"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-xl font-semibold text-stone-800 group-hover:text-emerald-600 transition-colors">
+                        {city.name}
+                      </h3>
+                      <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-full">
+                        {rangeCounts[city.id]} {rangeCounts[city.id] === 1 ? 'range' : 'ranges'}
+                      </span>
+                    </div>
+                    <p className="text-stone-500 text-sm mb-3">
+                      Find archery ranges, lessons & pro shops
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-emerald-600 font-medium text-sm group-hover:gap-2 transition-all">
+                      View ranges <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </section>
         )}
 

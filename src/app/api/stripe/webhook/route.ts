@@ -31,13 +31,13 @@ export async function POST(request: Request) {
   }
 
   // Map Stripe plan IDs to database subscription tiers
+  // Bronze is the free claimed tier ($0), so we only map paid plans (Silver/Gold)
   const PLAN_TO_TIER: Record<string, string> = {
-    silver: 'basic',
-    gold: 'pro',
-    platinum: 'premium',
-    basic: 'basic',
-    pro: 'pro',
-    premium: 'premium',
+    silver: 'silver',
+    gold: 'gold',
+    // Fallback for previous IDs
+    pro: 'silver',
+    premium: 'gold',
   }
 
   try {
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
               stripe_subscription_id: session.subscription as string,
               subscription_status: 'active',
               subscription_updated_at: new Date().toISOString(),
-              is_featured: subscriptionTier !== 'free', // Enable featured badge for paid tiers
+              is_featured: true, // All paid tiers are featured
             })
             .eq('id', rangeId)
 
@@ -92,8 +92,8 @@ export async function POST(request: Request) {
             subscription_updated_at: new Date().toISOString(),
           }
 
-          if (subscription.status === 'canceled') {
-            updates.subscription_tier = 'free'
+          if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
+            updates.subscription_tier = 'bronze' // Revert to free/claimed tier
             updates.is_featured = false
           }
 

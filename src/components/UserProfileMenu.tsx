@@ -191,7 +191,7 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
                                             Analytics
                                         </div>
                                         <Link
-                                            href="/pricing#silver"
+                                            href="/pricing#bronze"
                                             onClick={() => setIsOpen(false)}
                                             className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors"
                                         >

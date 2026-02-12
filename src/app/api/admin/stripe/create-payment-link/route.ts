@@ -43,9 +43,9 @@ export async function POST(request: Request) {
 
     // Map plan IDs to Stripe Price IDs
     const PRICE_IDS: Record<string, string> = {
+      bronze: process.env.STRIPE_BRONZE_PRICE_ID || '',
       silver: process.env.STRIPE_SILVER_PRICE_ID || '',
       gold: process.env.STRIPE_GOLD_PRICE_ID || '',
-      platinum: process.env.STRIPE_PLATNIUM_PRICE_ID || '',
       legacy: process.env.STRIPE_LEGACY_PRICE_ID || '',
     }
 

@@ -3,7 +3,7 @@
 // src/types/range.ts
 // =====================================================
 
-export type SubscriptionTier = 'free' | 'basic' | 'pro' | 'premium';
+export type SubscriptionTier = 'free' | 'bronze' | 'silver' | 'gold';
 
 export type FacilityType = 'indoor' | 'outdoor' | 'both';
 
@@ -97,8 +97,9 @@ export interface TierLimits {
   hasReviews: boolean;
   hasEvents: boolean;
   featuredBadge: boolean;
-  proBadge: boolean;
-  premiumBadge: boolean;
+  bronzeBadge: boolean;
+  silverBadge: boolean;
+  goldBadge: boolean;
   homepageFeature: boolean;
   customDesign: boolean;
   socialPromotion: boolean;
@@ -117,8 +118,9 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasReviews: false,
     hasEvents: false,
     featuredBadge: false,
-    proBadge: false,
-    premiumBadge: false,
+    bronzeBadge: false,
+    silverBadge: false,
+    goldBadge: false,
     homepageFeature: false,
     customDesign: false,
     socialPromotion: false,
@@ -126,7 +128,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     priorityInSearch: false,
     supportLevel: 'none',
   },
-  basic: {
+  bronze: {
     maxPhotos: 3,
     maxVideos: 0,
     hasAnalytics: true,
@@ -135,8 +137,9 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasReviews: false,
     hasEvents: false,
     featuredBadge: true,
-    proBadge: false,
-    premiumBadge: false,
+    bronzeBadge: true,
+    silverBadge: false,
+    goldBadge: false,
     homepageFeature: false,
     customDesign: false,
     socialPromotion: false,
@@ -144,7 +147,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     priorityInSearch: true,
     supportLevel: 'email',
   },
-  pro: {
+  silver: {
     maxPhotos: 5,
     maxVideos: 1,
     hasAnalytics: true,
@@ -153,8 +156,9 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasReviews: true,
     hasEvents: true,
     featuredBadge: false,
-    proBadge: true,
-    premiumBadge: false,
+    bronzeBadge: false,
+    silverBadge: true,
+    goldBadge: false,
     homepageFeature: false,
     customDesign: false,
     socialPromotion: false,
@@ -162,7 +166,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     priorityInSearch: true,
     supportLevel: '48hr',
   },
-  premium: {
+  gold: {
     maxPhotos: -1,
     maxVideos: -1,
     hasAnalytics: true,
@@ -171,8 +175,9 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasReviews: true,
     hasEvents: true,
     featuredBadge: false,
-    proBadge: false,
-    premiumBadge: true,
+    bronzeBadge: false,
+    silverBadge: false,
+    goldBadge: true,
     homepageFeature: true,
     customDesign: true,
     socialPromotion: true,
@@ -251,10 +256,10 @@ export function getMaxVideos(tier: SubscriptionTier, actualCount: number): numbe
   return Math.min(limit, actualCount);
 }
 
-export function getBadgeType(tier: SubscriptionTier): 'featured' | 'pro' | 'premium' | null {
+export function getBadgeType(tier: SubscriptionTier): 'featured' | 'bronze' | 'silver' | 'gold' | null {
   const limits = TIER_LIMITS[tier];
-  if (limits.premiumBadge) return 'premium';
-  if (limits.proBadge) return 'pro';
-  if (limits.featuredBadge) return 'featured';
+  if (limits.goldBadge) return 'gold';
+  if (limits.silverBadge) return 'silver';
+  if (limits.bronzeBadge || limits.featuredBadge) return 'bronze';
   return null;
 }

@@ -93,7 +93,7 @@ export default function AnalyticsPage() {
             const currentTier = getUserSubscriptionTier(rangeData)
             setTier(currentTier)
 
-            // If user has analytics access (BASIC or higher), load data
+            // If user has analytics access (BRONZE or higher), load data
             if (canAccessAnalytics(currentTier)) {
                 // Fetch analytics events from the last 30 days
                 const thirtyDaysAgo = new Date()
@@ -241,8 +241,8 @@ export default function AnalyticsPage() {
     }
 
     const isFreeTier = tier === 'free'
-    const isBasicTier = tier === 'basic'
-    const isProTier = tier === 'pro' || tier === 'premium'
+    const isBronzeTier = tier === 'bronze'
+    const isSilverTier = tier === 'silver' || tier === 'gold'
 
     return (
         <div className="min-h-screen bg-stone-50">
@@ -270,13 +270,13 @@ export default function AnalyticsPage() {
                         </div>
                         <h2 className="text-2xl font-bold text-stone-800 mb-4">Analytics are Locked</h2>
                         <p className="text-stone-600 mb-8 max-w-md mx-auto">
-                            Detailed performance tracking, visitor insights, and review management are available on our paid plans. Upgrade to Basic to see your views and reviews.
+                            Detailed performance tracking, visitor insights, and review management are available on our paid plans. Upgrade to Bronze to see your views and reviews.
                         </p>
                         <Link
-                            href="/pricing#silver"
+                            href="/pricing#bronze"
                             className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98]"
                         >
-                            Upgrade to Basic
+                            Upgrade to Bronze
                         </Link>
                     </div>
                 ) : (
@@ -305,8 +305,8 @@ export default function AnalyticsPage() {
                                 <p className="text-sm text-stone-400 mt-1">Page views (30 days)</p>
                             </div>
 
-                            {/* Clicks and Inquiries ONLY for PRO+ (Current Basic tier in UI needs to be hide if tier is basic) */}
-                            {!isBasicTier ? (
+                            {/* Clicks and Inquiries ONLY for SILVER+ (Current Bronze tier in UI needs to be hide if tier is bronze) */}
+                            {!isBronzeTier ? (
                                 <>
                                     <div className="bg-white rounded-xl p-6 border border-stone-200">
                                         <div className="flex items-center gap-3 mb-2">
@@ -334,7 +334,7 @@ export default function AnalyticsPage() {
                                 <>
                                     <div className="bg-white rounded-xl p-6 border border-stone-200 opacity-50 relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-stone-50/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Link href="/pricing#gold" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Pro</Link>
+                                            <Link href="/pricing#silver" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Silver</Link>
                                         </div>
                                         <div className="flex items-center gap-3 mb-2">
                                             <MousePointer className="w-5 h-5 text-stone-300" />
@@ -344,7 +344,7 @@ export default function AnalyticsPage() {
                                     </div>
                                     <div className="bg-white rounded-xl p-6 border border-stone-200 opacity-50 relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-stone-50/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Link href="/pricing#gold" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Pro</Link>
+                                            <Link href="/pricing#silver" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Silver</Link>
                                         </div>
                                         <div className="flex items-center gap-3 mb-2">
                                             <Calendar className="w-5 h-5 text-stone-300" />
@@ -358,7 +358,7 @@ export default function AnalyticsPage() {
 
                         {/* Middle Section: Clicks/Activity or Reviews */}
                         <div className="grid md:grid-cols-2 gap-6 mb-8">
-                            {!isBasicTier ? (
+                            {!isBronzeTier ? (
                                 <>
                                     {/* Click Breakdown */}
                                     <div className="bg-white rounded-xl border border-stone-200 p-6">
@@ -427,7 +427,7 @@ export default function AnalyticsPage() {
                                     </div>
                                 </>
                             ) : (
-                                /* BASIC TIER: Reviews View instead of deeper analytics */
+                                /* BRONZE TIER: Reviews View instead of deeper analytics */
                                 <div className="md:col-span-2 bg-white rounded-xl border border-stone-200 p-6">
                                     <div className="flex items-center justify-between mb-6">
                                         <div className="flex items-center gap-3">
@@ -468,16 +468,16 @@ export default function AnalyticsPage() {
                                                         <button
                                                             disabled
                                                             className="text-xs font-semibold text-stone-300 flex items-center gap-1 cursor-not-allowed"
-                                                            title="Upgrade to Pro to respond to reviews"
+                                                            title="Upgrade to Silver to respond to reviews"
                                                         >
                                                             <MessageSquare className="w-3 h-3" />
-                                                            Reply (Upgrade to Pro)
+                                                            Reply (Upgrade to Silver)
                                                         </button>
                                                     </div>
                                                 </div>
                                             ))}
                                             {reviews.length > 5 && (
-                                                <p className="text-center text-sm text-stone-400 pt-4 border-t border-stone-50">Upgrade to Pro to see all {reviews.length} reviews and respond to them.</p>
+                                                <p className="text-center text-sm text-stone-400 pt-4 border-t border-stone-50">Upgrade to Silver to see all {reviews.length} reviews and respond to them.</p>
                                             )}
                                         </div>
                                     ) : (
@@ -490,8 +490,8 @@ export default function AnalyticsPage() {
                             )}
                         </div>
 
-                        {/* Views Over Time Chart - ONLY for PRO+ */}
-                        {!isBasicTier && (
+                        {/* Views Over Time Chart - ONLY for SILVER+ */}
+                        {!isBronzeTier && (
                             <div className="bg-white rounded-xl border border-stone-200 p-6 mb-8">
                                 <div className="flex items-center gap-3 mb-6">
                                     <BarChart3 className="w-5 h-5 text-stone-400" />
@@ -548,28 +548,30 @@ export default function AnalyticsPage() {
                         )}
 
                         {/* Upgrade CTA */}
-                        {(isBasicTier || !isProTier) && (
+                        {!isSilverTier || tier === 'silver' ? (
                             <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-md">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h3 className="text-lg font-semibold mb-1">
-                                            {isBasicTier ? 'Unlock Full Analytics & Manage Reviews' : 'Unlock Advanced Analytics'}
+                                            {tier === 'silver'
+                                                ? 'Unlock Unlimited Photos & Maximum Visibility'
+                                                : 'Unlock Full Analytics & Manage Reviews'}
                                         </h3>
                                         <p className="text-blue-100">
-                                            {isBasicTier
-                                                ? 'Upgrade to Pro to track clicks, inquiries, activity history, and respond to your customers\' reviews.'
-                                                : 'Upgrade to Pro to track detailed visitor insights and click events'}
+                                            {tier === 'silver'
+                                                ? 'Upgrade to Gold for unlimited photo gallery, homepage feature, and priority phone support.'
+                                                : 'Upgrade to Silver to track clicks, inquiries, activity history, and respond to your customers\' reviews.'}
                                         </p>
                                     </div>
                                     <Link
-                                        href={isBasicTier ? "/pricing#gold" : "/pricing#silver"}
+                                        href={tier === 'silver' ? "/pricing#gold" : "/pricing#silver"}
                                         className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors shadow-sm"
                                     >
                                         Upgrade Now
                                     </Link>
                                 </div>
                             </div>
-                        )}
+                        ) : null}
                     </>
                 )}
             </main>

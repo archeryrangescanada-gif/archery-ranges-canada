@@ -77,14 +77,14 @@ export function PhotoManager({ rangeId, currentPhotos, tier, onPhotosChange }: P
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-stone-700">Photos ({currentPhotos.length}/{photoLimit})</h3>
-                {tier === 'free' && (
-                    <Link href="/pricing" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                {tier === 'bronze' && (
+                    <Link href="/pricing#silver" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
                         Upgrade for more photos
                     </Link>
                 )}
-                {tier === 'basic' && currentPhotos.length >= 3 && (
-                    <Link href="/pricing" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
-                        Upgrade for 5+ photos
+                {tier === 'silver' && (
+                    <Link href="/pricing#gold" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                        Upgrade for unlimited photos
                     </Link>
                 )}
             </div>
@@ -133,7 +133,11 @@ export function PhotoManager({ rangeId, currentPhotos, tier, onPhotosChange }: P
             </div>
 
             <p className="text-xs text-stone-400">
-                {tier === 'free' ? 'Free plan: 1 photo allowed. Upgrade to Basic for 3 photos.' : `Basic plan: ${photoLimit} photos allowed.`}
+                {tier === 'bronze'
+                    ? `Bronze plan: ${photoLimit} photo allowed. Upgrade to Silver for 5 photos.`
+                    : tier === 'silver'
+                        ? `Silver plan: ${photoLimit} photos allowed. Upgrade to Gold for unlimited photos.`
+                        : `${tier.charAt(0).toUpperCase() + tier.slice(1)} plan: ${photoLimit} photos allowed.`}
             </p>
         </div>
     )

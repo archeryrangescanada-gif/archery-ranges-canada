@@ -3,18 +3,26 @@
  * Handles tier detection and permission checks for FREE vs BASIC tiers
  */
 
-export type SubscriptionTier = 'free' | 'basic' | 'pro' | 'premium'
+export type SubscriptionTier = 'free' | 'bronze' | 'silver' | 'gold'
 
 /**
  * Get the subscription tier from a range object
  * @param range - Range object with subscription_tier field
  * @returns The subscription tier (defaults to 'free' if null/undefined)
  */
-export function getUserSubscriptionTier(range: { subscription_tier?: string | null }): SubscriptionTier {
+export function getUserSubscriptionTier(range: { subscription_tier?: string | null, owner_id?: string | null }): SubscriptionTier {
+    if (!range) return 'free'
+
     const tier = range.subscription_tier?.toLowerCase()
 
-    if (tier === 'basic' || tier === 'pro' || tier === 'premium') {
+    // Explicit paid tiers
+    if (tier === 'silver' || tier === 'gold') {
         return tier as SubscriptionTier
+    }
+
+    // Default to bronze if claimed (has owner_id) or explicitly bronze
+    if (tier === 'bronze' || range.owner_id) {
+        return 'bronze'
     }
 
     return 'free'
@@ -38,12 +46,12 @@ export function getPhotoLimit(tier: SubscriptionTier): number {
     switch (tier) {
         case 'free':
             return 1
-        case 'basic':
-            return 3
-        case 'pro':
+        case 'bronze':
+            return 1
+        case 'silver':
             return 5
-        case 'premium':
-            return 10
+        case 'gold':
+            return 100 // High enough to be effectively unlimited for most users
         default:
             return 1
     }
@@ -55,7 +63,7 @@ export function getPhotoLimit(tier: SubscriptionTier): number {
  * @returns true if tier is pro or premium, false for free or basic
  */
 export function canRespondToReviews(tier: SubscriptionTier): boolean {
-    return tier === 'pro' || tier === 'premium'
+    return tier === 'silver' || tier === 'gold'
 }
 
 /**
@@ -66,11 +74,11 @@ export function canRespondToReviews(tier: SubscriptionTier): boolean {
 export function getUpgradeMessage(tier: SubscriptionTier): string {
     switch (tier) {
         case 'free':
-            return 'Upgrade to Basic for analytics and more photos'
-        case 'basic':
-            return 'Upgrade to Pro for advanced analytics and review responses'
-        case 'pro':
-            return 'Upgrade to Premium for maximum visibility'
+            return 'Claim your listing to unlock Bronze features'
+        case 'bronze':
+            return 'Upgrade to Silver for advanced analytics and more photos'
+        case 'silver':
+            return 'Upgrade to Gold for maximum visibility and unlimited photos'
         default:
             return 'Upgrade your plan'
     }

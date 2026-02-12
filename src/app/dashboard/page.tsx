@@ -202,17 +202,22 @@ export default function DashboardPage() {
                                                 {range.province && `, ${range.province.name}`}
                                             </p>
                                             <div className="flex items-center gap-2 mt-2">
-                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${range.subscription_tier === 'premium'
-                                                    ? 'bg-amber-100 text-amber-700'
-                                                    : range.subscription_tier === 'pro'
-                                                        ? 'bg-blue-100 text-blue-700'
-                                                        : range.subscription_tier === 'basic'
-                                                            ? 'bg-emerald-100 text-emerald-700'
-                                                            : 'bg-stone-100 text-stone-600'
-                                                    }`}>
-                                                    {range.subscription_tier === 'premium' && <Star className="w-3 h-3" />}
-                                                    {(range.subscription_tier && range.subscription_tier.charAt(0).toUpperCase() + range.subscription_tier.slice(1)) || 'Free'}
-                                                </span>
+                                                {(() => {
+                                                    const tier = getUserSubscriptionTier(range)
+                                                    return (
+                                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${tier === 'gold'
+                                                            ? 'bg-amber-100 text-amber-700'
+                                                            : tier === 'silver'
+                                                                ? 'bg-blue-100 text-blue-700'
+                                                                : tier === 'bronze'
+                                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                                    : 'bg-stone-100 text-stone-600'
+                                                            }`}>
+                                                            {tier === 'gold' && <Star className="w-3 h-3" />}
+                                                            {tier.charAt(0).toUpperCase() + tier.slice(1)}
+                                                        </span>
+                                                    )
+                                                })()}
                                             </div>
                                         </div>
                                     </div>
@@ -237,11 +242,11 @@ export default function DashboardPage() {
                                             <>
                                                 <div
                                                     className="p-2 text-stone-300 cursor-not-allowed group relative"
-                                                    title="Upgrade for Analytics"
+                                                    title="Upgrade for Advanced Analytics"
                                                 >
                                                     <Lock className="w-4 h-4" />
                                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">
-                                                        Upgrade to Basic for Analytics
+                                                        Upgrade for Advanced Analytics
                                                     </div>
                                                 </div>
                                                 <Link

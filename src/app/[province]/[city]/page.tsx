@@ -200,8 +200,8 @@ export default async function CityPage({ params }: PageProps) {
   const ranges = await getRangesInCity(city.id);
   const localInfo = cityLocalInfo[city.slug.toLowerCase()] || cityLocalInfo['default'];
 
-  const featuredRanges = ranges.filter((r) => r.subscription_tier === 'premium' || r.subscription_tier === 'pro');
-  const regularRanges = ranges.filter((r) => r.subscription_tier === 'basic' || r.subscription_tier === 'free' || !r.subscription_tier);
+  const featuredRanges = ranges.filter((r) => r.subscription_tier === 'gold' || r.subscription_tier === 'silver');
+  const regularRanges = ranges.filter((r) => r.subscription_tier === 'bronze' || r.subscription_tier === 'free' || !r.subscription_tier);
 
   const indoorCount = ranges.filter((r) => r.facility_type === 'indoor' || r.facility_type === 'both').length;
   const outdoorCount = ranges.filter((r) => r.facility_type === 'outdoor' || r.facility_type === 'both').length;

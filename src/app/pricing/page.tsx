@@ -12,24 +12,24 @@ const tiers = [
   {
     id: 'bronze',
     name: 'Bronze',
-    tagline: 'The Guest',
-    description: 'Entry-level listing to get on the map',
+    tagline: 'The Member',
+    description: 'Claim your listing and get started for free',
     badge: '/bronze-badge.png',
     monthlyPrice: 0,
     yearlyPrice: 0,
-    searchRank: 'Standard (Bottom)',
+    searchRank: 'Standard (Boosted)',
     features: [
       { text: 'Bronze Badge', included: true },
       { text: 'Map Pin Visibility', included: true },
       { text: 'Basic Listing Card', included: true },
-      { text: '1 Photo (Thumbnail)', included: true },
-      { text: '150 Word Description', included: true },
+      { text: '1 Photo Gallery', included: true },
+      { text: '350 Word Description', included: true },
       { text: 'Basic Amenity Tags', included: true },
+      { text: 'Analytics Dashboard', included: true },
       { text: 'Clickable Website Link', included: false },
       { text: 'Phone Number Display', included: false },
       { text: 'Email Address Display', included: false },
       { text: 'Social Media Links', included: false },
-      { text: 'Analytics Dashboard', included: false },
     ],
     cta: 'Get Started Free',
     ctaLink: '/auth/signup',
@@ -38,32 +38,6 @@ const tiers = [
   {
     id: 'silver',
     name: 'Silver',
-    tagline: 'The Member',
-    description: 'Your digital business card for clubs and small ranges',
-    badge: '/silver-badge.png',
-    monthlyPrice: 49,
-    yearlyPrice: 499,
-    searchRank: 'Boosted (Above Bronze)',
-    features: [
-      { text: 'Silver Badge', included: true },
-      { text: 'Boosted Search Ranking', included: true },
-      { text: 'Clickable Website Link', included: true },
-      { text: 'Phone Number Display', included: true },
-      { text: 'Email Address Display', included: true },
-      { text: 'Facebook & Instagram Links', included: true },
-      { text: '5 Photo Gallery', included: true },
-      { text: '350 Word Description', included: true },
-      { text: 'Basic Analytics (Profile Views)', included: true },
-      { text: 'Events Calendar', included: false },
-      { text: 'Review Management', included: false },
-    ],
-    cta: 'Start Silver',
-    ctaLink: '/auth/signup?plan=silver',
-    highlighted: false,
-  },
-  {
-    id: 'gold',
-    name: 'Gold',
     tagline: 'The Marketer',
     description: 'Growth package for commercial ranges driving traffic',
     badge: '/gold-badge.png',
@@ -71,26 +45,26 @@ const tiers = [
     yearlyPrice: 1500,
     searchRank: 'Priority (Top of Results)',
     features: [
-      { text: 'Gold Badge', included: true },
+      { text: 'Silver Badge', included: true },
       { text: 'Priority Search Placement', included: true },
-      { text: 'All Silver Features', included: true },
+      { text: 'All Bronze Features', included: true },
       { text: '"Message Range" Lead Form', included: true },
       { text: 'Read & Reply to Reviews', included: true },
-      { text: 'Unlimited Photo Gallery', included: true },
+      { text: '5 Photo Gallery', included: true },
       { text: 'YouTube Video Embed', included: true },
       { text: 'Events Calendar & Global Feed', included: true },
       { text: 'Advanced Analytics', included: true },
       { text: 'Track Clicks (Web, Call, Directions)', included: true },
       { text: 'Home Page Feature', included: false },
     ],
-    cta: 'Start Gold',
-    ctaLink: '/auth/signup?plan=gold',
+    cta: 'Start Silver',
+    ctaLink: '/auth/signup?plan=silver',
     highlighted: true,
     popularLabel: 'Most Popular',
   },
   {
-    id: 'platinum',
-    name: 'Platinum',
+    id: 'gold',
+    name: 'Gold',
     tagline: 'The Partner',
     description: 'Dominance package with exclusive visibility + SaaS tools',
     badge: '/platinum-badge.png',
@@ -98,9 +72,9 @@ const tiers = [
     yearlyPrice: 3999,
     searchRank: 'Maximum (Pinned Above All)',
     features: [
-      { text: 'Platinum Badge + Verified ✓', included: true },
+      { text: 'Gold Badge + Verified ✓', included: true },
       { text: 'Pinned Top of All Searches', included: true },
-      { text: 'All Gold Features', included: true },
+      { text: 'All Silver Features', included: true },
       { text: 'Home Page Hero (50km radius)', included: true },
       { text: 'No Competitor Ads on Profile', included: true },
       { text: 'Digital Waiver System', included: true },
@@ -110,8 +84,8 @@ const tiers = [
       { text: 'PDF Export of Waivers', included: true },
       { text: 'Priority Phone Support', included: true },
     ],
-    cta: 'Start Platinum',
-    ctaLink: '/auth/signup?plan=platinum',
+    cta: 'Start Gold',
+    ctaLink: '/auth/signup?plan=gold',
     highlighted: false,
   },
 ]
@@ -120,56 +94,56 @@ const comparisonFeatures = [
   {
     category: 'Visibility & Search',
     features: [
-      { name: 'Badge Type', bronze: 'bronze-badge', silver: 'silver-badge', gold: 'gold-badge', platinum: 'platinum-badge' },
-      { name: 'Search Ranking', bronze: 'Bottom', silver: 'Middle', gold: 'Top', platinum: 'Pinned Top' },
-      { name: 'Home Page Feature (50km)', bronze: false, silver: false, gold: false, platinum: true },
-      { name: 'No Competitor Ads', bronze: false, silver: false, gold: false, platinum: true },
+      { name: 'Badge Type', bronze: 'bronze-badge', silver: 'silver-badge', gold: 'gold-badge' },
+      { name: 'Search Ranking', bronze: 'Boosted', silver: 'Priority', gold: 'Pinned Top' },
+      { name: 'Home Page Feature (50km)', bronze: false, silver: false, gold: true },
+      { name: 'No Competitor Ads', bronze: false, silver: false, gold: true },
     ],
   },
   {
     category: 'Contact Information',
     features: [
-      { name: 'Map Pin', bronze: true, silver: true, gold: true, platinum: true },
-      { name: 'Clickable Website Link', bronze: false, silver: true, gold: true, platinum: true },
-      { name: 'Phone Number', bronze: false, silver: true, gold: true, platinum: true },
-      { name: 'Email Address', bronze: false, silver: true, gold: true, platinum: true },
-      { name: 'Social Media Links', bronze: false, silver: true, gold: true, platinum: true },
-      { name: '"Message Range" Lead Form', bronze: false, silver: false, gold: true, platinum: true },
+      { name: 'Map Pin', bronze: true, silver: true, gold: true },
+      { name: 'Clickable Website Link', bronze: false, silver: true, gold: true },
+      { name: 'Phone Number', bronze: false, silver: true, gold: true },
+      { name: 'Email Address', bronze: false, silver: true, gold: true },
+      { name: 'Social Media Links', bronze: false, silver: true, gold: true },
+      { name: '"Message Range" Lead Form', bronze: false, silver: true, gold: true },
     ],
   },
   {
     category: 'Content & Media',
     features: [
-      { name: 'Photos', bronze: '1', silver: '5', gold: 'Unlimited', platinum: 'Unlimited' },
-      { name: 'Description Length', bronze: '150 words', silver: '350 words', gold: 'Unlimited', platinum: 'Unlimited' },
-      { name: 'Video Embed', bronze: false, silver: false, gold: true, platinum: true },
-      { name: 'Events Calendar', bronze: false, silver: false, gold: true, platinum: true },
+      { name: 'Photos', bronze: '1', silver: '5', gold: 'Unlimited' },
+      { name: 'Description Length', bronze: '350 words', silver: 'Unlimited', gold: 'Unlimited' },
+      { name: 'Video Embed', bronze: false, silver: true, gold: true },
+      { name: 'Events Calendar', bronze: false, silver: true, gold: true },
     ],
   },
   {
     category: 'Reviews & Engagement',
     features: [
-      { name: 'Receive Reviews', bronze: true, silver: true, gold: true, platinum: true },
-      { name: 'Reply to Reviews', bronze: false, silver: false, gold: true, platinum: true },
+      { name: 'Receive Reviews', bronze: true, silver: true, gold: true },
+      { name: 'Reply to Reviews', bronze: false, silver: true, gold: true },
     ],
   },
   {
     category: 'Analytics',
     features: [
-      { name: 'Profile Views', bronze: false, silver: true, gold: true, platinum: true },
-      { name: 'Website Clicks', bronze: false, silver: false, gold: true, platinum: true },
-      { name: 'Call Button Clicks', bronze: false, silver: false, gold: true, platinum: true },
-      { name: 'Direction Clicks', bronze: false, silver: false, gold: true, platinum: true },
+      { name: 'Profile Views', bronze: true, silver: true, gold: true },
+      { name: 'Detailed Clicks', bronze: false, silver: true, gold: true },
+      { name: 'Inquiry Tracking', bronze: false, silver: true, gold: true },
+      { name: 'Activity History', bronze: false, silver: true, gold: true },
     ],
   },
   {
     category: 'SaaS Tools (Waiver System)',
     features: [
-      { name: 'Digital Waiver System', bronze: false, silver: false, gold: false, platinum: true },
-      { name: 'iPad Kiosk Mode', bronze: false, silver: false, gold: false, platinum: true },
-      { name: 'Waiver Dashboard', bronze: false, silver: false, gold: false, platinum: true },
-      { name: 'Expiry Tracking & Emails', bronze: false, silver: false, gold: false, platinum: true },
-      { name: 'PDF Export', bronze: false, silver: false, gold: false, platinum: true },
+      { name: 'Digital Waiver System', bronze: false, silver: false, gold: true },
+      { name: 'iPad Kiosk Mode', bronze: false, silver: false, gold: true },
+      { name: 'Waiver Dashboard', bronze: false, silver: false, gold: true },
+      { name: 'Expiry Tracking & Emails', bronze: false, silver: false, gold: true },
+      { name: 'PDF Export', bronze: false, silver: false, gold: true },
     ],
   },
 ]
@@ -341,7 +315,7 @@ export default function PricingPage() {
 
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-stone-200">
             {/* Table Header */}
-            <div className="grid grid-cols-5 bg-stone-800 text-white">
+            <div className="grid grid-cols-4 bg-stone-800 text-white">
               <div className="p-4 font-semibold">Feature</div>
               <div className="p-4 text-center font-semibold">
                 <div className="flex items-center justify-center gap-2">
@@ -349,31 +323,24 @@ export default function PricingPage() {
                   <span>Bronze</span>
                 </div>
               </div>
-              <div className="p-4 text-center font-semibold">
+              <div className="p-4 text-center font-semibold bg-green-700">
                 <div className="flex items-center justify-center gap-2">
                   <img src="/silver-badge.png" alt="Silver" className="h-6 w-6 object-contain" />
                   <span>Silver</span>
                 </div>
               </div>
-              <div className="p-4 text-center font-semibold bg-green-700">
+              <div className="p-4 text-center font-semibold">
                 <div className="flex items-center justify-center gap-2">
                   <img src="/gold-badge.png" alt="Gold" className="h-6 w-6 object-contain" />
                   <span>Gold</span>
                 </div>
               </div>
-              <div className="p-4 text-center font-semibold">
-                <div className="flex items-center justify-center gap-2">
-                  <img src="/platinum-badge.png" alt="Platinum" className="h-6 w-6 object-contain" />
-                  <span>Platinum</span>
-                </div>
-              </div>
             </div>
 
             {/* Price Row */}
-            <div className="grid grid-cols-5 border-b border-stone-200 bg-stone-50">
+            <div className="grid grid-cols-4 border-b border-stone-200 bg-stone-50">
               <div className="p-4 font-semibold text-stone-700">Price</div>
               <div className="p-4 text-center font-bold text-stone-800">Free</div>
-              <div className="p-4 text-center font-bold text-stone-800">$49/mo</div>
               <div className="p-4 text-center font-bold text-green-600 bg-green-50">$149/mo</div>
               <div className="p-4 text-center font-bold text-stone-800">$399/mo</div>
             </div>
@@ -382,8 +349,8 @@ export default function PricingPage() {
             {comparisonFeatures.map((category, catIdx) => (
               <div key={catIdx}>
                 {/* Category Header */}
-                <div className="grid grid-cols-5 bg-stone-100 border-b border-stone-200">
-                  <div className="col-span-5 p-3 font-semibold text-stone-700">
+                <div className="grid grid-cols-4 bg-stone-100 border-b border-stone-200">
+                  <div className="col-span-4 p-3 font-semibold text-stone-700">
                     {category.category}
                   </div>
                 </div>
@@ -392,15 +359,15 @@ export default function PricingPage() {
                 {category.features.map((feature, featIdx) => (
                   <div
                     key={featIdx}
-                    className="grid grid-cols-5 border-b border-stone-100 hover:bg-stone-50"
+                    className="grid grid-cols-4 border-b border-stone-100 hover:bg-stone-50"
                   >
                     <div className="p-4 text-stone-600">{feature.name}</div>
-                    {['bronze', 'silver', 'gold', 'platinum'].map((tier) => {
+                    {['bronze', 'silver', 'gold'].map((tier) => {
                       const value = feature[tier as keyof typeof feature]
                       return (
                         <div
                           key={tier}
-                          className={`p-4 text-center ${tier === 'gold' ? 'bg-green-50/50' : ''}`}
+                          className={`p-4 text-center ${tier === 'silver' ? 'bg-green-50/50' : ''}`}
                         >
                           {typeof value === 'boolean' ? (
                             value ? (
@@ -421,12 +388,7 @@ export default function PricingPage() {
                           ) : value === 'gold-badge' ? (
                             <div className="flex items-center justify-center gap-2">
                               <img src="/gold-badge.png" alt="Gold" className="h-6 w-6 object-contain" />
-                              <span className="text-stone-700 font-medium">Gold</span>
-                            </div>
-                          ) : value === 'platinum-badge' ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <img src="/platinum-badge.png" alt="Platinum" className="h-6 w-6 object-contain" />
-                              <span className="text-stone-700 font-medium">Platinum + Verified</span>
+                              <span className="text-stone-700 font-medium">Gold + Verified</span>
                             </div>
                           ) : (
                             <span className="text-stone-700 font-medium">{value}</span>
@@ -451,9 +413,9 @@ export default function PricingPage() {
 
             <div className="relative">
               <div className="flex items-center gap-3 mb-4">
-                <img src="/platinum-badge.png" alt="Platinum" className="w-20 h-20 object-contain" />
+                <img src="/platinum-badge.png" alt="Gold" className="w-20 h-20 object-contain" />
                 <div>
-                  <h2 className="text-3xl font-bold">Platinum Partner Program</h2>
+                  <h2 className="text-3xl font-bold">Gold Partner Program</h2>
                   <p className="text-amber-400 font-medium">The Ultimate Range Management Solution</p>
                 </div>
               </div>
@@ -482,13 +444,13 @@ export default function PricingPage() {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/auth/signup?plan=platinum"
+                  href="/auth/signup?plan=gold"
                   className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg"
                 >
-                  Start Platinum - $399/mo
+                  Start Gold - $399/mo
                 </Link>
                 <Link
-                  href="/contact?subject=platinum"
+                  href="/contact?subject=gold"
                   className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-xl font-semibold transition-all"
                 >
                   Schedule a Demo
@@ -522,11 +484,11 @@ export default function PricingPage() {
               },
               {
                 q: 'How does the Digital Waiver System work?',
-                a: 'Our Platinum waiver system includes an iPad-friendly kiosk mode, a searchable database of all signed waivers, automatic expiry notifications, and PDF export capability. It\'s designed to replace paper waivers completely.',
+                a: 'Our Gold waiver system includes an iPad-friendly kiosk mode, a searchable database of all signed waivers, automatic expiry notifications, and PDF export capability. It\'s designed to replace paper waivers completely.',
               },
               {
                 q: 'What is the "Home Page Hero" feature?',
-                a: 'Platinum members are featured on the app/website home page for any user within 50km of their range. This gives you immediate visibility when archers in your area open the site.',
+                a: 'Gold members are featured on the app/website home page for any user within 50km of their range. This gives you immediate visibility when archers in your area open the site.',
               },
               {
                 q: 'Do you offer discounts for multiple locations?',
