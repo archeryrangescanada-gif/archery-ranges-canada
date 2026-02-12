@@ -109,16 +109,12 @@ export default function ClaimsPage() {
   const fetchRequests = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('claims')
-        .select(`
-          *,
-          listing:ranges(id, name, phone_number, website, address)
-        `)
-        .order('created_at', { ascending: false })
+      const response = await fetch('/api/admin/claims')
+      const result = await response.json()
 
-      if (error) throw error
-      setRequests((data as Claim[]) || [])
+      if (!response.ok) throw new Error(result.error || 'Failed to fetch claims')
+
+      setRequests((result.claims as Claim[]) || [])
     } catch (err) {
       console.error('Error fetching requests:', err)
     } finally {
@@ -183,6 +179,45 @@ export default function ClaimsPage() {
       }
 
       alert('Claim denied. Notification email sent.')
+      fetchRequests()
+      setShowModal(false)
+      setRejectionReason('')
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  // Revoke an approved claim
+  const handleRevoke = async () => {
+    if (!selectedRequest) return
+    if (!rejectionReason.trim()) {
+      alert('Please provide a reason for revocation.')
+      return
+    }
+    if (!confirm('Are you sure you want to REVOKE this approved claim? This will remove the owner from the listing, clear is_claimed, and potentially downgrade their account role.')) return
+
+    setProcessing(true)
+    try {
+      const { data: { user: adminUser } } = await supabase.auth.getUser()
+
+      const response = await fetch('/api/admin/claims/revoke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          claimId: selectedRequest.id,
+          adminId: adminUser?.id,
+          reason: rejectionReason
+        }),
+      })
+
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.error || 'Failed to revoke claim')
+      }
+
+      alert('Claim revoked. Owner removed, listing unclaimed, notification sent.')
       fetchRequests()
       setShowModal(false)
       setRejectionReason('')
@@ -483,14 +518,18 @@ export default function ClaimsPage() {
                 />
               </div>
 
-              {(selectedRequest.status === 'pending' || selectedRequest.status === 'contacted') && (
+              {(selectedRequest.status === 'pending' || selectedRequest.status === 'contacted' || selectedRequest.status === 'approved') && (
                 <div>
-                  <label className="block text-sm font-bold text-stone-700 mb-2">Rejection Reason (only for Denial)</label>
+                  <label className="block text-sm font-bold text-stone-700 mb-2">
+                    {selectedRequest.status === 'approved' ? 'Revocation Reason (required)' : 'Rejection Reason (only for Denial)'}
+                  </label>
                   <textarea
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
                     className="w-full p-4 border-2 border-stone-100 rounded-2xl focus:border-red-500 outline-none text-stone-900"
-                    placeholder="Tell the user why you're denying their claim..."
+                    placeholder={selectedRequest.status === 'approved'
+                      ? 'Explain why this claim is being revoked...'
+                      : "Tell the user why you're denying their claim..."}
                     rows={2}
                   />
                 </div>
@@ -547,6 +586,16 @@ export default function ClaimsPage() {
                     APPROVE CLAIM
                   </button>
                 </>
+              )}
+
+              {selectedRequest.status === 'approved' && (
+                <button
+                  onClick={() => handleRevoke()}
+                  disabled={processing || !rejectionReason.trim()}
+                  className="flex-1 py-4 bg-red-500 hover:bg-red-600 text-white font-black rounded-2xl shadow-lg shadow-red-200 transition-all disabled:opacity-50"
+                >
+                  REVOKE CLAIM
+                </button>
               )}
             </div>
           </div>

@@ -112,13 +112,15 @@ CREATE POLICY "Users can delete their own reviews."
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, avatar_url)
+  INSERT INTO public.profiles (id, email, full_name, avatar_url, role)
   VALUES (
-    new.id,
-    COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', 'New User'),
-    new.raw_user_meta_data->>'avatar_url'
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', NEW.email),
+    NEW.raw_user_meta_data->>'avatar_url',
+    'user'
   );
-  RETURN new;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -128,12 +130,14 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- Backfill
-INSERT INTO public.profiles (id, full_name, avatar_url)
-SELECT 
-  id, 
-  COALESCE(raw_user_meta_data->>'full_name', raw_user_meta_data->>'name', 'User'), 
-  raw_user_meta_data->>'avatar_url'
+-- Backfill any users missing a profile row
+INSERT INTO public.profiles (id, email, full_name, avatar_url, role)
+SELECT
+  id,
+  email,
+  COALESCE(raw_user_meta_data->>'full_name', raw_user_meta_data->>'name', email),
+  raw_user_meta_data->>'avatar_url',
+  'user'
 FROM auth.users
 WHERE id NOT IN (SELECT id FROM public.profiles)
 ON CONFLICT (id) DO NOTHING;

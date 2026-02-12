@@ -18,6 +18,7 @@ import { MapSection } from '@/components/listing/MapSection';
 import { SubscriptionBadge } from '@/components/listing/SubscriptionBadge';
 import { BreadcrumbNav } from '@/components/listing/BreadcrumbNav';
 import { UpgradeCTA } from '@/components/listing/UpgradeCTA';
+import { ClaimListingBanner } from '@/components/listing/ClaimListingBanner';
 import { RangeAnalyticsProvider } from '@/components/RangeAnalyticsProvider';
 import Link from 'next/link';
 import Header from '@/components/Header';
@@ -481,8 +482,16 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   <ContactForm rangeId={range.id} rangeName={range.name} />
                 )}
 
-                {/* Upgrade CTA for free tier */}
-                {range.subscription_tier === 'free' && (
+                {/* Claim Banner for unclaimed listings */}
+                {!range.owner_id && (
+                  <ClaimListingBanner
+                    rangeId={range.id}
+                    rangeName={range.name}
+                  />
+                )}
+
+                {/* Upgrade CTA for claimed free tier listings */}
+                {range.subscription_tier === 'free' && range.owner_id && (
                   <UpgradeCTA
                     rangeId={range.id}
                     rangeName={range.name}

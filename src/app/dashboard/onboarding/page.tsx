@@ -121,6 +121,25 @@ export default function OnboardingPage() {
     }
   }, [searchParams])
 
+  // Pre-select range if rangeId passed in URL (from Claim CTA)
+  useEffect(() => {
+    const rangeIdParam = searchParams.get('rangeId')
+    if (rangeIdParam) {
+      setMode('claim')
+      const fetchRange = async () => {
+        const { data } = await supabase
+          .from('ranges')
+          .select('id, name, address, facility_type, cities(name), provinces:cities(provinces(name))')
+          .eq('id', rangeIdParam)
+          .single()
+        if (data) {
+          setSelectedRange(data as unknown as Range)
+        }
+      }
+      fetchRange()
+    }
+  }, [searchParams, supabase])
+
   const currentStepIndex = steps.findIndex(s => s.id === currentStep)
 
   const goNext = () => {

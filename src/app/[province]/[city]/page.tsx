@@ -8,6 +8,7 @@ import { Range } from '@/types/range';
 import { RangeCard, RangeCardFeatured } from '@/components/listing/RangeCard';
 import { MapPin, Filter, ArrowLeft, Target, Home, ChevronRight, Calendar, Scale, DollarSign, HelpCircle, Building2, TreePine } from 'lucide-react';
 import { Province } from '@/types/database';
+import { ClaimListingBanner } from '@/components/listing/ClaimListingBanner';
 
 // Enable ISR - revalidate every 5 minutes
 export const revalidate = 300;
@@ -234,6 +235,11 @@ export default async function CityPage({ params }: PageProps) {
             </ol>
           </div>
         </nav>
+
+        {/* Claim CTA Banner */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <ClaimListingBanner />
+        </div>
 
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white">

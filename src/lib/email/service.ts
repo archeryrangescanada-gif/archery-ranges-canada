@@ -10,6 +10,7 @@ import {
   rangeSubmissionNotificationEmail,
   claimReceivedEmail,
   adminClaimNotificationEmail,
+  claimRevokedEmail,
 } from './templates'
 
 export interface SendEmailParams {
@@ -307,6 +308,30 @@ export class EmailService {
 
     return this.sendEmail({
       to: process.env.RESEND_REPLY_TO_EMAIL || 'archeryrangescanada@gmail.com',
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
+    })
+  }
+
+  /**
+   * Send claim revoked notification to user
+   */
+  static async sendClaimRevokedEmail(params: {
+    to: string
+    businessName: string
+    rangeName: string
+    reason: string
+  }) {
+    const template = claimRevokedEmail({
+      businessName: params.businessName,
+      rangeName: params.rangeName,
+      reason: params.reason,
+      supportEmail: EMAIL_CONFIG.replyTo,
+    })
+
+    return this.sendEmail({
+      to: params.to,
       subject: template.subject,
       html: template.html,
       text: template.text,

@@ -8,6 +8,7 @@ import SearchFilters from '@/components/SearchFilters'
 import ReportRangeModal from '@/components/ReportRangeModal'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { ClaimListingBanner } from '@/components/listing/ClaimListingBanner'
 import { trackSearch, trackProvinceSelected } from '@/lib/analytics'
 import { Province, City } from '@/types/database'
 
@@ -478,6 +479,10 @@ export default function Home() {
       </section>
 
       <main className="container mx-auto px-4 py-12">
+        <div className="mb-12">
+          <ClaimListingBanner />
+        </div>
+
         {showFilters && (
           <div className="mb-12 max-w-7xl mx-auto">
             <SearchFilters onFilterChange={handleFilterChange} />

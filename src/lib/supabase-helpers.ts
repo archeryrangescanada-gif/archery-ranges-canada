@@ -185,6 +185,72 @@ export const claimsAPI = {
         updated_at: new Date().toISOString()
       })
       .eq('id', claimId)
+  },
+
+  async revoke(claimId: string, adminId: string, reason: string) {
+    // 1. Fetch claim with relations
+    const { data: claim, error: claimError } = await supabaseAdmin
+      .from('claims')
+      .select('*, listing:ranges(id, name), user:profiles(id, email, full_name)')
+      .eq('id', claimId)
+      .single()
+
+    if (claimError) return { error: claimError }
+
+    // 2. Update claim status to rejected
+    const { error: updateError } = await supabaseAdmin
+      .from('claims')
+      .update({
+        status: 'rejected',
+        reviewed_by: adminId,
+        reviewed_at: new Date().toISOString(),
+        rejection_reason: reason
+      })
+      .eq('id', claimId)
+
+    if (updateError) return { error: updateError }
+
+    // 3. Clear ownership from the range
+    const { error: rangeError } = await supabaseAdmin
+      .from('ranges')
+      .update({
+        owner_id: null,
+        is_claimed: false
+      })
+      .eq('id', claim.listing_id)
+
+    if (rangeError) return { error: rangeError }
+
+    // 4. Downgrade role only if user has no other approved claims
+    const { data: otherClaims } = await supabaseAdmin
+      .from('claims')
+      .select('id')
+      .eq('user_id', claim.user_id)
+      .eq('status', 'approved')
+      .neq('id', claimId)
+
+    if (!otherClaims || otherClaims.length === 0) {
+      const { error: roleError } = await supabaseAdmin
+        .from('profiles')
+        .update({ role: 'user' })
+        .eq('id', claim.user_id)
+
+      if (roleError) return { error: roleError }
+    }
+
+    // 5. Send revocation email
+    try {
+      await EmailService.sendClaimRevokedEmail({
+        to: claim.email_address || claim.user?.email,
+        businessName: claim.first_name || claim.user?.full_name || claim.listing?.name,
+        rangeName: claim.listing?.name,
+        reason: reason
+      })
+    } catch (emailErr) {
+      console.error('Failed to send revocation email:', emailErr)
+    }
+
+    return { success: true }
   }
 }
 

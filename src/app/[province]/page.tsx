@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { Home, ChevronRight, MapPin, Target, ArrowRight } from 'lucide-react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { ClaimListingBanner } from '@/components/listing/ClaimListingBanner'
 
 interface City {
   id: string
@@ -157,6 +158,11 @@ export default async function ProvincePage({ params }: PageProps) {
           </ol>
         </div>
       </nav>
+
+      {/* Claim CTA Banner */}
+      <div className="container mx-auto px-4 py-4">
+        <ClaimListingBanner />
+      </div>
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white py-12">

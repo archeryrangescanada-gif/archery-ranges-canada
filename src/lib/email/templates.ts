@@ -631,6 +631,60 @@ Archery Ranges Canada
   }
 }
 
+// Claim Revoked Email (To User)
+export const claimRevokedEmail = (params: {
+  businessName: string
+  rangeName: string
+  reason: string
+  supportEmail: string
+}): EmailTemplate => {
+  const html = emailWrapper(`
+    <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 24px;">Claim Revoked</h2>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      Hello <strong>${params.businessName}</strong>,
+    </p>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      Your previously approved claim for <strong>${params.rangeName}</strong> has been revoked by an administrator.
+    </p>
+
+    <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 20px 0;">
+      <p style="margin: 0 0 10px 0; color: #991b1b; font-weight: 600;">Reason:</p>
+      <p style="margin: 0; color: #7f1d1d; font-size: 14px; line-height: 1.6;">
+        ${params.reason}
+      </p>
+    </div>
+
+    <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+      If you believe this is an error, please contact our support team at
+      <a href="mailto:${params.supportEmail}" style="color: #10b981;">${params.supportEmail}</a>.
+    </p>
+  `)
+
+  const text = `
+Claim Revoked
+
+Hello ${params.businessName},
+
+Your previously approved claim for ${params.rangeName} has been revoked by an administrator.
+
+Reason:
+${params.reason}
+
+If you believe this is an error, please contact our support team at ${params.supportEmail}.
+
+---
+Archery Ranges Canada - Find the perfect archery range near you
+`
+
+  return {
+    subject: `Claim Revoked - ${params.rangeName}`,
+    html,
+    text,
+  }
+}
+
 // Admin Claim Notification Email
 export const adminClaimNotificationEmail = (params: {
   firstName: string
