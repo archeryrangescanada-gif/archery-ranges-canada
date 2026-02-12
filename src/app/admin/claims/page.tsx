@@ -128,7 +128,7 @@ export default function ClaimsPage() {
   const fetchRequests = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/admin/claims')
+      const response = await fetch('/api/admin/claims', { cache: 'no-store' })
       const result = await response.json()
 
       if (!response.ok) throw new Error(result.error || 'Failed to fetch claims')
