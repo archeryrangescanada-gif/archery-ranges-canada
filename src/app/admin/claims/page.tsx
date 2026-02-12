@@ -355,13 +355,13 @@ export default function ClaimsPage() {
     try {
       // Map plan names to database subscription tiers
       const PLAN_TO_TIER: Record<string, string> = {
-        silver: 'basic',
-        gold: 'pro',
-        platinum: 'premium',
-        legacy: 'premium', // Legacy maps to premium tier features
+        silver: 'silver',
+        gold: 'gold',
+        platinum: 'gold',
+        legacy: 'gold', // Legacy maps to gold tier features
       }
 
-      const subscriptionTier = PLAN_TO_TIER[paymentPlan] || 'basic'
+      const subscriptionTier = PLAN_TO_TIER[paymentPlan] || 'bronze'
 
       // Build update object based on tier
       const updateData: Record<string, any> = {
@@ -372,12 +372,12 @@ export default function ClaimsPage() {
       }
 
       // Enable features based on tier
-      if (subscriptionTier === 'pro' || subscriptionTier === 'premium') {
+      if (subscriptionTier === 'silver' || subscriptionTier === 'gold') {
         updateData.show_reviews = true
         updateData.events_enabled = true
       }
 
-      if (subscriptionTier === 'premium' || paymentPlan === 'legacy') {
+      if (subscriptionTier === 'gold' || paymentPlan === 'legacy') {
         updateData.featured_on_homepage = true
         updateData.featured_in_top_ranges = true
       }

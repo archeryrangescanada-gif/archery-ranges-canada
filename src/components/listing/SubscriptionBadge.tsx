@@ -1,7 +1,7 @@
 import { Award, Star, Crown } from 'lucide-react';
 
 interface SubscriptionBadgeProps {
-  type: 'featured' | 'pro' | 'premium';
+  type: 'featured' | 'bronze' | 'silver' | 'gold';
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -13,19 +13,26 @@ const badgeConfig = {
     shadowColor: 'shadow-emerald-500/30',
     iconBg: 'bg-emerald-300/30',
   },
-  pro: {
+  bronze: {
+    icon: Award,
+    label: 'Bronze',
+    bgGradient: 'from-orange-400 to-orange-700',
+    shadowColor: 'shadow-orange-500/30',
+    iconBg: 'bg-orange-300/30',
+  },
+  silver: {
     icon: Star,
-    label: 'Pro',
-    bgGradient: 'from-amber-400 to-orange-500',
+    label: 'Silver',
+    bgGradient: 'from-slate-300 to-slate-500',
+    shadowColor: 'shadow-slate-400/30',
+    iconBg: 'bg-slate-200/30',
+  },
+  gold: {
+    icon: Crown,
+    label: 'Gold',
+    bgGradient: 'from-amber-400 via-amber-200 to-amber-600',
     shadowColor: 'shadow-amber-500/30',
     iconBg: 'bg-amber-300/30',
-  },
-  premium: {
-    icon: Crown,
-    label: 'Premium',
-    bgGradient: 'from-blue-400 via-blue-500 to-indigo-600',
-    shadowColor: 'shadow-blue-500/30',
-    iconBg: 'bg-blue-300/30',
   },
 };
 
@@ -76,10 +83,10 @@ export function SubscriptionBadge({ type, size = 'md' }: SubscriptionBadgeProps)
   );
 }
 
-export function SubscriptionBadgeInline({ type }: { type: 'featured' | 'pro' | 'premium' }) {
+export function SubscriptionBadgeInline({ type }: { type: 'featured' | 'bronze' | 'silver' | 'gold' }) {
   return <SubscriptionBadge type={type} size="sm" />;
 }
 
-export function SubscriptionBadgeHero({ type }: { type: 'featured' | 'pro' | 'premium' }) {
+export function SubscriptionBadgeHero({ type }: { type: 'featured' | 'bronze' | 'silver' | 'gold' }) {
   return <SubscriptionBadge type={type} size="lg" />;
 }
