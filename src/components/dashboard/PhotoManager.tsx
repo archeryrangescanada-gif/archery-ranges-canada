@@ -39,14 +39,14 @@ export function PhotoManager({ rangeId, currentPhotos, tier, onPhotosChange }: P
             const filePath = `range-photos/${fileName}`
 
             const { error: uploadError, data } = await supabase.storage
-                .from('ranges')
+                .from('range-images')
                 .upload(filePath, file)
 
             if (uploadError) throw uploadError
 
             // 2. Get public URL
             const { data: { publicUrl } } = supabase.storage
-                .from('ranges')
+                .from('range-images')
                 .getPublicUrl(filePath)
 
             // 3. Update parent state
