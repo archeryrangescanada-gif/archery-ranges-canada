@@ -428,7 +428,7 @@ export default function ClaimsPage() {
         </table>
       </div>
 
-// Review Claim Modal
+      {/* Review Claim Modal */}
       {showModal && selectedRequest && (
         <div className="fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-8 max-h-[90vh] overflow-y-auto">
