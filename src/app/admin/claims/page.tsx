@@ -127,27 +127,32 @@ export default function ClaimsPage() {
 
     setProcessing(true)
     try {
-      const { data: { user: adminUser } } = await supabase.auth.getUser()
+      const { data: { user: adminUser }, error: authError } = await supabase.auth.getUser()
+
+      if (authError || !adminUser?.id) {
+        throw new Error(`Auth failed: ${authError?.message || 'No user found'}. Please log in again.`)
+      }
 
       const response = await fetch('/api/admin/claims/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           claimId: request.id,
-          adminId: adminUser?.id
+          adminId: adminUser.id
         }),
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        const err = await response.json()
-        throw new Error(err.error || 'Failed to approve claim')
+        throw new Error(result.error || 'Failed to approve claim')
       }
 
       alert('Claim approved successfully! Role upgraded and range claimed.')
       fetchRequests()
       setShowModal(false)
     } catch (err: any) {
-      alert('Error: ' + err.message)
+      alert('Error approving claim: ' + err.message)
     } finally {
       setProcessing(false)
     }

@@ -84,15 +84,19 @@ export const claimsAPI = {
   },
 
   async approve(claimId: string, adminId: string) {
+    // 1. Fetch claim with listing info only (no user join needed)
     const { data: claim, error: claimError } = await supabaseAdmin
       .from('claims')
-      .select('*, listing:ranges(id, name), user:profiles(id, email, full_name)')
+      .select('*, listing:ranges(id, name)')
       .eq('id', claimId)
       .single()
 
-    if (claimError) return { error: claimError }
+    if (claimError) {
+      console.error('approve step 1 (fetch claim) failed:', claimError)
+      return { error: claimError }
+    }
 
-    // Update claim status
+    // 2. Update claim status
     const { error: updateError } = await supabaseAdmin
       .from('claims')
       .update({
@@ -102,9 +106,12 @@ export const claimsAPI = {
       })
       .eq('id', claimId)
 
-    if (updateError) return { error: updateError }
+    if (updateError) {
+      console.error('approve step 2 (update claim status) failed:', updateError)
+      return { error: updateError }
+    }
 
-    // Update range/listing
+    // 3. Update range/listing
     const { error: rangeError } = await supabaseAdmin
       .from('ranges')
       .update({
@@ -114,22 +121,28 @@ export const claimsAPI = {
       })
       .eq('id', claim.listing_id)
 
-    if (rangeError) return { error: rangeError }
+    if (rangeError) {
+      console.error('approve step 3 (update range) failed:', rangeError)
+      return { error: rangeError }
+    }
 
-    // Update user profile role
+    // 4. Update user profile role
     const { error: roleError } = await supabaseAdmin
       .from('profiles')
       .update({ role: 'owner' })
       .eq('id', claim.user_id)
 
-    if (roleError) return { error: roleError }
+    if (roleError) {
+      console.error('approve step 4 (update profile role) failed:', roleError)
+      return { error: roleError }
+    }
 
-    // Send approval email
+    // 5. Send approval email
     try {
       await EmailService.sendVerificationApprovedEmail({
-        to: claim.email_address || claim.user.email,
-        businessName: claim.first_name || claim.user.full_name || claim.listing.name,
-        rangeName: claim.listing.name,
+        to: claim.email_address,
+        businessName: claim.first_name || claim.listing?.name,
+        rangeName: claim.listing?.name,
         rangeId: claim.listing_id
       })
     } catch (emailErr) {
@@ -142,7 +155,7 @@ export const claimsAPI = {
   async reject(claimId: string, adminId: string, reason: string) {
     const { data: claim, error: claimError } = await supabaseAdmin
       .from('claims')
-      .select('*, listing:ranges(id, name), user:profiles(id, email, full_name)')
+      .select('*, listing:ranges(id, name)')
       .eq('id', claimId)
       .single()
 
@@ -163,9 +176,9 @@ export const claimsAPI = {
     // Send rejection email
     try {
       await EmailService.sendVerificationRejectedEmail({
-        to: claim.email_address || claim.user.email,
-        businessName: claim.first_name || claim.user.full_name || claim.listing.name,
-        rangeName: claim.listing.name,
+        to: claim.email_address,
+        businessName: claim.first_name || claim.listing?.name,
+        rangeName: claim.listing?.name,
         reason: reason
       })
     } catch (emailErr) {
@@ -188,10 +201,10 @@ export const claimsAPI = {
   },
 
   async revoke(claimId: string, adminId: string, reason: string) {
-    // 1. Fetch claim with relations
+    // 1. Fetch claim with listing info
     const { data: claim, error: claimError } = await supabaseAdmin
       .from('claims')
-      .select('*, listing:ranges(id, name), user:profiles(id, email, full_name)')
+      .select('*, listing:ranges(id, name)')
       .eq('id', claimId)
       .single()
 
@@ -241,8 +254,8 @@ export const claimsAPI = {
     // 5. Send revocation email
     try {
       await EmailService.sendClaimRevokedEmail({
-        to: claim.email_address || claim.user?.email,
-        businessName: claim.first_name || claim.user?.full_name || claim.listing?.name,
+        to: claim.email_address,
+        businessName: claim.first_name || claim.listing?.name,
         rangeName: claim.listing?.name,
         reason: reason
       })
