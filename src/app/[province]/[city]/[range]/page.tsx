@@ -278,6 +278,16 @@ export default async function RangeDetailPage({ params }: PageProps) {
 
           {/* Main Content */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Claim Banner for unclaimed listings */}
+            {!range.owner_id && (
+              <div className="mb-8">
+                <ClaimListingBanner
+                  rangeId={range.id}
+                  rangeName={range.name}
+                />
+              </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - Main Content */}
               <div className="lg:col-span-2 space-y-8">
@@ -390,58 +400,58 @@ export default async function RangeDetailPage({ params }: PageProps) {
 
                 {/* FAQ Section (Silver/Basic and above only) */}
                 {tierLimits.hasClickableContact && (
-                <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-                  <h2 className="text-xl font-semibold text-stone-800 mb-6">
-                    Frequently Asked Questions about {range.name}
-                  </h2>
+                  <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+                    <h2 className="text-xl font-semibold text-stone-800 mb-6">
+                      Frequently Asked Questions about {range.name}
+                    </h2>
 
-                  <div className="space-y-4">
-                    <div className="border-b border-stone-100 pb-4">
-                      <h3 className="font-medium text-stone-800 mb-2">Where is {range.name} located?</h3>
-                      <p className="text-stone-600 text-sm">
-                        {range.name} is located at {range.address || range.city}, {range.province}, Canada.
-                        {range.latitude && range.longitude && ' View the map above for exact directions.'}
-                      </p>
+                    <div className="space-y-4">
+                      <div className="border-b border-stone-100 pb-4">
+                        <h3 className="font-medium text-stone-800 mb-2">Where is {range.name} located?</h3>
+                        <p className="text-stone-600 text-sm">
+                          {range.name} is located at {range.address || range.city}, {range.province}, Canada.
+                          {range.latitude && range.longitude && ' View the map above for exact directions.'}
+                        </p>
+                      </div>
+
+                      {range.facility_type && (
+                        <div className="border-b border-stone-100 pb-4">
+                          <h3 className="font-medium text-stone-800 mb-2">Is {range.name} an indoor or outdoor range?</h3>
+                          <p className="text-stone-600 text-sm">
+                            {range.name} is {range.facility_type === 'both' ? 'both an indoor and outdoor' : `an ${range.facility_type}`} archery facility.
+                          </p>
+                        </div>
+                      )}
+
+                      {range.lessons_available && (
+                        <div className="border-b border-stone-100 pb-4">
+                          <h3 className="font-medium text-stone-800 mb-2">Does {range.name} offer archery lessons?</h3>
+                          <p className="text-stone-600 text-sm">
+                            Yes! {range.name} offers archery lessons for beginners and experienced archers.
+                            {range.lesson_price_range && ` Lesson prices range from ${range.lesson_price_range}.`}
+                          </p>
+                        </div>
+                      )}
+
+                      {range.equipment_rental_available && (
+                        <div className="border-b border-stone-100 pb-4">
+                          <h3 className="font-medium text-stone-800 mb-2">Can I rent equipment at {range.name}?</h3>
+                          <p className="text-stone-600 text-sm">
+                            Yes, {range.name} offers equipment rental so you can try archery without owning your own gear.
+                          </p>
+                        </div>
+                      )}
+
+                      <div>
+                        <h3 className="font-medium text-stone-800 mb-2">How do I contact {range.name}?</h3>
+                        <p className="text-stone-600 text-sm">
+                          You can contact {range.name} {range.phone_number ? `by phone at ${range.phone_number}` : ''}
+                          {range.email ? `${range.phone_number ? ' or' : ''} by email at ${range.email}` : ''}.
+                          {range.website && ' Visit their website for more information.'}
+                        </p>
+                      </div>
                     </div>
-
-                    {range.facility_type && (
-                      <div className="border-b border-stone-100 pb-4">
-                        <h3 className="font-medium text-stone-800 mb-2">Is {range.name} an indoor or outdoor range?</h3>
-                        <p className="text-stone-600 text-sm">
-                          {range.name} is {range.facility_type === 'both' ? 'both an indoor and outdoor' : `an ${range.facility_type}`} archery facility.
-                        </p>
-                      </div>
-                    )}
-
-                    {range.lessons_available && (
-                      <div className="border-b border-stone-100 pb-4">
-                        <h3 className="font-medium text-stone-800 mb-2">Does {range.name} offer archery lessons?</h3>
-                        <p className="text-stone-600 text-sm">
-                          Yes! {range.name} offers archery lessons for beginners and experienced archers.
-                          {range.lesson_price_range && ` Lesson prices range from ${range.lesson_price_range}.`}
-                        </p>
-                      </div>
-                    )}
-
-                    {range.equipment_rental_available && (
-                      <div className="border-b border-stone-100 pb-4">
-                        <h3 className="font-medium text-stone-800 mb-2">Can I rent equipment at {range.name}?</h3>
-                        <p className="text-stone-600 text-sm">
-                          Yes, {range.name} offers equipment rental so you can try archery without owning your own gear.
-                        </p>
-                      </div>
-                    )}
-
-                    <div>
-                      <h3 className="font-medium text-stone-800 mb-2">How do I contact {range.name}?</h3>
-                      <p className="text-stone-600 text-sm">
-                        You can contact {range.name} {range.phone_number ? `by phone at ${range.phone_number}` : ''}
-                        {range.email ? `${range.phone_number ? ' or' : ''} by email at ${range.email}` : ''}.
-                        {range.website && ' Visit their website for more information.'}
-                      </p>
-                    </div>
-                  </div>
-                </section>
+                  </section>
                 )}
 
                 {/* Related Ranges CTA */}
@@ -482,13 +492,7 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   <ContactForm rangeId={range.id} rangeName={range.name} />
                 )}
 
-                {/* Claim Banner for unclaimed listings */}
-                {!range.owner_id && (
-                  <ClaimListingBanner
-                    rangeId={range.id}
-                    rangeName={range.name}
-                  />
-                )}
+
 
                 {/* Upgrade CTA for claimed free tier listings */}
                 {range.subscription_tier === 'free' && range.owner_id && (
