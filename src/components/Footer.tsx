@@ -37,7 +37,7 @@ export default function Footer() {
                     </div>
                 </div>
                 <div className="border-t border-green-600 pt-8 text-center text-green-100">
-                    <p>© 2025 Archery Ranges Canada. All rights reserved.</p>
+                    <p>© 2026 Archery Ranges Canada. All rights reserved.</p>
                 </div>
             </div>
         </footer>
