@@ -46,29 +46,36 @@ export async function POST(request: Request) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
 
-        if (session.payment_status === 'paid' && session.metadata?.rangeId) {
-          const rangeId = session.metadata.rangeId
-          const planId = session.metadata.planId || 'silver'
-          const subscriptionTier = PLAN_TO_TIER[planId] || 'basic'
+        if (session.payment_status === 'paid') {
+          // Check for rangeId in metadata OR client_reference_id
+          const rangeId = session.metadata?.rangeId || session.client_reference_id
 
-          console.log(`Checkout completed: Upgrading range ${rangeId} to ${subscriptionTier}`)
+          if (rangeId) {
+            // Default to 'silver' if no planId provided (since we're using a direct payment link for Silver)
+            const planId = session.metadata?.planId || 'silver'
+            const subscriptionTier = PLAN_TO_TIER[planId] || 'silver'
 
-          const { error } = await supabaseAdmin
-            .from('ranges')
-            .update({
-              subscription_tier: subscriptionTier,
-              stripe_customer_id: session.customer as string,
-              stripe_subscription_id: session.subscription as string,
-              subscription_status: 'active',
-              subscription_updated_at: new Date().toISOString(),
-              is_featured: true, // All paid tiers are featured
-            })
-            .eq('id', rangeId)
+            console.log(`Checkout completed: Upgrading range ${rangeId} to ${subscriptionTier}`)
 
-          if (error) {
-            console.error('Failed to update range subscription:', error)
+            const { error } = await supabaseAdmin
+              .from('ranges')
+              .update({
+                subscription_tier: subscriptionTier,
+                stripe_customer_id: session.customer as string,
+                stripe_subscription_id: session.subscription as string,
+                subscription_status: 'active',
+                subscription_updated_at: new Date().toISOString(),
+                is_featured: true, // All paid tiers are featured
+              })
+              .eq('id', rangeId)
+
+            if (error) {
+              console.error('Failed to update range subscription:', error)
+            } else {
+              console.log(`Successfully upgraded range ${rangeId} to ${subscriptionTier}`)
+            }
           } else {
-            console.log(`Successfully upgraded range ${rangeId} to ${subscriptionTier}`)
+            console.warn('Checkout completed but no rangeId found in metadata or client_reference_id')
           }
         }
         break

@@ -30,6 +30,8 @@ export default function SettingsPage() {
     const supabase = createClient()
 
     const [loading, setLoading] = useState(true)
+    const [loadingMessage, setLoadingMessage] = useState('Initializing...')
+    const [fatalError, setFatalError] = useState('')
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
@@ -52,48 +54,94 @@ export default function SettingsPage() {
     const [deleting, setDeleting] = useState(false)
 
     useEffect(() => {
+        let mounted = true
+
         async function loadData() {
-            const { data: { user } } = await supabase.auth.getUser()
+            try {
+                setLoadingMessage('Checking authentication...')
 
-            if (!user) {
-                router.push('/auth/login')
-                return
+                // 1. Auth Check
+                const authPromise = supabase.auth.getUser()
+                const authTimeout = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Authentication check timed out')), 10000)
+                )
+
+                const { data: { user }, error: authError } = await Promise.race([
+                    authPromise,
+                    authTimeout
+                ]) as any
+
+                if (!mounted) return
+
+                if (!user || authError) {
+                    console.log('Auth failed or no user:', authError)
+                    router.push('/auth/login')
+                    return
+                }
+
+                // 2. Fetch Range Data
+                setLoadingMessage('Loading range details...')
+
+                const dataPromise = supabase
+                    .from('ranges')
+                    .select('*')
+                    .eq('id', rangeId)
+                    .eq('owner_id', user.id)
+                    .single()
+
+                const dataTimeout = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Data loading timed out')), 15000)
+                )
+
+                const { data: rangeData, error: rangeError } = await Promise.race([
+                    dataPromise,
+                    dataTimeout
+                ]) as any
+
+                if (!mounted) return
+
+                if (rangeError) {
+                    throw rangeError
+                }
+
+                if (!rangeData) {
+                    router.push('/dashboard')
+                    return
+                }
+
+                setFormData({
+                    name: rangeData.name || '',
+                    address: rangeData.address || '',
+                    phone: rangeData.phone_number || '',
+                    email: rangeData.email || '',
+                    website: rangeData.website || '',
+                    description: rangeData.post_content || '',
+                    hasProShop: rangeData.has_pro_shop || false,
+                    has3dCourse: rangeData.has_3d_course || false,
+                    hasFieldCourse: rangeData.has_field_course || false,
+                    equipmentRental: rangeData.equipment_rental_available || false,
+                    lessonsAvailable: rangeData.lessons_available || false,
+                    post_images: Array.isArray(rangeData.post_images)
+                        ? rangeData.post_images
+                        : (typeof rangeData.post_images === 'string' ? JSON.parse(rangeData.post_images) : []),
+                })
+                setTier(getUserSubscriptionTier(rangeData))
+                setLoading(false)
+
+            } catch (err: any) {
+                console.error('Error in settings page:', err)
+                if (mounted) {
+                    setFatalError(err.message || 'Failed to load range settings')
+                    setLoading(false)
+                }
             }
-
-            // Fetch range info
-            const { data: rangeData } = await supabase
-                .from('ranges')
-                .select('*')
-                .eq('id', rangeId)
-                .eq('owner_id', user.id)
-                .single()
-
-            if (!rangeData) {
-                router.push('/dashboard')
-                return
-            }
-
-            setFormData({
-                name: rangeData.name || '',
-                address: rangeData.address || '',
-                phone: rangeData.phone_number || '',
-                email: rangeData.email || '',
-                website: rangeData.website || '',
-                description: rangeData.post_content || '',
-                hasProShop: rangeData.has_pro_shop || false,
-                has3dCourse: rangeData.has_3d_course || false,
-                hasFieldCourse: rangeData.has_field_course || false,
-                equipmentRental: rangeData.equipment_rental_available || false,
-                lessonsAvailable: rangeData.lessons_available || false,
-                post_images: Array.isArray(rangeData.post_images)
-                    ? rangeData.post_images
-                    : (typeof rangeData.post_images === 'string' ? JSON.parse(rangeData.post_images) : []),
-            })
-            setTier(getUserSubscriptionTier(rangeData))
-            setLoading(false)
         }
 
         loadData()
+
+        return () => {
+            mounted = false
+        }
     }, [router, supabase, rangeId])
 
     const updateField = (field: keyof FormData, value: string | boolean | string[]) => {
@@ -164,7 +212,31 @@ export default function SettingsPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-                <div className="text-stone-500">Loading...</div>
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto mb-4" />
+                    <div className="text-stone-600 font-medium">{loadingMessage}</div>
+                    <div className="text-stone-400 text-sm mt-2">Please wait...</div>
+                </div>
+            </div>
+        )
+    }
+
+    if (fatalError) {
+        return (
+            <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
+                <div className="bg-white p-8 rounded-xl shadow-sm border border-stone-200 max-w-md w-full text-center">
+                    <div className="text-red-500 font-medium mb-2">Error Loading Settings</div>
+                    <p className="text-stone-600 mb-6">{fatalError}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                    >
+                        Retry
+                    </button>
+                    <Link href="/dashboard" className="block mt-4 text-sm text-stone-500 hover:text-stone-700">
+                        Back to Dashboard
+                    </Link>
+                </div>
             </div>
         )
     }

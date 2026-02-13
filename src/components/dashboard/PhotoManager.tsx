@@ -78,14 +78,14 @@ export function PhotoManager({ rangeId, currentPhotos, tier, onPhotosChange }: P
             <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-stone-700">Photos ({currentPhotos.length}/{photoLimit})</h3>
                 {tier === 'bronze' && (
-                    <Link href="/pricing#silver" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                    <a href={`https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02?client_reference_id=${rangeId}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
                         Upgrade for more photos
-                    </Link>
+                    </a>
                 )}
                 {tier === 'silver' && (
-                    <Link href="/pricing#gold" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                    <a href={`https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02?client_reference_id=${rangeId}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
                         Upgrade for unlimited photos
-                    </Link>
+                    </a>
                 )}
             </div>
 

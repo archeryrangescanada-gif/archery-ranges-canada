@@ -16,7 +16,8 @@ import {
     ExternalLink,
     BarChart3,
     Star,
-    Lock
+    Lock,
+    Loader2
 } from 'lucide-react'
 import { canAccessAnalytics, getUserSubscriptionTier } from '@/lib/subscription-utils'
 // Custom interface for dashboard (some fields use different names)
@@ -45,35 +46,74 @@ export default function DashboardPage() {
     const [user, setUser] = useState<User | null>(null)
     const [ranges, setRanges] = useState<Range[]>([])
     const [loading, setLoading] = useState(true)
+    const [loadingMessage, setLoadingMessage] = useState('Initializing...')
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
+        let mounted = true
+
         async function loadData() {
-            const { data: { user } } = await supabase.auth.getUser()
-
-            if (!user) {
-                router.push('/auth/login')
-                return
-            }
-
-            setUser(user)
-
-            // Fetch user's ranges via API route (server-side auth)
             try {
-                const response = await fetch('/api/dashboard/ranges')
-                if (!response.ok) {
-                    throw new Error('Failed to fetch ranges')
+                // 1. Auth Check with Timeout
+                setLoadingMessage('Checking authentication...')
+
+                const authPromise = supabase.auth.getUser()
+                const authTimeout = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Authentication check timed out')), 10000)
+                )
+
+                const { data: { user }, error: authError } = await Promise.race([
+                    authPromise,
+                    authTimeout
+                ]) as any
+
+                if (!mounted) return
+
+                if (authError || !user) {
+                    console.log('Auth check failed or no user, redirecting to login')
+                    router.push('/auth/login')
+                    return
                 }
+
+                setUser(user)
+
+                // 2. Data Fetch with Timeout
+                setLoadingMessage('Loading your ranges...')
+
+                const dataPromise = fetch('/api/dashboard/ranges')
+                const dataTimeout = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Data loading timed out')), 15000)
+                )
+
+                const response = await Promise.race([
+                    dataPromise,
+                    dataTimeout
+                ]) as Response
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch ranges: ${response.statusText}`)
+                }
+
                 const data = await response.json()
-                setRanges((data.ranges as Range[]) || [])
-            } catch (error) {
-                console.error('Error loading ranges:', error)
-                setRanges([])
-            } finally {
-                setLoading(false)
+
+                if (mounted) {
+                    setRanges((data.ranges as Range[]) || [])
+                    setLoading(false)
+                }
+            } catch (err: any) {
+                console.error('Error loading dashboard:', err)
+                if (mounted) {
+                    setError(err.message || 'An unexpected error occurred')
+                    setLoading(false)
+                }
             }
         }
 
         loadData()
+
+        return () => {
+            mounted = false
+        }
     }, [router, supabase])
 
     const handleLogout = async () => {
@@ -84,7 +124,39 @@ export default function DashboardPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-                <div className="text-stone-500">Loading...</div>
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto mb-4" />
+                    <div className="text-stone-600 font-medium">{loadingMessage}</div>
+                    <div className="text-stone-400 text-sm mt-2">This should only take a moment</div>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
+                <div className="bg-white p-8 rounded-xl shadow-sm border border-stone-200 max-w-md w-full text-center">
+                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <LogOut className="w-6 h-6 text-red-600" />
+                    </div>
+                    <h2 className="text-xl font-bold text-stone-800 mb-2">Something went wrong</h2>
+                    <p className="text-stone-600 mb-6">{error}</p>
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="w-full px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors"
+                        >
+                            Try Again
+                        </button>
+                        <Link
+                            href="/"
+                            className="text-stone-500 hover:text-stone-700 text-sm"
+                        >
+                            Return to Home
+                        </Link>
+                    </div>
+                </div>
             </div>
         )
     }
@@ -249,12 +321,14 @@ export default function DashboardPage() {
                                                         Upgrade for Advanced Analytics
                                                     </div>
                                                 </div>
-                                                <Link
-                                                    href="/pricing#silver"
+                                                <a
+                                                    href={`https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02?client_reference_id=${range.id}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                     className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded shadow-sm transition-colors whitespace-nowrap"
                                                 >
                                                     Upgrade
-                                                </Link>
+                                                </a>
                                             </>
                                         )}
                                         <Link
@@ -279,12 +353,14 @@ export default function DashboardPage() {
                                 <h3 className="text-lg font-semibold mb-1">Upgrade Your Listing</h3>
                                 <p className="text-emerald-100">Get more visibility, add photos, and attract more customers</p>
                             </div>
-                            <Link
-                                href="/pricing"
+                            <a
+                                href={`https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02?client_reference_id=${ranges.find(r => !r.subscription_tier || r.subscription_tier === 'free')?.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="px-6 py-3 bg-white text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50 transition-colors"
                             >
-                                View Plans
-                            </Link>
+                                Upgrade Now
+                            </a>
                         </div>
                     </div>
                 )}
