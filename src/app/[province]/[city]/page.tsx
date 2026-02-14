@@ -187,6 +187,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: `Discover archery ranges, lessons, and clubs in ${city.name}. Indoor & outdoor options with pricing.`,
       type: 'website',
     },
+    robots: {
+      index: rangeCount > 0,
+      follow: rangeCount > 0,
+    }
   };
 }
 

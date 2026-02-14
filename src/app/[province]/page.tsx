@@ -134,7 +134,8 @@ export default async function ProvincePage({ params }: PageProps) {
   )
 
   const citiesWithRanges = sortedCities.filter(city => rangeCounts[city.id] > 0)
-  const citiesWithoutRanges = sortedCities.filter(city => !rangeCounts[city.id])
+  // Removed citiesWithoutRanges to prevent indexing empty pages
+  // Removed citiesWithoutRanges to prevent indexing empty pages
 
   // Group cities by first letter for Ontario (or if there are many cities)
   const cityGroups: Record<string, City[]> = {}
@@ -271,30 +272,7 @@ export default async function ProvincePage({ params }: PageProps) {
           </section>
         )}
 
-        {/* Cities without Ranges */}
-        {citiesWithoutRanges.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-xl font-semibold text-stone-700 mb-4">
-              Other Cities in {province.name}
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {citiesWithoutRanges.slice(0, 20).map((city: City) => (
-                <Link
-                  key={city.id}
-                  href={`/${provinceSlug}/${city.slug}`}
-                  className="px-3 py-1.5 bg-stone-100 hover:bg-emerald-100 text-stone-600 hover:text-emerald-700 rounded-full text-sm transition-colors"
-                >
-                  {city.name}
-                </Link>
-              ))}
-              {citiesWithoutRanges.length > 20 && (
-                <span className="px-3 py-1.5 text-stone-400 text-sm">
-                  +{citiesWithoutRanges.length - 20} more
-                </span>
-              )}
-            </div>
-          </section>
-        )}
+
 
         {/* No Cities */}
         {cities.length === 0 && (
