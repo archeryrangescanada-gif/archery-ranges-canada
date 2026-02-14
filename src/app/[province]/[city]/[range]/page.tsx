@@ -20,6 +20,7 @@ import { BreadcrumbNav } from '@/components/listing/BreadcrumbNav';
 import { UpgradeCTA } from '@/components/listing/UpgradeCTA';
 import { ClaimListingBanner } from '@/components/listing/ClaimListingBanner';
 import { RangeAnalyticsProvider } from '@/components/RangeAnalyticsProvider';
+import { normalizeToArray } from '@/lib/utils/data-normalization';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -32,41 +33,7 @@ interface PageProps {
   };
 }
 
-// Helper to normalize post_images/video_urls to always be an array
-function normalizeToArray(value: string | string[] | null | undefined): string[] {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  if (typeof value === 'string') {
-    // Check if it's a PostgreSQL array format: {"/path/to/image.jpg","/another.jpg"}
-    if (value.startsWith('{') && value.endsWith('}')) {
-      // Remove curly braces and split by comma
-      const inner = value.slice(1, -1);
-      if (!inner) return [];
-      // Handle quoted strings in PostgreSQL array format
-      const items = inner.split(',').map(item => {
-        // Remove surrounding quotes if present
-        const trimmed = item.trim();
-        if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
-          return trimmed.slice(1, -1);
-        }
-        return trimmed;
-      }).filter(Boolean);
-      return items;
-    }
-    // Check if it's a JSON array string
-    if (value.startsWith('[')) {
-      try {
-        const parsed = JSON.parse(value);
-        return Array.isArray(parsed) ? parsed : [value];
-      } catch {
-        return [value];
-      }
-    }
-    // Single string path
-    return [value];
-  }
-  return [];
-}
+
 
 async function getRange(provinceSlug: string, citySlug: string, rangeSlug: string): Promise<Range | null> {
   const supabase = await createClient();

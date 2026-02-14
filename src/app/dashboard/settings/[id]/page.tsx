@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft, Save, Trash2, MapPin, Loader2 } from 'lucide-react'
 import { PhotoManager } from '@/components/dashboard/PhotoManager'
 import { SubscriptionTier, getUserSubscriptionTier } from '@/lib/subscription-utils'
+import { normalizeToArray } from '@/lib/utils/data-normalization'
 
 interface FormData {
     name: string
@@ -121,9 +122,7 @@ export default function SettingsPage() {
                     hasFieldCourse: rangeData.has_field_course || false,
                     equipmentRental: rangeData.equipment_rental_available || false,
                     lessonsAvailable: rangeData.lessons_available || false,
-                    post_images: Array.isArray(rangeData.post_images)
-                        ? rangeData.post_images
-                        : (typeof rangeData.post_images === 'string' ? JSON.parse(rangeData.post_images) : []),
+                    post_images: normalizeToArray(rangeData.post_images),
                 })
                 setTier(getUserSubscriptionTier(rangeData))
                 setLoading(false)
