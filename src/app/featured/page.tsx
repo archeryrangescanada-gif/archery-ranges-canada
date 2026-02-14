@@ -46,17 +46,37 @@ export default function FeaturedPage() {
         .order('name')
 
       if (data) {
+        // Helper to normalize array data
+        const normalizeToArray = (input: any): string[] => {
+          if (!input) return [];
+          if (Array.isArray(input)) return input;
+          if (typeof input === 'string') {
+            const trimmed = input.trim();
+            if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+              try {
+                return JSON.parse(trimmed);
+              } catch {
+                return [];
+              }
+            }
+            if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+              const inner = trimmed.slice(1, -1);
+              if (!inner) return [];
+              return inner.split(',').map(item => {
+                const t = item.trim();
+                return t.startsWith('"') && t.endsWith('"') ? t.slice(1, -1) : t;
+              }).filter(Boolean);
+            }
+            return [trimmed];
+          }
+          return [];
+        };
+
         const normalized = (data as any[]).map(item => ({
           ...item,
-          photos: typeof item.photos === 'string'
-            ? item.photos.split(',').map((s: string) => s.trim()).filter(Boolean)
-            : Array.isArray(item.photos) ? item.photos : [],
-          post_images: typeof item.post_images === 'string'
-            ? item.post_images.split(',').map((s: string) => s.trim()).filter(Boolean)
-            : Array.isArray(item.post_images) ? item.post_images : [],
-          amenities: typeof item.amenities === 'string'
-            ? item.amenities.split(',').map((s: string) => s.trim()).filter(Boolean)
-            : Array.isArray(item.amenities) ? item.amenities : []
+          photos: normalizeToArray(item.photos),
+          post_images: normalizeToArray(item.post_images),
+          amenities: normalizeToArray(item.amenities)
         }))
         setRanges(normalized as Range[])
       }

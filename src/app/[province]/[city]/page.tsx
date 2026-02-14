@@ -146,17 +146,37 @@ async function getRangesInCity(cityId: string): Promise<Range[]> {
   }
 
   // Post-process the data to handle TEXT columns that should be arrays/JSON
+  // Import the normalizer at the top of the file, or if not possible, use the inline logic
+  const normalizeToArray = (input: any): string[] => {
+    if (!input) return [];
+    if (Array.isArray(input)) return input;
+    if (typeof input === 'string') {
+      const trimmed = input.trim();
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          return JSON.parse(trimmed);
+        } catch {
+          return [];
+        }
+      }
+      if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+        const inner = trimmed.slice(1, -1);
+        if (!inner) return [];
+        return inner.split(',').map(item => {
+          const t = item.trim();
+          return t.startsWith('"') && t.endsWith('"') ? t.slice(1, -1) : t;
+        }).filter(Boolean);
+      }
+      return [trimmed];
+    }
+    return [];
+  };
+
   return (data as any[]).map(item => ({
     ...item,
-    post_images: typeof item.post_images === 'string'
-      ? item.post_images.split(',').map((s: string) => s.trim()).filter(Boolean)
-      : Array.isArray(item.post_images) ? item.post_images : [],
-    post_tags: typeof item.post_tags === 'string'
-      ? item.post_tags.split(',').map((s: string) => s.trim()).filter(Boolean)
-      : Array.isArray(item.post_tags) ? item.post_tags : [],
-    bow_types_allowed: typeof item.bow_types_allowed === 'string'
-      ? item.bow_types_allowed.split(',').map((s: string) => s.trim()).filter(Boolean)
-      : Array.isArray(item.bow_types_allowed) ? item.bow_types_allowed : [],
+    post_images: normalizeToArray(item.post_images),
+    post_tags: normalizeToArray(item.post_tags),
+    bow_types_allowed: normalizeToArray(item.bow_types_allowed),
     business_hours: typeof item.business_hours === 'string'
       ? (() => {
         try {
