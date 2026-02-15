@@ -21,6 +21,12 @@ interface FormData {
     hasFieldCourse: boolean
     equipmentRental: boolean
     lessonsAvailable: boolean
+    parkingAvailable: boolean
+    accessibility: boolean
+    facilityType: string
+    bowTypes: string[]
+    latitude: number
+    longitude: number
     post_images: string[]
 }
 
@@ -50,6 +56,12 @@ export default function SettingsPage() {
         hasFieldCourse: false,
         equipmentRental: false,
         lessonsAvailable: false,
+        parkingAvailable: false,
+        accessibility: false,
+        facilityType: '',
+        bowTypes: [],
+        latitude: 0,
+        longitude: 0,
         post_images: []
     })
     const [deleting, setDeleting] = useState(false)
@@ -116,12 +128,18 @@ export default function SettingsPage() {
                     phone: rangeData.phone_number || '',
                     email: rangeData.email || '',
                     website: rangeData.website || '',
-                    description: rangeData.post_content || '',
+                    description: rangeData.description || rangeData.post_content || '',
                     hasProShop: rangeData.has_pro_shop || false,
                     has3dCourse: rangeData.has_3d_course || false,
                     hasFieldCourse: rangeData.has_field_course || false,
                     equipmentRental: rangeData.equipment_rental_available || false,
                     lessonsAvailable: rangeData.lessons_available || false,
+                    parkingAvailable: rangeData.parking_available === true || rangeData.parking_available === 'true',
+                    accessibility: rangeData.accessibility === true || rangeData.accessibility === 'true' || rangeData.accessibility === 'wheelchair_accessible',
+                    facilityType: rangeData.facility_type || '',
+                    bowTypes: normalizeToArray(rangeData.bow_types_allowed).map(t => t.toLowerCase()),
+                    latitude: rangeData.latitude || 0,
+                    longitude: rangeData.longitude || 0,
                     post_images: normalizeToArray(rangeData.post_images),
                 })
                 setTier(getUserSubscriptionTier(rangeData))
@@ -143,7 +161,7 @@ export default function SettingsPage() {
         }
     }, [router, supabase, rangeId])
 
-    const updateField = (field: keyof FormData, value: string | boolean | string[]) => {
+    const updateField = (field: keyof FormData, value: string | boolean | string[] | number) => {
         setFormData(prev => ({ ...prev, [field]: value }))
         setSuccess('')
     }
@@ -162,12 +180,19 @@ export default function SettingsPage() {
                     phone_number: formData.phone,
                     email: formData.email,
                     website: formData.website,
-                    post_content: formData.description,
+                    description: formData.description,
+                    post_content: formData.description, // Keep them in sync for now
                     has_pro_shop: formData.hasProShop,
                     has_3d_course: formData.has3dCourse,
                     has_field_course: formData.hasFieldCourse,
                     equipment_rental_available: formData.equipmentRental,
                     lessons_available: formData.lessonsAvailable,
+                    parking_available: formData.parkingAvailable,
+                    accessibility: formData.accessibility,
+                    facility_type: formData.facilityType,
+                    bow_types_allowed: formData.bowTypes,
+                    latitude: formData.latitude,
+                    longitude: formData.longitude,
                     post_images: formData.post_images,
                 })
                 .eq('id', rangeId)
@@ -360,6 +385,85 @@ export default function SettingsPage() {
 
                         {/* Amenities */}
                         <div className="pt-6 border-t border-stone-200">
+                            <h2 className="text-lg font-semibold text-stone-800 mb-4">Facility Details</h2>
+
+                            <div className="space-y-6 mb-6">
+                                {/* Facility Type */}
+                                <div>
+                                    <label className="block text-sm font-medium text-stone-700 mb-2">
+                                        Facility Type
+                                    </label>
+                                    <select
+                                        value={formData.facilityType}
+                                        onChange={(e) => updateField('facilityType', e.target.value)}
+                                        className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                    >
+                                        <option value="">Select Type...</option>
+                                        <option value="indoor">Indoor</option>
+                                        <option value="outdoor">Outdoor</option>
+                                        <option value="both">Indoor & Outdoor</option>
+                                    </select>
+                                </div>
+
+                                {/* Bow Types */}
+                                <div>
+                                    <label className="block text-sm font-medium text-stone-700 mb-2">
+                                        Bow Types Allowed
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {['Recurve', 'Compound', 'Longbow', 'Crossbow', 'Traditional'].map(type => {
+                                            const lowerType = type.toLowerCase();
+                                            const isSelected = formData.bowTypes.includes(lowerType);
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={type}
+                                                    onClick={() => {
+                                                        const newTypes = isSelected
+                                                            ? formData.bowTypes.filter(t => t !== lowerType)
+                                                            : [...formData.bowTypes, lowerType];
+                                                        updateField('bowTypes', newTypes);
+                                                    }}
+                                                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${isSelected
+                                                        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                                        : 'bg-stone-50 text-stone-600 border border-stone-200 hover:border-stone-300'
+                                                        }`}
+                                                >
+                                                    {type}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h2 className="text-lg font-semibold text-stone-800 mb-4">Location Coordinates</h2>
+                            <p className="text-sm text-stone-500 mb-4">
+                                Update these values if the map pin is incorrect. get the coordinates from Google Maps (right click a location).
+                            </p>
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-stone-700 mb-1">Latitude</label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        value={formData.latitude}
+                                        onChange={(e) => updateField('latitude', parseFloat(e.target.value))}
+                                        className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-stone-700 mb-1">Longitude</label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        value={formData.longitude}
+                                        onChange={(e) => updateField('longitude', parseFloat(e.target.value))}
+                                        className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800"
+                                    />
+                                </div>
+                            </div>
+
                             <h2 className="text-lg font-semibold text-stone-800 mb-4">Amenities & Features</h2>
 
                             <div className="grid grid-cols-2 gap-3">
@@ -369,6 +473,8 @@ export default function SettingsPage() {
                                     { field: 'hasFieldCourse', label: 'Field Course' },
                                     { field: 'equipmentRental', label: 'Equipment Rental' },
                                     { field: 'lessonsAvailable', label: 'Lessons Available' },
+                                    { field: 'parkingAvailable', label: 'Parking Available' },
+                                    { field: 'accessibility', label: 'Wheelchair Accessible' },
                                 ].map(amenity => (
                                     <label
                                         key={amenity.field}
