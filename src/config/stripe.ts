@@ -3,13 +3,12 @@ export const STRIPE_CONFIG = {
     priceId: 'price_1SsxuqBndelh03vCfGSkseAR',
     productId: 'prod_TqfFZtryPP99t3',
     checkoutUrl: (listingId: string) =>
-      `https://buy.stripe.com/3cI5kC3UoeXx6eJ53v2oE00?client_reference_id=${listingId}`,
+      `https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02?client_reference_id=${listingId}`,
   },
   gold: {
-    priceId: 'PLACEHOLDER',
-    productId: 'PLACEHOLDER',
+    priceId: 'price_1T0uXWBndelh03vCm83TOM27',
     checkoutUrl: (listingId: string) =>
-      `https://buy.stripe.com/PLACEHOLDER?client_reference_id=${listingId}`,
+      `https://buy.stripe.com/14A8wO3Uo4iTbz353v2oE03?client_reference_id=${listingId}`,
   },
 } as const;
 

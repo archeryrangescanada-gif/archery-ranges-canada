@@ -30,14 +30,48 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  // Map Stripe plan IDs to database subscription tiers
-  // Bronze is the free claimed tier ($0), so we only map paid plans (Silver/Gold)
+  // Map Stripe price IDs to subscription tiers
+  const PRICE_TO_TIER: Record<string, string> = {
+    // Silver price IDs
+    [process.env.STRIPE_SILVER_PRICE_ID || '']: 'silver',
+    'price_1SsxuqBndelh03vCfGSkseAR': 'silver',
+    // Gold price IDs
+    [process.env.STRIPE_GOLD_PRICE_ID || '']: 'gold',
+    'price_1T0uXWBndelh03vCm83TOM27': 'gold',
+  }
+
+  // Map plan name strings to tiers (for metadata-based lookups)
   const PLAN_TO_TIER: Record<string, string> = {
     silver: 'silver',
     gold: 'gold',
-    // Fallback for previous IDs
     pro: 'silver',
     premium: 'gold',
+  }
+
+  // Helper: Determine tier from checkout session
+  async function getTierFromSession(session: Stripe.Checkout.Session): Promise<string> {
+    // 1. Check metadata first (custom checkout sessions)
+    if (session.metadata?.planId) {
+      return PLAN_TO_TIER[session.metadata.planId] || 'silver'
+    }
+
+    // 2. Retrieve line items to get the price ID (works for payment links)
+    try {
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 })
+      if (lineItems.data.length > 0) {
+        const priceId = lineItems.data[0].price?.id
+        if (priceId && PRICE_TO_TIER[priceId]) {
+          console.log(`Detected tier from price ID ${priceId}: ${PRICE_TO_TIER[priceId]}`)
+          return PRICE_TO_TIER[priceId]
+        }
+      }
+    } catch (err) {
+      console.error('Failed to retrieve line items:', err)
+    }
+
+    // 3. Default to silver
+    console.warn('Could not determine tier, defaulting to silver')
+    return 'silver'
   }
 
   try {
@@ -51,9 +85,7 @@ export async function POST(request: Request) {
           const rangeId = session.metadata?.rangeId || session.client_reference_id
 
           if (rangeId) {
-            // Default to 'silver' if no planId provided (since we're using a direct payment link for Silver)
-            const planId = session.metadata?.planId || 'silver'
-            const subscriptionTier = PLAN_TO_TIER[planId] || 'silver'
+            const subscriptionTier = await getTierFromSession(session)
 
             console.log(`Checkout completed: Upgrading range ${rangeId} to ${subscriptionTier}`)
 

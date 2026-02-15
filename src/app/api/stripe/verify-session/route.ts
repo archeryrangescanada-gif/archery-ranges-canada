@@ -39,16 +39,15 @@ export async function POST(request: Request) {
 
     // Map Stripe plan IDs to database subscription tiers
     const PLAN_TO_TIER: Record<string, string> = {
-      silver: 'basic',
-      gold: 'pro',
-      platinum: 'premium',
-      // Backwards compatibility
-      basic: 'basic',
-      pro: 'pro',
-      premium: 'premium',
+      silver: 'silver',
+      gold: 'gold',
+      // Backwards compatibility with old names
+      basic: 'silver',
+      pro: 'gold',
+      premium: 'gold',
     }
 
-    const subscriptionTier = PLAN_TO_TIER[planId] || 'basic'
+    const subscriptionTier = PLAN_TO_TIER[planId] || 'silver'
 
     // Update the range with subscription info
     const { error: updateError } = await supabaseAdmin
