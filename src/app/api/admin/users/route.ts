@@ -14,7 +14,23 @@ export async function GET(request: NextRequest) {
         // Create admin client for bypassing RLS
         const adminSupabase = getSupabaseAdmin();
 
-        // Fetch all users using admin client to bypass RLS
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+
+        if (id) {
+            const { data: user, error } = await adminSupabase
+                .from('profiles')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error) {
+                return NextResponse.json({ error: error.message }, { status: error.code === 'PGRST116' ? 404 : 500 });
+            }
+            return NextResponse.json({ user });
+        }
+
+        // Fetch all users
         const { data: users, error } = await adminSupabase
             .from('profiles')
             .select('*')

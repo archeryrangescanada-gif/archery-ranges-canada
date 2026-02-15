@@ -224,8 +224,20 @@ export default async function CityPage({ params }: PageProps) {
   const ranges = await getRangesInCity(city.id);
   const localInfo = cityLocalInfo[city.slug.toLowerCase()] || cityLocalInfo['default'];
 
-  const featuredRanges = ranges.filter((r) => r.subscription_tier === 'gold' || r.subscription_tier === 'silver');
-  const regularRanges = ranges.filter((r) => r.subscription_tier === 'bronze' || r.subscription_tier === 'free' || !r.subscription_tier);
+  // Sort ranges by tier preference (Gold > Silver > Bronze > Free)
+  ranges.sort((a, b) => {
+    const getTierWeight = (tier: string | undefined | null) => {
+      if (tier === 'gold') return 100
+      if (tier === 'silver') return 50
+      if (tier === 'bronze') return 20
+      return 0
+    }
+    return getTierWeight(b.subscription_tier) - getTierWeight(a.subscription_tier)
+  });
+
+  const featuredRanges = ranges.filter((r) => r.is_featured || r.subscription_tier === 'gold' || r.subscription_tier === 'silver');
+  // Regular ranges are those NOT in the featured list
+  const regularRanges = ranges.filter((r) => !featuredRanges.includes(r));
 
   const indoorCount = ranges.filter((r) => r.facility_type === 'indoor' || r.facility_type === 'both').length;
   const outdoorCount = ranges.filter((r) => r.facility_type === 'outdoor' || r.facility_type === 'both').length;

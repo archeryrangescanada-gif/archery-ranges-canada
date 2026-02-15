@@ -6,8 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { ArrowLeft, Save, Trash2, MapPin, Loader2 } from 'lucide-react'
 import { PhotoManager } from '@/components/dashboard/PhotoManager'
-import { SubscriptionTier, getUserSubscriptionTier } from '@/lib/subscription-utils'
+import { SubscriptionTier, getUserSubscriptionTier, getUpgradeLink } from '@/lib/subscription-utils'
 import { normalizeToArray } from '@/lib/utils/data-normalization'
+import { TIER_LIMITS } from '@/types/range'
 
 interface FormData {
     name: string
@@ -28,6 +29,7 @@ interface FormData {
     latitude: number
     longitude: number
     post_images: string[]
+    video_urls: string[]
 }
 
 export default function SettingsPage() {
@@ -62,7 +64,8 @@ export default function SettingsPage() {
         bowTypes: [],
         latitude: 0,
         longitude: 0,
-        post_images: []
+        post_images: [],
+        video_urls: []
     })
     const [deleting, setDeleting] = useState(false)
 
@@ -141,6 +144,7 @@ export default function SettingsPage() {
                     latitude: rangeData.latitude || 0,
                     longitude: rangeData.longitude || 0,
                     post_images: normalizeToArray(rangeData.post_images),
+                    video_urls: normalizeToArray(rangeData.video_urls),
                 })
                 setTier(getUserSubscriptionTier(rangeData))
                 setLoading(false)
@@ -194,6 +198,7 @@ export default function SettingsPage() {
                     latitude: formData.latitude,
                     longitude: formData.longitude,
                     post_images: formData.post_images,
+                    video_urls: formData.video_urls,
                 })
                 .eq('id', rangeId)
 
@@ -336,6 +341,20 @@ export default function SettingsPage() {
                                         rows={5}
                                         className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
                                     />
+                                    <div className="flex justify-end mt-1">
+                                        {(() => {
+                                            const wordCount = formData.description.trim().split(/\s+/).filter(Boolean).length;
+                                            const limit = TIER_LIMITS[tier].descriptionWordLimit;
+                                            const isOver = limit !== -1 && wordCount > limit;
+
+                                            return (
+                                                <div className={`text-xs ${isOver ? 'text-red-500 font-bold' : 'text-stone-400'}`}>
+                                                    {wordCount} / {limit === -1 ? 'Unlimited' : limit} words
+                                                    {isOver && <span className="ml-1">(Please shorten description)</span>}
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -502,6 +521,96 @@ export default function SettingsPage() {
                                     tier={tier}
                                     onPhotosChange={(newPhotos) => updateField('post_images', newPhotos)}
                                 />
+                            </div>
+
+                            {/* Video Management */}
+                            <div className="pt-6 border-t border-stone-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-lg font-semibold text-stone-800">Videos</h2>
+                                    {(() => {
+                                        const limit = TIER_LIMITS[tier].maxVideos;
+                                        if (limit === 0 && tier !== 'free') {
+                                            // Should not happen for paid tiers usually, but just in case
+                                            return null;
+                                        }
+                                        if (tier === 'bronze') {
+                                            return (
+                                                <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                                                    Upgrade to Silver to add videos
+                                                </a>
+                                            )
+                                        }
+                                        if (tier === 'silver') {
+                                            return (
+                                                <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                                                    Upgrade to Gold for unlimited videos
+                                                </a>
+                                            )
+                                        }
+                                        return null;
+                                    })()}
+                                </div>
+
+                                {TIER_LIMITS[tier].maxVideos === 0 ? (
+                                    <div className="bg-stone-50 border border-stone-200 rounded-lg p-6 text-center">
+                                        <p className="text-stone-500 text-sm mb-3">Video embedding is available on Silver and Gold plans.</p>
+                                        <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                                            Upgrade to Add Videos
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {formData.video_urls.map((url, index) => (
+                                            <div key={index} className="flex gap-2">
+                                                <input
+                                                    type="url"
+                                                    value={url}
+                                                    onChange={(e) => {
+                                                        const newUrls = [...formData.video_urls];
+                                                        newUrls[index] = e.target.value;
+                                                        updateField('video_urls', newUrls);
+                                                    }}
+                                                    placeholder="https://www.youtube.com/watch?v=..."
+                                                    className="flex-1 px-4 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const newUrls = formData.video_urls.filter((_, i) => i !== index);
+                                                        updateField('video_urls', newUrls);
+                                                    }}
+                                                    className="p-2 text-stone-400 hover:text-red-500 transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        {(() => {
+                                            const limit = TIER_LIMITS[tier].maxVideos;
+                                            const canAdd = limit === -1 || formData.video_urls.length < limit;
+
+                                            if (canAdd) {
+                                                return (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => updateField('video_urls', [...formData.video_urls, ''])}
+                                                        className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                                                    >
+                                                        + Add Video URL
+                                                    </button>
+                                                );
+                                            } else {
+                                                return (
+                                                    <p className="text-xs text-stone-400">
+                                                        Video limit reached ({limit}/{limit}).
+                                                        {tier === 'silver' && ' Upgrade to Gold for unlimited videos.'}
+                                                    </p>
+                                                );
+                                            }
+                                        })()}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

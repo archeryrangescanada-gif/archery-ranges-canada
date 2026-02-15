@@ -3,7 +3,15 @@
  * Handles tier detection and permission checks for FREE vs BASIC tiers
  */
 
-export type SubscriptionTier = 'free' | 'bronze' | 'silver' | 'gold'
+import { SubscriptionTier } from '@/types/range';
+
+export { type SubscriptionTier };
+
+// Stripe Payment Links
+const STRIPE_LINKS = {
+    silver: 'https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02',
+    gold: 'https://buy.stripe.com/14A8wO3Uo4iTbz353v2oE03'
+};
 
 /**
  * Get the subscription tier from a range object
@@ -40,18 +48,17 @@ export function canAccessAnalytics(tier: SubscriptionTier): boolean {
 /**
  * Get the photo upload limit based on subscription tier
  * @param tier - The subscription tier
- * @returns Number of photos allowed
+ * @returns Number of photos allowed (-1 for unlimited)
  */
 export function getPhotoLimit(tier: SubscriptionTier): number {
     switch (tier) {
         case 'free':
-            return 1
         case 'bronze':
             return 1
         case 'silver':
             return 5
         case 'gold':
-            return 100 // High enough to be effectively unlimited for most users
+            return -1 // Unlimited
         default:
             return 1
     }
@@ -79,7 +86,25 @@ export function getUpgradeMessage(tier: SubscriptionTier): string {
             return 'Upgrade to Silver for advanced analytics and more photos'
         case 'silver':
             return 'Upgrade to Gold for maximum visibility and unlimited photos'
+        case 'gold':
+            return 'You are on the highest tier'
         default:
             return 'Upgrade your plan'
     }
+}
+
+/**
+ * Get the appropriate upgrade link based on current tier
+ * @param currentTier - The user's current subscription tier
+ * @param rangeId - The range ID for client reference
+ * @returns URL string for the upgrade page
+ */
+export function getUpgradeLink(currentTier: SubscriptionTier, rangeId?: string): string {
+    const baseUrl = currentTier === 'silver' ? STRIPE_LINKS.gold : STRIPE_LINKS.silver;
+
+    if (rangeId) {
+        return `${baseUrl}?client_reference_id=${rangeId}`;
+    }
+
+    return baseUrl;
 }

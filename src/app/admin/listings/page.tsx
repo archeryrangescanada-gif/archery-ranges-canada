@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import { Search, Filter, Plus, Edit, Trash2, Eye, Star, Upload, FileUp, BarChart3 } from 'lucide-react'
+import { Search, Filter, Plus, Edit, Trash2, Eye, Star, Upload, FileUp, BarChart3, UserCheck, UserX, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import Papa from 'papaparse'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,8 @@ interface Listing {
   city_id?: string | null
   province_id?: string | null
   status: 'active' | 'pending' | 'inactive' | 'rejected'
+  subscription_tier: 'free' | 'bronze' | 'silver' | 'gold'
+  owner_id?: string | null
   is_premium: boolean
   is_featured: boolean
   views_count: number
@@ -110,6 +112,9 @@ export default function ListingsPage() {
           id,
           name,
           is_featured,
+          is_premium,
+          subscription_tier,
+          owner_id,
           created_at,
           city_id,
           province_id,
@@ -147,9 +152,11 @@ export default function ListingsPage() {
           city_id: item.city_id,
           province_id: item.province_id,
           status: item.status || 'active',
+          subscription_tier: item.subscription_tier || 'free',
+          owner_id: item.owner_id,
           is_premium: item.is_premium || false,
           is_featured: item.is_featured || false,
-          claimed: item.is_claimed || false,
+          claimed: !!item.owner_id, // If owner_id exists, it's claimed
           views_count: item.views_count ?? 0,
           created_at: item.created_at
         }
@@ -525,10 +532,143 @@ export default function ListingsPage() {
     return <div className="p-8 text-center text-gray-500">Loading data from database...</div>
   }
 
+  // Quick Edit Modal Logic
+  const [selectedListing, setSelectedListing] = useState<Listing | null>(null)
+  const [ownerDetails, setOwnerDetails] = useState<any>(null)
+  const [loadingOwner, setLoadingOwner] = useState(false)
 
+  const openQuickEdit = async (listing: Listing) => {
+    setSelectedListing(listing)
+    setOwnerDetails(null)
+
+    if (listing.owner_id) {
+      setLoadingOwner(true)
+      try {
+        const res = await fetch(`/api/admin/users?id=${listing.owner_id}`)
+        const data = await res.json()
+        if (res.ok && data.user) {
+          setOwnerDetails(data.user)
+        }
+      } catch (error) {
+        console.error('Failed to load owner:', error)
+      } finally {
+        setLoadingOwner(false)
+      }
+    }
+  }
+
+  const handleTierChange = async (listingId: string, newTier: 'free' | 'bronze' | 'silver' | 'gold') => {
+    if (!confirm(`Change tier to ${newTier.toUpperCase()}?`)) return
+
+    // Logic to sync is_premium if tier is not free?
+    // Or just update both.
+    const isPremium = newTier !== 'free'
+
+    try {
+      const res = await fetch(`/api/admin/listings/${listingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscription_tier: newTier,
+          is_premium: isPremium
+        })
+      })
+
+      if (!res.ok) throw new Error('Failed to update tier')
+
+      setListings(listings.map(l => l.id === listingId ? { ...l, subscription_tier: newTier, is_premium: isPremium } : l))
+
+      if (selectedListing?.id === listingId) {
+        setSelectedListing({ ...selectedListing, subscription_tier: newTier, is_premium: isPremium })
+      }
+
+    } catch (error: any) {
+      alert(error.message)
+    }
+  }
 
   return (
     <div>
+      {/* Quick Edit Modal */}
+      {selectedListing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 relative">
+            <button
+              onClick={() => setSelectedListing(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-2xl font-bold mb-1">{selectedListing.name}</h2>
+            <p className="text-gray-500 text-sm mb-6">{selectedListing.city}, {selectedListing.province}</p>
+
+            {/* Claim Status Section */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-widest mb-3">Claim Status</h3>
+              {selectedListing.claimed ? (
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-green-100 rounded-full text-green-600">
+                    <UserCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-green-800">Claimed Listing</p>
+                    {loadingOwner ? (
+                      <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Loading owner details...
+                      </div>
+                    ) : ownerDetails ? (
+                      <div className="mt-1 text-sm text-gray-600 space-y-1">
+                        <p><span className="font-medium">Name:</span> {ownerDetails.full_name || 'N/A'}</p>
+                        <p><span className="font-medium">Email:</span> {ownerDetails.email}</p>
+                        <p><span className="font-medium">Role:</span> {ownerDetails.role}</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-red-500 mt-1">Could not load owner details.</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-200 rounded-full text-gray-500">
+                    <UserX className="w-5 h-5" />
+                  </div>
+                  <p className="font-medium text-gray-600">Unclaimed Listing</p>
+                </div>
+              )}
+            </div>
+
+            {/* Tier Edit Section */}
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-widest mb-3">Subscription Tier</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {['free', 'bronze', 'silver', 'gold'].map((tier) => (
+                  <button
+                    key={tier}
+                    onClick={() => handleTierChange(selectedListing.id, tier as any)}
+                    className={`px-4 py-3 rounded-lg border-2 text-sm font-bold capitalize transition-all ${selectedListing.subscription_tier === tier
+                        ? 'border-green-500 bg-green-50 text-green-700 shadow-sm'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-600 bg-white'
+                      }`}
+                  >
+                    {tier}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-gray-100">
+              <Link
+                href={`/admin/listings/${selectedListing.id}/edit`}
+                className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-2"
+              >
+                <Edit className="w-4 h-4" /> Full Edit Page
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Listings Management</h1>
@@ -663,12 +803,18 @@ export default function ListingsPage() {
                 <tr key={listing.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
+                      <div
+                        className="cursor-pointer hover:opacity-75"
+                        onClick={() => openQuickEdit(listing)}
+                      >
+                        <div className="text-sm font-medium text-gray-900 group-hover:text-green-600 transition-colors">
                           {listing.name}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {listing.claimed ? '✓ Claimed' : 'Unclaimed'}
+                        <div className="text-sm text-gray-500 flex items-center gap-2">
+                          <span className={`inline-block w-2 h-2 rounded-full ${listing.claimed ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                          {listing.claimed ? 'Claimed' : 'Unclaimed'}
+                          <span className="text-gray-300">|</span>
+                          <span className="capitalize">{listing.subscription_tier}</span>
                         </div>
                       </div>
                     </div>

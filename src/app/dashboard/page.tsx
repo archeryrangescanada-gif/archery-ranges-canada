@@ -19,7 +19,7 @@ import {
     Lock,
     Loader2
 } from 'lucide-react'
-import { canAccessAnalytics, getUserSubscriptionTier } from '@/lib/subscription-utils'
+import { canAccessAnalytics, getUserSubscriptionTier, getUpgradeLink, getUpgradeMessage } from '@/lib/subscription-utils'
 // Custom interface for dashboard (some fields use different names)
 interface Range {
     id: string
@@ -322,7 +322,7 @@ export default function DashboardPage() {
                                                     </div>
                                                 </div>
                                                 <a
-                                                    href={`https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02?client_reference_id=${range.id}`}
+                                                    href={getUpgradeLink(getUserSubscriptionTier(range), range.id)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded shadow-sm transition-colors whitespace-nowrap"
@@ -350,11 +350,13 @@ export default function DashboardPage() {
                     <div className="mt-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-6 text-white">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-semibold mb-1">Upgrade Your Listing</h3>
+                                <h3 className="text-lg font-semibold mb-1">
+                                    {getUpgradeMessage(getUserSubscriptionTier(ranges.find(r => !r.subscription_tier || r.subscription_tier === 'free')!))}
+                                </h3>
                                 <p className="text-emerald-100">Get more visibility, add photos, and attract more customers</p>
                             </div>
                             <a
-                                href={`https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02?client_reference_id=${ranges.find(r => !r.subscription_tier || r.subscription_tier === 'free')?.id}`}
+                                href={getUpgradeLink(getUserSubscriptionTier(ranges.find(r => !r.subscription_tier || r.subscription_tier === 'free')!), ranges.find(r => !r.subscription_tier || r.subscription_tier === 'free')?.id)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="px-6 py-3 bg-white text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50 transition-colors"

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Upload, X, Loader2, Image as ImageIcon, Plus } from 'lucide-react'
-import { SubscriptionTier, getPhotoLimit } from '@/lib/subscription-utils'
+import { SubscriptionTier, getPhotoLimit, getUpgradeLink } from '@/lib/subscription-utils'
 import Link from 'next/link'
 
 interface PhotoManagerProps {
@@ -18,7 +18,7 @@ export function PhotoManager({ rangeId, currentPhotos, tier, onPhotosChange }: P
     const [uploading, setUploading] = useState(false)
     const [error, setError] = useState('')
     const photoLimit = getPhotoLimit(tier)
-    const canUpload = currentPhotos.length < photoLimit
+    const canUpload = photoLimit === -1 || currentPhotos.length < photoLimit
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -76,14 +76,14 @@ export function PhotoManager({ rangeId, currentPhotos, tier, onPhotosChange }: P
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-stone-700">Photos ({currentPhotos.length}/{photoLimit})</h3>
+                <h3 className="text-sm font-medium text-stone-700">Photos ({currentPhotos.length}/{photoLimit === -1 ? 'Unlimited' : photoLimit})</h3>
                 {tier === 'bronze' && (
-                    <a href={`https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02?client_reference_id=${rangeId}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                    <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
                         Upgrade for more photos
                     </a>
                 )}
                 {tier === 'silver' && (
-                    <a href={`https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02?client_reference_id=${rangeId}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                    <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
                         Upgrade for unlimited photos
                     </a>
                 )}

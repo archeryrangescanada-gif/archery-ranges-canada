@@ -30,6 +30,7 @@ interface Range {
   distance?: number
   phone_number?: string | null
   website?: string | null
+  subscription_tier?: string | null
 }
 
 interface SearchResult {
@@ -202,7 +203,7 @@ export default function Home() {
 
       const { data: rangesData } = await supabaseClient
         .from('ranges')
-        .select('id, name, slug, facility_type, price_range, photos, description, is_premium, is_featured, latitude, longitude, city:cities(*, province:provinces(*))')
+        .select('id, name, slug, facility_type, price_range, photos, description, is_premium, is_featured, latitude, longitude, subscription_tier, city:cities(*, province:provinces(*))')
         .order('name')
 
       if (provincesData) setProvinces(provincesData as Province[])
@@ -232,13 +233,26 @@ export default function Home() {
 
   useEffect(() => {
     // Filter and sort for the featured section
-    const featuredCandidateList = ranges.filter(r => r.is_premium || r.is_featured);
+    // Explicitly prioritize Gold > Silver > Featured > Others
+    const featuredCandidateList = ranges.filter(r =>
+      (r as any).subscription_tier === 'gold' ||
+      (r as any).subscription_tier === 'silver' ||
+      r.is_premium ||
+      r.is_featured
+    );
 
-    // Sort: Featured first, then Premium
-    featuredCandidateList.sort((a, b) => {
-      if (a.is_featured && !b.is_featured) return -1;
-      if (!a.is_featured && b.is_featured) return 1;
+    // Custom sort function for tiers
+    const getTierWeight = (r: any) => {
+      if (r.subscription_tier === 'gold') return 100;
+      if (r.subscription_tier === 'silver') return 50;
+      if (r.is_premium) return 25;
+      if (r.is_featured) return 10;
       return 0;
+    }
+
+    // Sort: Tier weight DESC
+    featuredCandidateList.sort((a, b) => {
+      return getTierWeight(b) - getTierWeight(a);
     });
 
     setFeaturedRanges(featuredCandidateList.slice(0, 6));
@@ -528,9 +542,19 @@ export default function Home() {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute top-4 right-4">
-                      <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                        ⭐ PREMIUM
-                      </span>
+                      {range.subscription_tier === 'gold' ? (
+                        <span className="bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 text-stone-900 text-xs font-bold px-3 py-1 rounded-full shadow-md border border-yellow-200">
+                          🏆 GOLD
+                        </span>
+                      ) : range.subscription_tier === 'silver' ? (
+                        <span className="bg-gradient-to-r from-stone-300 to-stone-400 text-stone-800 text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                          🥈 SILVER
+                        </span>
+                      ) : (
+                        <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                          ⭐ FEATURED
+                        </span>
+                      )}
                     </div>
                     <div className="absolute bottom-4 left-4 flex gap-2">
                       <span className="bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold px-3 py-1 rounded-full">

@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { ArrowLeft, Eye, TrendingUp, MousePointer, Calendar, BarChart3, Phone, Mail, Globe, Navigation, MapPin, MessageSquare, Lock, Star } from 'lucide-react'
-import { SubscriptionTier, getUserSubscriptionTier, canAccessAnalytics } from '@/lib/subscription-utils'
+import { SubscriptionTier, getUserSubscriptionTier, canAccessAnalytics, getUpgradeLink } from '@/lib/subscription-utils'
 
 interface Range {
     id: string
@@ -334,7 +334,7 @@ export default function AnalyticsPage() {
                                 <>
                                     <div className="bg-white rounded-xl p-6 border border-stone-200 opacity-50 relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-stone-50/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Link href="/pricing#silver" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Silver</Link>
+                                            <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Silver</a>
                                         </div>
                                         <div className="flex items-center gap-3 mb-2">
                                             <MousePointer className="w-5 h-5 text-stone-300" />
@@ -344,7 +344,7 @@ export default function AnalyticsPage() {
                                     </div>
                                     <div className="bg-white rounded-xl p-6 border border-stone-200 opacity-50 relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-stone-50/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Link href="/pricing#silver" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Silver</Link>
+                                            <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">Upgrade to Silver</a>
                                         </div>
                                         <div className="flex items-center gap-3 mb-2">
                                             <Calendar className="w-5 h-5 text-stone-300" />
@@ -563,12 +563,14 @@ export default function AnalyticsPage() {
                                                 : 'Upgrade to Silver to track clicks, inquiries, activity history, and respond to your customers\' reviews.'}
                                         </p>
                                     </div>
-                                    <Link
-                                        href={tier === 'silver' ? "/pricing#gold" : "/pricing#silver"}
+                                    <a
+                                        href={getUpgradeLink(tier, rangeId)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors shadow-sm"
                                     >
                                         Upgrade Now
-                                    </Link>
+                                    </a>
                                 </div>
                             </div>
                         ) : null}

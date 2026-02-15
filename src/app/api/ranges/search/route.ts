@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
         address,
         facility_type,
         owner_id,
+        subscription_tier,
         cities(name),
         provinces(name)
       `)
@@ -60,6 +61,7 @@ export async function GET(request: NextRequest) {
       address: r.address,
       facility_type: r.facility_type,
       owner_id: r.owner_id,
+      subscription_tier: r.subscription_tier,
       cities: r.cities ? { name: r.cities.name } : null,
       provinces: r.provinces ? { name: r.provinces.name } : null
     }))
