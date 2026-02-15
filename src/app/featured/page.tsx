@@ -7,25 +7,7 @@ import { useState, useEffect } from 'react'
 import { supabaseClient } from '@/lib/auth'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-// Custom interface for featured page
-interface Range {
-  id: string
-  name: string
-  slug: string
-  city_id?: string | null
-  facility_type?: string | null
-  amenities?: string[]
-  price_range?: string
-  is_premium?: boolean
-  is_featured?: boolean
-  photos?: string[]
-  description?: string | null
-  phone_number?: string | null
-  website?: string | null
-  latitude?: number | null
-  longitude?: number | null
-  city?: { name: string; slug: string; province?: { name: string; slug: string } } | null
-}
+import { Range } from '@/types/range'
 
 export default function FeaturedPage() {
   const [ranges, setRanges] = useState<Range[]>([])
@@ -74,9 +56,8 @@ export default function FeaturedPage() {
 
         const normalized = (data as any[]).map(item => ({
           ...item,
-          photos: normalizeToArray(item.photos),
           post_images: normalizeToArray(item.post_images),
-          amenities: normalizeToArray(item.amenities)
+          post_tags: normalizeToArray(item.post_tags)
         }))
         setRanges(normalized as Range[])
       }
@@ -143,97 +124,85 @@ export default function FeaturedPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {ranges.map((range, index) => (
-                <Link
-                  key={range.id}
-                  href={'/' + range.city?.province?.slug + '/' + range.city?.slug + '/' + range.slug}
-                  className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-green-500"
-                >
-                  <div className="relative h-48 bg-gradient-to-br from-green-400 to-green-600 overflow-hidden">
-                    <img
-                      src={range.photos && range.photos.length > 0
-                        ? range.photos[0]
-                        : fallbackImages[index % fallbackImages.length]
-                      }
-                      alt={range.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      onError={(e) => {
-                        e.currentTarget.src = fallbackImages[index % fallbackImages.length]
-                      }}
-                    />
-                    <div className="absolute top-4 right-4 flex flex-col gap-2">
-                      {range.is_featured && (
-                        <span className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full text-center">
-                          ⭐ FEATURED
-                        </span>
-                      )}
-                      {range.is_premium && (
-                        <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full text-center">
-                          💎 PREMIUM
-                        </span>
-                      )}
-                    </div>
-                    <div className="absolute bottom-4 left-4">
-                      <span className="bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
-                        {range.facility_type || 'Indoor/Outdoor'}
-                      </span>
-                    </div>
-                  </div>
+              {ranges.map((range, index) => {
+                // Safely access city/province from joined data
+                const city = (range as any).city;
+                const province = city?.province;
 
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors">
-                      {range.name}
-                    </h3>
-                    <p className="text-gray-600 flex items-center mb-4">
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      {range.city?.name}, {range.city?.province?.name}
-                    </p>
-
-                    {range.description && (
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                        {range.description}
-                      </p>
-                    )}
-
-                    {range.amenities && range.amenities.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {range.amenities.slice(0, 3).map((amenity, idx) => (
-                          <span
-                            key={idx}
-                            className="bg-green-50 text-green-700 text-xs px-2 py-1 rounded-full"
-                          >
-                            {amenity}
+                return (
+                  <Link
+                    key={range.id}
+                    href={`/${province?.slug || 'province'}/${city?.slug || 'city'}/${range.slug}`}
+                    className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-green-500"
+                  >
+                    <div className="relative h-48 bg-gradient-to-br from-green-400 to-green-600 overflow-hidden">
+                      <img
+                        src={range.post_images && range.post_images.length > 0
+                          ? range.post_images[0]
+                          : fallbackImages[index % fallbackImages.length]
+                        }
+                        alt={range.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        onError={(e) => {
+                          e.currentTarget.src = fallbackImages[index % fallbackImages.length]
+                        }}
+                      />
+                      <div className="absolute top-4 right-4 flex flex-col gap-2">
+                        {range.is_featured && (
+                          <span className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full text-center">
+                            ⭐ FEATURED
                           </span>
-                        ))}
-                        {range.amenities.length > 3 && (
-                          <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
-                            +{range.amenities.length - 3} more
+                        )}
+                        {(range as any).is_premium && (
+                          <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full text-center">
+                            💎 PREMIUM
                           </span>
                         )}
                       </div>
-                    )}
-
-                    <div className="flex gap-2 pt-4 border-t border-gray-100">
-                      <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
-                        View Details
-                      </button>
-                      {range.phone_number && (
-                        <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
-                          📞
-                        </button>
-                      )}
-                      {range.website && (
-                        <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
-                          🌐
-                        </button>
-                      )}
+                      <div className="absolute bottom-4 left-4">
+                        <span className="bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+                          {range.facility_type || 'Indoor/Outdoor'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+
+                    <div className="p-6">
+                      <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors">
+                        {range.name}
+                      </h3>
+                      <p className="text-gray-600 flex items-center mb-4">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {city?.name}, {province?.name}
+                      </p>
+
+                      {range.description && (
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                          {range.description}
+                        </p>
+                      )}
+
+                      <div className="flex gap-2 pt-4 border-t border-gray-100">
+                        <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
+                          View Details
+                        </button>
+                        {range.phone_number && (
+                          <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                            📞
+                          </button>
+                        )}
+                        {range.website && (
+                          <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                            🌐
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
             </div>
           </>
         )}
