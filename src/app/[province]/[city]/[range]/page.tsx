@@ -271,8 +271,8 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   action={<FavoriteButton listingId={range.id} initialIsFavorited={isFavorited} />}
                 />
 
-                {/* Social Links */}
-                {(range.facebook_url || range.instagram_url || range.youtube_url || range.twitter_url) && (
+                {/* Social Links (Silver+) */}
+                {tierLimits.hasSocialLinks && (range.facebook_url || range.instagram_url || range.youtube_url || range.twitter_url) && (
                   <SocialLinks
                     facebook={range.facebook_url}
                     instagram={range.instagram_url}

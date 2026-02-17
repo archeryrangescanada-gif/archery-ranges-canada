@@ -8,7 +8,13 @@ import { ArrowLeft, Save, Trash2, MapPin, Loader2 } from 'lucide-react'
 import { PhotoManager } from '@/components/dashboard/PhotoManager'
 import { SubscriptionTier, getUserSubscriptionTier, getUpgradeLink } from '@/lib/subscription-utils'
 import { normalizeToArray } from '@/lib/utils/data-normalization'
-import { TIER_LIMITS } from '@/types/range'
+import { TIER_LIMITS, BusinessHours, DayOfWeek } from '@/types/range'
+
+const DAYS_ORDER: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+const DAY_LABELS: Record<DayOfWeek, string> = {
+    monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday', thursday: 'Thursday',
+    friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday',
+}
 
 interface FormData {
     name: string
@@ -17,6 +23,10 @@ interface FormData {
     email: string
     website: string
     description: string
+    facebookUrl: string
+    instagramUrl: string
+    youtubeUrl: string
+    twitterUrl: string
     hasProShop: boolean
     has3dCourse: boolean
     hasFieldCourse: boolean
@@ -26,6 +36,14 @@ interface FormData {
     accessibility: boolean
     facilityType: string
     bowTypes: string[]
+    rangeLengthYards: string
+    numberOfLanes: string
+    maxDrawWeight: string
+    membershipRequired: boolean
+    membershipPrice: string
+    dropInPrice: string
+    lessonPriceRange: string
+    businessHours: BusinessHours
     latitude: number
     longitude: number
     post_images: string[]
@@ -53,6 +71,10 @@ export default function SettingsPage() {
         email: '',
         website: '',
         description: '',
+        facebookUrl: '',
+        instagramUrl: '',
+        youtubeUrl: '',
+        twitterUrl: '',
         hasProShop: false,
         has3dCourse: false,
         hasFieldCourse: false,
@@ -62,6 +84,14 @@ export default function SettingsPage() {
         accessibility: false,
         facilityType: '',
         bowTypes: [],
+        rangeLengthYards: '',
+        numberOfLanes: '',
+        maxDrawWeight: '',
+        membershipRequired: false,
+        membershipPrice: '',
+        dropInPrice: '',
+        lessonPriceRange: '',
+        businessHours: {},
         latitude: 0,
         longitude: 0,
         post_images: [],
@@ -132,6 +162,10 @@ export default function SettingsPage() {
                     email: rangeData.email || '',
                     website: rangeData.website || '',
                     description: rangeData.description || rangeData.post_content || '',
+                    facebookUrl: rangeData.facebook_url || '',
+                    instagramUrl: rangeData.instagram_url || '',
+                    youtubeUrl: rangeData.youtube_url || '',
+                    twitterUrl: rangeData.twitter_url || '',
                     hasProShop: rangeData.has_pro_shop || false,
                     has3dCourse: rangeData.has_3d_course || false,
                     hasFieldCourse: rangeData.has_field_course || false,
@@ -141,6 +175,20 @@ export default function SettingsPage() {
                     accessibility: rangeData.accessibility === true || rangeData.accessibility === 'true' || rangeData.accessibility === 'wheelchair_accessible',
                     facilityType: rangeData.facility_type || '',
                     bowTypes: normalizeToArray(rangeData.bow_types_allowed).map(t => t.toLowerCase()),
+                    rangeLengthYards: rangeData.range_length_yards != null ? String(rangeData.range_length_yards) : '',
+                    numberOfLanes: rangeData.number_of_lanes != null ? String(rangeData.number_of_lanes) : '',
+                    maxDrawWeight: rangeData.max_draw_weight != null ? String(rangeData.max_draw_weight) : '',
+                    membershipRequired: rangeData.membership_required || false,
+                    membershipPrice: rangeData.membership_price_adult != null ? String(rangeData.membership_price_adult) : '',
+                    dropInPrice: rangeData.drop_in_price != null ? String(rangeData.drop_in_price) : '',
+                    lessonPriceRange: rangeData.lesson_price_range || '',
+                    businessHours: (() => {
+                        if (!rangeData.business_hours) return {};
+                        if (typeof rangeData.business_hours === 'string') {
+                            try { return JSON.parse(rangeData.business_hours); } catch { return {}; }
+                        }
+                        return rangeData.business_hours;
+                    })(),
                     latitude: rangeData.latitude || 0,
                     longitude: rangeData.longitude || 0,
                     post_images: normalizeToArray(rangeData.post_images),
@@ -165,7 +213,7 @@ export default function SettingsPage() {
         }
     }, [router, supabase, rangeId])
 
-    const updateField = (field: keyof FormData, value: string | boolean | string[] | number) => {
+    const updateField = (field: keyof FormData, value: string | boolean | string[] | number | BusinessHours) => {
         setFormData(prev => ({ ...prev, [field]: value }))
         setSuccess('')
     }
@@ -185,7 +233,13 @@ export default function SettingsPage() {
                     email: formData.email,
                     website: formData.website,
                     description: formData.description,
-                    post_content: formData.description, // Keep them in sync for now
+                    post_content: formData.description,
+                    ...(TIER_LIMITS[tier].hasSocialLinks ? {
+                        facebook_url: formData.facebookUrl || null,
+                        instagram_url: formData.instagramUrl || null,
+                        youtube_url: formData.youtubeUrl || null,
+                        twitter_url: formData.twitterUrl || null,
+                    } : {}),
                     has_pro_shop: formData.hasProShop,
                     has_3d_course: formData.has3dCourse,
                     has_field_course: formData.hasFieldCourse,
@@ -195,6 +249,14 @@ export default function SettingsPage() {
                     accessibility: formData.accessibility,
                     facility_type: formData.facilityType,
                     bow_types_allowed: formData.bowTypes,
+                    range_length_yards: formData.rangeLengthYards ? Number(formData.rangeLengthYards) : null,
+                    number_of_lanes: formData.numberOfLanes ? Number(formData.numberOfLanes) : null,
+                    max_draw_weight: formData.maxDrawWeight ? Number(formData.maxDrawWeight) : null,
+                    membership_required: formData.membershipRequired,
+                    membership_price_adult: formData.membershipPrice ? Number(formData.membershipPrice) : null,
+                    drop_in_price: formData.dropInPrice ? Number(formData.dropInPrice) : null,
+                    lesson_price_range: formData.lessonPriceRange || null,
+                    business_hours: Object.keys(formData.businessHours).length > 0 ? formData.businessHours : null,
                     latitude: formData.latitude,
                     longitude: formData.longitude,
                     post_images: formData.post_images,
@@ -402,6 +464,69 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
+                        {/* Social Media */}
+                        <div className="pt-6 border-t border-stone-200">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-semibold text-stone-800">Social Media Links</h2>
+                                {!TIER_LIMITS[tier].hasSocialLinks && (
+                                    <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                                        Upgrade to Silver to add social links
+                                    </a>
+                                )}
+                            </div>
+                            {TIER_LIMITS[tier].hasSocialLinks ? (
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-stone-700 mb-1">Facebook</label>
+                                        <input
+                                            type="url"
+                                            value={formData.facebookUrl}
+                                            onChange={(e) => updateField('facebookUrl', e.target.value)}
+                                            placeholder="https://facebook.com/yourpage"
+                                            className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-stone-700 mb-1">Instagram</label>
+                                        <input
+                                            type="url"
+                                            value={formData.instagramUrl}
+                                            onChange={(e) => updateField('instagramUrl', e.target.value)}
+                                            placeholder="https://instagram.com/yourpage"
+                                            className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-stone-700 mb-1">YouTube</label>
+                                        <input
+                                            type="url"
+                                            value={formData.youtubeUrl}
+                                            onChange={(e) => updateField('youtubeUrl', e.target.value)}
+                                            placeholder="https://youtube.com/@yourchannel"
+                                            className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-stone-700 mb-1">X (Twitter)</label>
+                                        <input
+                                            type="url"
+                                            value={formData.twitterUrl}
+                                            onChange={(e) => updateField('twitterUrl', e.target.value)}
+                                            placeholder="https://x.com/yourhandle"
+                                            className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-stone-50 border border-stone-200 rounded-lg p-6 text-center">
+                                    <p className="text-stone-500 text-sm mb-3">Social media links are available on Silver and Gold plans.</p>
+                                    <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                                        Upgrade to Add Social Links
+                                    </a>
+                                </div>
+                            )}
+                        </div>
+
                         {/* Amenities */}
                         <div className="pt-6 border-t border-stone-200">
                             <h2 className="text-lg font-semibold text-stone-800 mb-4">Facility Details</h2>
@@ -452,6 +577,49 @@ export default function SettingsPage() {
                                                 </button>
                                             );
                                         })}
+                                    </div>
+                                </div>
+
+                                {/* Range Specifications */}
+                                <div className="grid md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-stone-700 mb-1">
+                                            Range Length (yards)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={formData.rangeLengthYards}
+                                            onChange={(e) => updateField('rangeLengthYards', e.target.value)}
+                                            placeholder="e.g. 20"
+                                            className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-stone-700 mb-1">
+                                            Number of Lanes
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={formData.numberOfLanes}
+                                            onChange={(e) => updateField('numberOfLanes', e.target.value)}
+                                            placeholder="e.g. 12"
+                                            className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-stone-700 mb-1">
+                                            Max Draw Weight (lbs)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={formData.maxDrawWeight}
+                                            onChange={(e) => updateField('maxDrawWeight', e.target.value)}
+                                            placeholder="e.g. 60"
+                                            className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -512,6 +680,122 @@ export default function SettingsPage() {
                                     </label>
                                 ))}
                             </div>
+                            {/* Pricing */}
+                            <div className="pt-6 border-t border-stone-200">
+                                <h2 className="text-lg font-semibold text-stone-800 mb-4">Pricing</h2>
+
+                                <div className="space-y-4">
+                                    <label
+                                        className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${formData.membershipRequired
+                                            ? 'border-emerald-500 bg-emerald-50'
+                                            : 'border-stone-200 hover:border-stone-300'
+                                            }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.membershipRequired}
+                                            onChange={(e) => updateField('membershipRequired', e.target.checked)}
+                                            className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
+                                        />
+                                        <span className="font-medium text-stone-700">Membership Required</span>
+                                    </label>
+
+                                    <div className="grid md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-stone-700 mb-1">
+                                                Drop-In Price (CAD)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={formData.dropInPrice}
+                                                onChange={(e) => updateField('dropInPrice', e.target.value)}
+                                                placeholder="e.g. 15"
+                                                className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-stone-700 mb-1">
+                                                Adult Membership Price (CAD)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={formData.membershipPrice}
+                                                onChange={(e) => updateField('membershipPrice', e.target.value)}
+                                                placeholder="e.g. 200"
+                                                className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-stone-700 mb-1">
+                                                Lesson Price Range
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={formData.lessonPriceRange}
+                                                onChange={(e) => updateField('lessonPriceRange', e.target.value)}
+                                                placeholder="e.g. $30 - $60"
+                                                className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Business Hours */}
+                            <div className="pt-6 border-t border-stone-200">
+                                <h2 className="text-lg font-semibold text-stone-800 mb-4">Business Hours</h2>
+
+                                <div className="space-y-3">
+                                    {DAYS_ORDER.map(day => {
+                                        const dayData = formData.businessHours[day] || { open: '', close: '', closed: false };
+                                        return (
+                                            <div key={day} className="flex items-center gap-3">
+                                                <span className="w-24 text-sm font-medium text-stone-700">{DAY_LABELS[day]}</span>
+                                                <label className="flex items-center gap-1.5 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={dayData.closed}
+                                                        onChange={(e) => {
+                                                            const updated = { ...formData.businessHours, [day]: { ...dayData, closed: e.target.checked } };
+                                                            updateField('businessHours', updated as any);
+                                                        }}
+                                                        className="w-4 h-4 text-stone-600 rounded focus:ring-stone-500"
+                                                    />
+                                                    <span className="text-xs text-stone-500">Closed</span>
+                                                </label>
+                                                {!dayData.closed && (
+                                                    <>
+                                                        <input
+                                                            type="time"
+                                                            value={dayData.open || ''}
+                                                            onChange={(e) => {
+                                                                const updated = { ...formData.businessHours, [day]: { ...dayData, open: e.target.value } };
+                                                                updateField('businessHours', updated as any);
+                                                            }}
+                                                            className="px-3 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                                        />
+                                                        <span className="text-stone-400 text-sm">to</span>
+                                                        <input
+                                                            type="time"
+                                                            value={dayData.close || ''}
+                                                            onChange={(e) => {
+                                                                const updated = { ...formData.businessHours, [day]: { ...dayData, close: e.target.value } };
+                                                                updateField('businessHours', updated as any);
+                                                            }}
+                                                            className="px-3 py-2 rounded-lg border border-stone-300 text-stone-800 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                                        />
+                                                    </>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             {/* Photo Management */}
                             <div className="pt-6 border-t border-stone-200">
                                 <h2 className="text-lg font-semibold text-stone-800 mb-4">Photos</h2>
