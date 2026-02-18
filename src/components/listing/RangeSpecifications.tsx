@@ -143,5 +143,3 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
     </section>
   );
 }
-  );
-}
