@@ -1,7 +1,7 @@
 // src/app/admin/analytics/page.tsx
 'use client'
 import { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown, Eye, MousePointerClick, Users, MapPin, Phone, Mail, Globe, Navigation } from 'lucide-react'
+import { TrendingUp, TrendingDown, Eye, MousePointerClick, Users, MapPin, Phone, Mail, Globe, Navigation, Tag } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface RangeData {
@@ -14,6 +14,12 @@ interface RangeData {
 
 interface AnalyticsEvent {
   event_type: string
+  created_at: string
+}
+
+interface SiteEvent {
+  event_type: string
+  metadata: Record<string, string> | null
   created_at: string
 }
 
@@ -45,6 +51,11 @@ interface AnalyticsData {
     province: string
     listings: number
     views: number
+  }[]
+  categoryStats: {
+    name: string
+    slug: string
+    clicks: number
   }[]
 }
 
@@ -160,6 +171,29 @@ export default function AnalyticsPage() {
         clicks: r.click_count || 0
       }))
 
+      // 8. Fetch category click stats from site_analytics
+      const { data: siteEvents } = await supabase
+        .from('site_analytics')
+        .select('event_type, metadata, created_at')
+        .eq('event_type', 'category_selected')
+        .gte('created_at', startDate.toISOString())
+
+      const typedSiteEvents = (siteEvents || []) as SiteEvent[]
+      const categoryCountMap = new Map<string, { name: string; clicks: number }>()
+      for (const event of typedSiteEvents) {
+        const slug = event.metadata?.category_slug || 'unknown'
+        const name = event.metadata?.category_name || slug
+        const existing = categoryCountMap.get(slug)
+        if (existing) {
+          existing.clicks++
+        } else {
+          categoryCountMap.set(slug, { name, clicks: 1 })
+        }
+      }
+      const categoryStats = Array.from(categoryCountMap.entries())
+        .map(([slug, data]) => ({ slug, name: data.name, clicks: data.clicks }))
+        .sort((a, b) => b.clicks - a.clicks)
+
       setAnalytics({
         pageViews: {
           total: totalViews,
@@ -179,7 +213,8 @@ export default function AnalyticsPage() {
           newUsers: 0, // Would need created_at tracking
           activeListings
         },
-        provinceStats
+        provinceStats,
+        categoryStats
       })
     } catch (err) {
       console.error('Error fetching analytics:', err)
@@ -335,6 +370,31 @@ export default function AnalyticsPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Category Clicks */}
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Tag className="w-5 h-5 text-yellow-500" />
+          Category Clicks
+        </h2>
+        {analytics.categoryStats.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {analytics.categoryStats.map((cat) => (
+              <div key={cat.slug} className="bg-yellow-50 rounded-lg p-4 text-center border border-yellow-200">
+                <p className="text-2xl font-bold text-yellow-700">{cat.clicks.toLocaleString()}</p>
+                <p className="text-sm text-yellow-600 mt-1">{cat.name}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-24 text-gray-400">
+            <div className="text-center">
+              <Tag className="w-6 h-6 mx-auto mb-1 opacity-50" />
+              <p className="text-sm">No category clicks yet</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Province Stats & Top Listings */}

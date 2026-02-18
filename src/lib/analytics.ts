@@ -33,6 +33,7 @@ export type GeneralEvent =
     | 'search_performed'
     | 'filter_applied'
     | 'province_selected'
+    | 'category_selected'
     | 'page_view';
 
 export type AnalyticsEvent = ListingClickEvent | GeneralEvent;
@@ -199,4 +200,33 @@ export function trackProvinceSelected(provinceName: string): void {
     trackEvent('province_selected', {
         province_name: provinceName,
     });
+    sendToSiteBackend('province_selected', { province: provinceName });
+}
+
+// -----------------------------------------------------------------------------
+// Site-Wide Analytics Backend
+// -----------------------------------------------------------------------------
+
+async function sendToSiteBackend(eventType: string, metadata?: Record<string, string>): Promise<void> {
+    try {
+        await fetch('/api/analytics/site-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ eventType, metadata }),
+        });
+    } catch (error) {
+        console.log('[Analytics] Site backend tracking failed:', error);
+    }
+}
+
+export function trackCategorySelected(categorySlug: string, categoryName: string): void {
+    trackEvent('category_selected', {
+        category_slug: categorySlug,
+        category_name: categoryName,
+    });
+    sendToSiteBackend('category_selected', { category_slug: categorySlug, category_name: categoryName });
+}
+
+export function trackSearchEvent(query: string): void {
+    sendToSiteBackend('search_performed', { query });
 }
