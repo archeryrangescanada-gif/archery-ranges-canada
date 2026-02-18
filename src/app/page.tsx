@@ -11,6 +11,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { ClaimListingBanner } from '@/components/listing/ClaimListingBanner'
 import { trackSearch, trackProvinceSelected } from '@/lib/analytics'
+import { normalizeToArray } from '@/lib/utils/data-normalization'
 import { Province, City } from '@/types/database'
 
 interface Range {
@@ -20,6 +21,7 @@ interface Range {
   facility_type?: string | null
   price_range?: string | null
   photos?: string[] | null
+  post_images?: string[] | null
   description?: string | null
   is_premium?: boolean
   is_featured?: boolean
@@ -203,7 +205,7 @@ export default function Home() {
 
       const { data: rangesData } = await supabaseClient
         .from('ranges')
-        .select('id, name, slug, facility_type, price_range, photos, description, is_premium, is_featured, latitude, longitude, subscription_tier, city:cities(*, province:provinces(*))')
+        .select('id, name, slug, facility_type, price_range, post_images, description, is_premium, is_featured, latitude, longitude, subscription_tier, city:cities(*, province:provinces(*))')
         .order('name')
 
       if (provincesData) setProvinces(provincesData as Province[])
@@ -211,9 +213,8 @@ export default function Home() {
       if (rangesData) {
         const normalized = (rangesData as any[]).map(item => ({
           ...item,
-          photos: typeof item.photos === 'string'
-            ? item.photos.split(',').map((s: string) => s.trim()).filter(Boolean)
-            : Array.isArray(item.photos) ? item.photos : [],
+          post_images: normalizeToArray(item.post_images),
+          photos: normalizeToArray(item.post_images),
           amenities: typeof item.amenities === 'string'
             ? item.amenities.split(',').map((s: string) => s.trim()).filter(Boolean)
             : Array.isArray(item.amenities) ? item.amenities : []
