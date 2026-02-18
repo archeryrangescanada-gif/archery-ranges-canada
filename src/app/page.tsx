@@ -10,6 +10,7 @@ import ReportRangeModal from '@/components/ReportRangeModal'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { ClaimListingBanner } from '@/components/listing/ClaimListingBanner'
+import { CategoryButtons } from '@/components/CategoryButtons'
 import { trackSearch, trackProvinceSelected } from '@/lib/analytics'
 import { normalizeToArray } from '@/lib/utils/data-normalization'
 import { Province, City } from '@/types/database'
@@ -493,6 +494,11 @@ export default function Home() {
                 </p>
               </div>
             )}
+
+            <div className="mt-6">
+              <p className="text-green-100 text-sm mb-3">Browse by Category</p>
+              <CategoryButtons variant="hero" />
+            </div>
           </div>
         </div>
       </section>
@@ -755,6 +761,20 @@ export default function Home() {
                 ))}
               </div>
             )}
+          </section>
+        )}
+
+        {(searchQuery.trim() === '' && !hasActiveFilters) && (
+          <section className="mt-16 mb-8">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-800 mb-3">
+                Browse by Category
+              </h2>
+              <p className="text-gray-600 text-lg">
+                Find ranges by the programs and services they offer
+              </p>
+            </div>
+            <CategoryButtons variant="section" />
           </section>
         )}
       </main>
