@@ -33,29 +33,59 @@ const provinceInfo: Record<string, {
   topActivities: string[];
 }> = {
   'ontario': {
-    description: 'Ontario is home to Canada\'s largest archery community with facilities ranging from Olympic-level training centers in Toronto to scenic outdoor courses in Muskoka.',
-    popularCities: ['Toronto', 'Ottawa', 'Hamilton', 'Mississauga', 'London'],
-    topActivities: ['3D target shooting', 'Olympic recurve training', 'Bowhunting courses']
+    description: 'Ontario is home to Canada\'s largest archery community with facilities ranging from Olympic-level training centers in Toronto to scenic outdoor courses in Muskoka. The province boasts a strong network of clubs affiliated with the Ontario Association of Archers (OAA), hosting regular tournaments, indoor winter leagues, and youth development programs year-round.',
+    popularCities: ['Toronto', 'Ottawa', 'Hamilton', 'Mississauga', 'London', 'Windsor', 'Barrie', 'Kingston'],
+    topActivities: ['3D target shooting', 'Olympic recurve training', 'Bowhunting courses', 'Youth development programs', 'Indoor winter leagues']
   },
   'british-columbia': {
-    description: 'British Columbia offers stunning outdoor archery experiences with ranges set against mountain backdrops, plus world-class indoor facilities in Vancouver and Victoria.',
-    popularCities: ['Vancouver', 'Victoria', 'Kelowna', 'Surrey', 'Burnaby'],
-    topActivities: ['Mountain field archery', 'Traditional bow making', 'Wildlife archery courses']
+    description: 'British Columbia offers stunning outdoor archery experiences with ranges set against mountain backdrops, plus world-class indoor facilities in Vancouver and Victoria. BC\'s diverse terrain makes it ideal for field archery and 3D courses, while the mild coastal climate allows for year-round outdoor shooting. The province is home to many clubs affiliated with the BC Archery Association, offering programs for all skill levels from beginner to competitive.',
+    popularCities: ['Vancouver', 'Victoria', 'Kelowna', 'Surrey', 'Burnaby', 'Nanaimo', 'Kamloops'],
+    topActivities: ['Mountain field archery', 'Traditional bow shooting', '3D forest courses', 'Olympic-style target archery', 'Beginner introduction courses']
   },
   'alberta': {
-    description: 'Alberta\'s archery scene combines prairie hunting traditions with modern indoor ranges, particularly strong in Calgary and Edmonton.',
-    popularCities: ['Calgary', 'Edmonton', 'Red Deer', 'Lethbridge'],
-    topActivities: ['Elk hunting preparation', 'Compound bow training', '3D shoots']
+    description: 'Alberta\'s archery scene combines prairie hunting traditions with modern indoor ranges, particularly strong in Calgary and Edmonton. The province is well known for its bowhunting culture, with many ranges offering specialized courses for elk, deer, and big game preparation. Alberta is home to numerous clubs under the Alberta Federation of Shooting Sports (AFSS), providing opportunities for target archery, 3D shooting, and competitive tournaments throughout the year.',
+    popularCities: ['Calgary', 'Edmonton', 'Red Deer', 'Lethbridge', 'Medicine Hat', 'Sherwood Park', 'Cochrane'],
+    topActivities: ['Bowhunting preparation courses', 'Compound bow training', '3D target shoots', 'Field archery', 'Youth and family programs']
   },
   'quebec': {
-    description: 'Quebec has a vibrant archery culture with bilingual instruction available at most facilities, from Montreal\'s urban ranges to rural Laurentian courses.',
-    popularCities: ['Montreal', 'Quebec City', 'Laval', 'Gatineau'],
-    topActivities: ['Traditional archery', 'Youth programs', 'Winter indoor leagues']
+    description: 'Quebec has a vibrant archery culture with bilingual instruction available at most facilities, from Montreal\'s urban ranges to rural Laurentian courses. The province is served by the F\u00e9d\u00e9ration de tir \u00e0 l\'arc du Qu\u00e9bec (FTAQ), which organizes provincial championships, regional tournaments, and youth programs. Quebec\'s four-season climate supports both indoor winter leagues and beautiful outdoor summer shooting.',
+    popularCities: ['Montreal', 'Quebec City', 'Laval', 'Gatineau', 'Sherbrooke', 'Trois-Rivi\u00e8res'],
+    topActivities: ['Traditional archery', 'Youth programs', 'Winter indoor leagues', 'Outdoor field courses', 'Provincial tournament circuits']
+  },
+  'saskatchewan': {
+    description: 'Saskatchewan\'s wide-open prairies provide a unique backdrop for archery, with a strong emphasis on bowhunting and outdoor field shooting. The province\'s archery clubs offer welcoming communities for beginners and experienced archers alike, with regular 3D shoots and tournaments throughout the warmer months and indoor ranges keeping archers active through the winter.',
+    popularCities: ['Saskatoon', 'Regina', 'Prince Albert', 'Moose Jaw'],
+    topActivities: ['Bowhunting preparation', '3D outdoor shoots', 'Indoor winter leagues', 'Compound and recurve training']
+  },
+  'manitoba': {
+    description: 'Manitoba offers a growing archery community centered around Winnipeg and Brandon, with clubs providing year-round shooting opportunities. The province\'s archers enjoy access to both indoor facilities for winter practice and scenic outdoor ranges during the summer months. Manitoba\'s archery organizations host regular tournaments and promote youth participation in the sport.',
+    popularCities: ['Winnipeg', 'Brandon', 'Steinbach', 'Thompson'],
+    topActivities: ['Indoor target archery', '3D shooting events', 'Bowhunting courses', 'Youth introduction programs']
+  },
+  'nova-scotia': {
+    description: 'Nova Scotia\'s archery community thrives in a beautiful maritime setting, with ranges offering both indoor and outdoor experiences. The province\'s clubs cater to all levels, from casual recreational shooting to competitive tournament archery. Nova Scotia\'s mild maritime climate allows for an extended outdoor shooting season compared to other eastern provinces.',
+    popularCities: ['Halifax', 'Dartmouth', 'Sydney', 'Truro'],
+    topActivities: ['Recreational target archery', '3D forest courses', 'Traditional bow shooting', 'Beginner lessons']
+  },
+  'new-brunswick': {
+    description: 'New Brunswick offers a close-knit archery community with clubs spread across the province, from the Saint John River Valley to the Acadian coast. Archers enjoy a mix of indoor ranges for year-round practice and outdoor courses set in the province\'s scenic woodlands.',
+    popularCities: ['Fredericton', 'Saint John', 'Moncton', 'Bathurst'],
+    topActivities: ['Indoor target practice', 'Woodland 3D courses', 'Bowhunting preparation', 'Family archery programs']
+  },
+  'newfoundland-and-labrador': {
+    description: 'Newfoundland and Labrador\'s rugged landscape provides a dramatic setting for outdoor archery. The province\'s archery clubs offer dedicated facilities for both target and field archery, with a strong tradition of bowhunting given the province\'s rich wildlife heritage.',
+    popularCities: ['St. John\'s', 'Corner Brook', 'Mount Pearl', 'Conception Bay South'],
+    topActivities: ['Field archery', 'Bowhunting courses', 'Indoor target practice', 'Traditional archery']
+  },
+  'prince-edward-island': {
+    description: 'Prince Edward Island may be Canada\'s smallest province, but its archery community is passionate and welcoming. PEI\'s ranges offer a friendly atmosphere for archers of all skill levels, with opportunities for both indoor and outdoor shooting on the island.',
+    popularCities: ['Charlottetown', 'Summerside'],
+    topActivities: ['Recreational archery', 'Indoor target shooting', 'Youth programs', 'Beginner lessons']
   },
   'default': {
-    description: 'Discover archery facilities across this province, from indoor target ranges to outdoor field courses.',
+    description: 'Discover archery facilities across this province, from indoor target ranges to outdoor field courses. Canada\'s archery community is welcoming to all skill levels, whether you\'re a complete beginner or an experienced competitive archer.',
     popularCities: [],
-    topActivities: ['Indoor target practice', 'Beginner lessons', '3D archery']
+    topActivities: ['Indoor target practice', 'Beginner lessons', '3D archery', 'Bowhunting preparation']
   }
 }
 
@@ -295,16 +325,23 @@ export default async function ProvincePage({ params }: PageProps) {
               About Archery in {province.name}
             </h2>
             <div className="prose prose-stone max-w-none">
+              <p>{info.description}</p>
               <p>
-                {province.name} offers {totalRanges} archery {totalRanges === 1 ? 'facility' : 'facilities'} across
+                {province.name} offers {totalRanges} archery {totalRanges === 1 ? 'facility' : 'facilities'} across{' '}
                 {citiesWithRanges.length} {citiesWithRanges.length === 1 ? 'city' : 'cities'}.
-                Whether you're looking for indoor target practice, outdoor 3D courses, or professional coaching,
-                you'll find options to match your skill level and interests.
+                Whether you&apos;re looking for indoor target practice, outdoor 3D courses, or professional coaching,
+                you&apos;ll find options to match your skill level and interests.
               </p>
 
               {info.topActivities.length > 0 && (
                 <p>
                   Popular archery activities in {province.name} include {info.topActivities.join(', ')}.
+                </p>
+              )}
+
+              {info.popularCities.length > 0 && (
+                <p>
+                  Top cities for archery in {province.name} include {info.popularCities.join(', ')}.
                 </p>
               )}
             </div>
