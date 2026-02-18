@@ -324,9 +324,9 @@ export default async function ProvincePage({ params }: PageProps) {
             <h2 className="text-xl font-bold text-stone-800 mb-4">
               About Archery in {province.name}
             </h2>
-            <div className="prose prose-stone max-w-none">
-              <p>{info.description}</p>
-              <p>
+            <div className="space-y-3">
+              <p className="text-stone-700 leading-relaxed">{info.description}</p>
+              <p className="text-stone-700 leading-relaxed">
                 {province.name} offers {totalRanges} archery {totalRanges === 1 ? 'facility' : 'facilities'} across{' '}
                 {citiesWithRanges.length} {citiesWithRanges.length === 1 ? 'city' : 'cities'}.
                 Whether you&apos;re looking for indoor target practice, outdoor 3D courses, or professional coaching,
@@ -334,13 +334,13 @@ export default async function ProvincePage({ params }: PageProps) {
               </p>
 
               {info.topActivities.length > 0 && (
-                <p>
+                <p className="text-stone-700 leading-relaxed">
                   Popular archery activities in {province.name} include {info.topActivities.join(', ')}.
                 </p>
               )}
 
               {info.popularCities.length > 0 && (
-                <p>
+                <p className="text-stone-700 leading-relaxed">
                   Top cities for archery in {province.name} include {info.popularCities.join(', ')}.
                 </p>
               )}
