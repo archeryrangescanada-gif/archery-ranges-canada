@@ -1,4 +1,4 @@
-import { Ruler, Target, Building2, TreePine, Crosshair, Weight } from 'lucide-react';
+import { Ruler, Target, Building2, TreePine, Crosshair, Weight, Check, X, Settings, History, Shield } from 'lucide-react';
 import { FacilityType, BowType } from '@/types/range';
 
 interface RangeSpecificationsProps {
@@ -9,23 +9,25 @@ interface RangeSpecificationsProps {
   maxDrawWeight?: number | string;
 }
 
-const bowTypeLabels: Record<BowType, string> = {
-  recurve: 'Recurve',
-  compound: 'Compound',
-  longbow: 'Longbow',
-  crossbow: 'Crossbow',
-  traditional: 'Traditional',
-};
-
-const bowTypeColors: Record<BowType, string> = {
-  recurve: 'bg-blue-100 text-blue-700 border-blue-200',
-  compound: 'bg-purple-100 text-purple-700 border-purple-200',
-  longbow: 'bg-amber-100 text-amber-700 border-amber-200',
-  crossbow: 'bg-red-100 text-red-700 border-red-200',
-  traditional: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+const bowTypeData: Record<BowType, { label: string; icon: React.ReactNode }> = {
+  recurve: { label: 'Recurve', icon: <Target className="w-5 h-5" /> },
+  compound: { label: 'Compound', icon: <Settings className="w-5 h-5" /> },
+  longbow: { label: 'Longbow', icon: <Shield className="w-5 h-5" /> },
+  crossbow: { label: 'Crossbow', icon: <Crosshair className="w-5 h-5" /> },
+  traditional: { label: 'Traditional', icon: <History className="w-5 h-5" /> },
 };
 
 export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, bowTypesAllowed, maxDrawWeight }: RangeSpecificationsProps) {
+  const allowedBows = Array.isArray(bowTypesAllowed)
+    ? bowTypesAllowed
+    : typeof bowTypesAllowed === 'string'
+      ? bowTypesAllowed.split(',').map(s => s.trim().toLowerCase() as BowType).filter(Boolean)
+      : [];
+
+  const allBowTypes: BowType[] = ['recurve', 'compound', 'longbow', 'crossbow', 'traditional'];
+  const availableBows = allBowTypes.filter(type => allowedBows.includes(type));
+  const unavailableBows = allBowTypes.filter(type => !allowedBows.includes(type));
+
   const hasSpecs = lengthYards || numberOfLanes || facilityType || (bowTypesAllowed && bowTypesAllowed.length > 0) || maxDrawWeight;
 
   if (!hasSpecs) return null;
@@ -37,7 +39,7 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
         Range Specifications
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
         {lengthYards && (
           <div className="bg-gradient-to-br from-stone-50 to-stone-100 rounded-xl p-4 border border-stone-200">
             <div className="flex items-center gap-3 mb-2">
@@ -104,24 +106,42 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
         )}
       </div>
 
-      {bowTypesAllowed && (Array.isArray(bowTypesAllowed) ? bowTypesAllowed.length > 0 : true) && (
+      <div className="space-y-6">
         <div>
-          <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider mb-3">Bow Types Allowed</h3>
-          <div className="flex flex-wrap gap-2">
-            {Array.isArray(bowTypesAllowed) ? (
-              bowTypesAllowed.map((bowType) => (
-                <span key={bowType} className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border ${bowTypeColors[bowType]}`}>
-                  {bowTypeLabels[bowType]}
-                </span>
-              ))
-            ) : (
-              <span className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border bg-stone-100 text-stone-700 border-stone-200">
-                {bowTypesAllowed}
-              </span>
-            )}
+          <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+            Bow Types Allowed
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+            {availableBows.map((bowType) => (
+              <div key={bowType} className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
+                  {bowTypeData[bowType].icon}
+                </div>
+                <p className="font-medium text-emerald-800">{bowTypeData[bowType].label}</p>
+                <Check className="w-5 h-5 text-emerald-500 ml-auto" />
+              </div>
+            ))}
           </div>
+
+          {unavailableBows.length > 0 && (
+            <div>
+              <p className="text-sm text-stone-500 mb-3">Not allowed at this location:</p>
+              <div className="flex flex-wrap gap-2">
+                {unavailableBows.map((bowType) => (
+                  <div key={bowType} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-stone-100 border border-stone-200 text-stone-500">
+                    <span className="text-stone-400">{bowTypeData[bowType].icon}</span>
+                    <span className="text-sm">{bowTypeData[bowType].label}</span>
+                    <X className="w-4 h-4 text-stone-400" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </section>
+  );
+}
   );
 }
