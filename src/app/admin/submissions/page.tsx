@@ -3,7 +3,6 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
-import { supabaseClient } from '@/lib/auth'
 import Link from 'next/link'
 
 export default function SubmissionsPage() {
@@ -16,19 +15,15 @@ export default function SubmissionsPage() {
 
   const fetchSubmissions = async () => {
     try {
-      console.log('[Submissions] Fetching submissions...')
-      const { data, error } = await supabaseClient
-        .from('range_submissions')
-        .select('*')
-        .order('submitted_at', { ascending: false })
+      const res = await fetch('/api/admin/submissions')
+      const json = await res.json()
 
-      if (error) {
-        console.error('[Submissions] Error fetching:', error.message, error.details, error.hint)
+      if (!res.ok) {
+        console.error('[Submissions] API error:', json.error)
         return
       }
 
-      console.log('[Submissions] Fetched data:', data)
-      setSubmissions(data || [])
+      setSubmissions(json.submissions || [])
     } catch (err) {
       console.error('[Submissions] Unexpected error:', err)
     } finally {
@@ -37,12 +32,22 @@ export default function SubmissionsPage() {
   }
 
   const updateStatus = async (id: string, status: string) => {
-    await supabaseClient
-      .from('range_submissions')
-      .update({ status, reviewed_at: new Date().toISOString() })
-      .eq('id', id)
-    
-    fetchSubmissions()
+    try {
+      const res = await fetch('/api/admin/submissions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      })
+
+      if (!res.ok) {
+        const json = await res.json()
+        console.error('[Submissions] Update error:', json.error)
+      }
+
+      fetchSubmissions()
+    } catch (err) {
+      console.error('[Submissions] Update error:', err)
+    }
   }
 
   return (
