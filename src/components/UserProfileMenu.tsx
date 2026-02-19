@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { LogOut, Settings, Heart, Star, MapPin, BarChart3, ClipboardList } from 'lucide-react';
+import { getUpgradeLink, getUserSubscriptionTier } from '@/lib/subscription-utils';
 
 interface UserProfileMenuProps {
     user: User;
@@ -190,13 +191,15 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
                                             <BarChart3 className="w-4 h-4 mr-3" />
                                             Analytics
                                         </div>
-                                        <Link
-                                            href="/pricing#bronze"
+                                        <a
+                                            href={getUpgradeLink('free', userRange.id)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
                                             onClick={() => setIsOpen(false)}
                                             className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors"
                                         >
                                             Upgrade
-                                        </Link>
+                                        </a>
                                     </div>
                                 )}
                             </>

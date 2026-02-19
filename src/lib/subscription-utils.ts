@@ -9,8 +9,8 @@ export { type SubscriptionTier };
 
 // Stripe Payment Links
 const STRIPE_LINKS = {
-    silver: 'https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02',
-    gold: 'https://buy.stripe.com/14A8wO3Uo4iTbz353v2oE03'
+    silver: process.env.NEXT_PUBLIC_STRIPE_SILVER_URL || 'https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02',
+    gold: process.env.NEXT_PUBLIC_STRIPE_GOLD_URL || 'https://buy.stripe.com/14A8wO3Uo4iTbz353v2oE03'
 };
 
 /**
