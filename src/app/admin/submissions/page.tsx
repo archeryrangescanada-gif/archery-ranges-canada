@@ -51,18 +51,17 @@ export default function SubmissionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Range Submissions</h1>
-          <Link href="/admin/dashboard" className="text-green-600 hover:underline">
-            ← Back to Dashboard
-          </Link>
-        </div>
+    <div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Range Submissions</h1>
+        <Link href="/admin/dashboard" className="text-green-600 hover:underline">
+          ← Back to Dashboard
+        </Link>
+      </div>
 
-        {loading ? (
-          <p>Loading...</p>
-        ) : submissions.length === 0 ? (
+      {loading ? (
+        <p className="text-gray-600">Loading...</p>
+      ) : submissions.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <p className="text-gray-500">No submissions found.</p>
             <p className="text-sm text-gray-400 mt-2">Check the browser console for any errors.</p>
@@ -82,10 +81,10 @@ export default function SubmissionsPage() {
               <tbody className="divide-y divide-gray-200">
                 {submissions.map((sub) => (
                   <tr key={sub.id}>
-                    <td className="px-6 py-4">{sub.range_name || 'N/A'}</td>
-                    <td className="px-6 py-4">{sub.address || 'N/A'}</td>
+                    <td className="px-6 py-4 text-gray-900">{sub.range_name || 'N/A'}</td>
+                    <td className="px-6 py-4 text-gray-700">{sub.address || 'N/A'}</td>
                     <td className="px-6 py-4">
-                      <div className="text-sm">
+                      <div className="text-sm text-gray-700">
                         {sub.email && <div>{sub.email}</div>}
                         {sub.phone && <div>{sub.phone}</div>}
                         {sub.website && <div><a href={sub.website} target="_blank" className="text-blue-600">Website</a></div>}
@@ -104,7 +103,7 @@ export default function SubmissionsPage() {
                       <select
                         value={sub.status}
                         onChange={(e) => updateStatus(sub.id, e.target.value)}
-                        className="border rounded px-2 py-1 text-sm"
+                        className="border rounded px-2 py-1 text-sm text-gray-800"
                       >
                         <option value="pending">Pending</option>
                         <option value="approved">Approved</option>
@@ -117,7 +116,6 @@ export default function SubmissionsPage() {
             </table>
           </div>
         )}
-      </div>
     </div>
   )
 }
