@@ -192,7 +192,7 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
                                             Analytics
                                         </div>
                                         <a
-                                            href={getUpgradeLink('free', userRange.id)}
+                                            href={getUpgradeLink('free', userRange?.id)}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             onClick={() => setIsOpen(false)}
