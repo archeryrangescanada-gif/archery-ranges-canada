@@ -59,7 +59,7 @@ const tiers = [
       { text: 'Home Page Feature', included: false },
     ],
     cta: 'Start Silver',
-    ctaLink: '/auth/signup?plan=silver',
+    ctaLink: process.env.NEXT_PUBLIC_STRIPE_SILVER_URL || '/auth/signup?plan=silver',
     highlighted: true,
     popularLabel: 'Most Popular',
   },
@@ -86,7 +86,7 @@ const tiers = [
       { text: 'Priority Phone Support', included: true },
     ],
     cta: 'Start Gold',
-    ctaLink: '/auth/signup?plan=gold',
+    ctaLink: process.env.NEXT_PUBLIC_STRIPE_GOLD_URL || '/auth/signup?plan=gold',
     highlighted: false,
   },
 ]
@@ -451,7 +451,7 @@ export default function PricingPage() {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/auth/signup?plan=gold"
+                  href={process.env.NEXT_PUBLIC_STRIPE_GOLD_URL || "/auth/signup?plan=gold"}
                   className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg"
                 >
                   Start Gold - $399/mo
