@@ -38,6 +38,11 @@ export default function ListingsPage() {
   const [aiUrl, setAiUrl] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
 
+  // Quick Edit Modal Logic
+  const [selectedListing, setSelectedListing] = useState<Listing | null>(null)
+  const [ownerDetails, setOwnerDetails] = useState<any>(null)
+  const [loadingOwner, setLoadingOwner] = useState(false)
+
   const handleAiExtract = async () => {
     if (!aiUrl) return alert('Please enter a URL')
 
@@ -533,9 +538,6 @@ export default function ListingsPage() {
   }
 
   // Quick Edit Modal Logic
-  const [selectedListing, setSelectedListing] = useState<Listing | null>(null)
-  const [ownerDetails, setOwnerDetails] = useState<any>(null)
-  const [loadingOwner, setLoadingOwner] = useState(false)
 
   const openQuickEdit = async (listing: Listing) => {
     setSelectedListing(listing)
@@ -647,8 +649,8 @@ export default function ListingsPage() {
                     key={tier}
                     onClick={() => handleTierChange(selectedListing.id, tier as any)}
                     className={`px-4 py-3 rounded-lg border-2 text-sm font-bold capitalize transition-all ${selectedListing.subscription_tier === tier
-                        ? 'border-green-500 bg-green-50 text-green-700 shadow-sm'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-600 bg-white'
+                      ? 'border-green-500 bg-green-50 text-green-700 shadow-sm'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-600 bg-white'
                       }`}
                   >
                     {tier}
