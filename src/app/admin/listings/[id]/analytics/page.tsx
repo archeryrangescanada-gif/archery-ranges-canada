@@ -71,7 +71,7 @@ export default function AdminRangeAnalyticsPage() {
             // Fetch range info (admin can view any range)
             const { data: rangeData, error: rangeError } = await supabase
                 .from('ranges')
-                .select('id, name, slug, city, province, view_count, click_count, inquiry_count, subscription_tier, owner_id')
+                .select('id, name, slug, view_count, click_count, inquiry_count, subscription_tier, owner_id, cities(name), provinces(name)')
                 .eq('id', rangeId)
                 .maybeSingle()
 
@@ -87,13 +87,16 @@ export default function AdminRangeAnalyticsPage() {
                 return
             }
 
+            const cityName = Array.isArray(rangeData.cities) ? rangeData.cities[0]?.name : (rangeData.cities as any)?.name || ''
+            const provinceName = Array.isArray(rangeData.provinces) ? rangeData.provinces[0]?.name : (rangeData.provinces as any)?.name || ''
+
             // Map the data to our expected format
             setRange({
                 id: rangeData.id,
                 name: rangeData.name,
                 slug: rangeData.slug || '',
-                city: rangeData.city || '',
-                province: rangeData.province || '',
+                city: cityName,
+                province: provinceName,
                 view_count: rangeData.view_count || 0,
                 click_count: rangeData.click_count || 0,
                 inquiry_count: rangeData.inquiry_count || 0,
@@ -206,7 +209,7 @@ export default function AdminRangeAnalyticsPage() {
     }
 
     const totalClicks = clickBreakdown.phone_clicks + clickBreakdown.email_clicks +
-                        clickBreakdown.website_clicks + clickBreakdown.directions_clicks
+        clickBreakdown.website_clicks + clickBreakdown.directions_clicks
 
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr)
