@@ -671,12 +671,12 @@ export default function ListingsPage() {
         </div>
       )}
 
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Listings Management</h1>
-          <p className="text-gray-600 mt-2">Manage all archery range listings</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Listings Management</h1>
+          <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">Manage all archery range listings</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {/* FILE INPUT HIDDEN */}
           <input
             type="file"
@@ -688,38 +688,38 @@ export default function ListingsPage() {
 
           <button
             onClick={() => setShowAIModal(true)}
-            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center shadow-sm"
+            className="bg-purple-600 text-white px-3 sm:px-4 py-2 rounded hover:bg-purple-700 flex items-center shadow-sm text-sm"
           >
-            <Star className="w-5 h-5 mr-2" />
+            <Star className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             AI Auto-Import
           </button>
 
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center disabled:opacity-50"
+            className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded hover:bg-blue-700 flex items-center disabled:opacity-50 text-sm"
           >
             {importing ? (
               <span className="flex items-center">Processing...</span>
             ) : (
               <>
-                <Upload className="w-5 h-5 mr-2" />
+                <Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Import CSV
               </>
             )}
           </button>
           <button
             onClick={() => setShowBulkDelete(true)}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center mr-2"
+            className="bg-red-600 text-white px-3 sm:px-4 py-2 rounded hover:bg-red-700 flex items-center text-sm"
           >
-            <Trash2 className="w-5 h-5 mr-2" />
+            <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Delete Options
           </button>
           <Link
             href="/admin/listings/new"
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center"
+            className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded hover:bg-green-700 flex items-center text-sm"
           >
-            <Plus className="w-5 h-5 mr-2" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Add Listing
           </Link>
         </div>
@@ -769,7 +769,7 @@ export default function ListingsPage() {
         </div>
       </div >
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>

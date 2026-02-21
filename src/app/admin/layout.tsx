@@ -17,8 +17,11 @@ import {
   LogOut,
   Shield,
   Mail,
-  Wrench
+  Wrench,
+  Menu,
+  X
 } from 'lucide-react'
+import { useState } from 'react'
 
 export default function AdminLayout({
   children,
@@ -28,6 +31,7 @@ export default function AdminLayout({
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   // useEffect(() => {
   //   const checkUser = async () => {
@@ -78,34 +82,53 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Top Navigation Bar */}
-      <nav className="bg-white shadow-sm border-b">
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="p-2 mr-2 text-gray-600 lg:hidden hover:bg-gray-100 rounded-md"
+              >
+                {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
               <Link href="/admin/dashboard" className="text-xl font-bold text-green-600">
                 ARC Admin
               </Link>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/" className="text-gray-600 hover:text-gray-900">
+              <Link href="/" className="text-gray-600 hover:text-gray-900 text-sm sm:text-base">
                 View Site
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex items-center text-gray-600 hover:text-gray-900"
+                className="flex items-center text-gray-600 hover:text-gray-900 text-sm sm:text-base"
               >
-                <LogOut className="w-5 h-5 mr-2" />
-                Logout
+                <LogOut className="w-5 h-5 mr-0 sm:mr-2" />
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      <div className="flex">
+      <div className="flex overflow-hidden">
+        {/* Sidebar Overlay (Mobile Only) */}
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <aside className="w-64 bg-white min-h-screen shadow-sm">
-          <nav className="mt-5 px-2">
+        <aside
+          className={`
+            fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-sm transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          `}
+        >
+          <nav className="mt-5 px-2 h-full overflow-y-auto pb-20">
             <div className="space-y-1">
               {navigation.map((item) => {
                 const Icon = item.icon
@@ -113,8 +136,9 @@ export default function AdminLayout({
                   <Link
                     key={item.name}
                     href={item.href}
+                    onClick={() => setIsSidebarOpen(false)}
                     className={`
-                      group flex items-center px-3 py-2 text-sm font-medium rounded-md
+                      group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
                       ${isActive(item.href)
                         ? 'bg-green-100 text-green-900'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
@@ -134,7 +158,7 @@ export default function AdminLayout({
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 sm:p-8 min-w-0 bg-gray-100 min-h-[calc(100vh-64px)] overflow-x-hidden">
           {children}
         </main>
       </div>
