@@ -27,6 +27,7 @@ interface Range {
     slug: string
     address?: string | null
     subscription_tier?: string | null
+    owner_id?: string | null
     city?: { name: string; slug: string } | null
     province?: { name: string; slug: string } | null
 }
@@ -345,27 +346,39 @@ export default function DashboardPage() {
                     )}
                 </div>
 
-                {/* Upgrade CTA for free users */}
-                {ranges.some(r => !r.subscription_tier || r.subscription_tier === 'free') && (
-                    <div className="mt-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-6 text-white">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="text-lg font-semibold mb-1">
-                                    {getUpgradeMessage(getUserSubscriptionTier(ranges.find(r => !r.subscription_tier || r.subscription_tier === 'free')!))}
-                                </h3>
-                                <p className="text-emerald-100">Get more visibility, add photos, and attract more customers</p>
+                {/* Upgrade CTA for free/bronze users */}
+                {ranges.some(r => {
+                    const tier = getUserSubscriptionTier(r);
+                    return tier === 'free' || tier === 'bronze';
+                }) && (
+                        <div className="mt-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-6 text-white text-center sm:text-left">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                                <div>
+                                    <h3 className="text-xl font-bold mb-1">
+                                        {getUpgradeMessage(getUserSubscriptionTier(ranges.find(r => {
+                                            const tier = getUserSubscriptionTier(r);
+                                            return tier === 'free' || tier === 'bronze';
+                                        })!))}
+                                    </h3>
+                                    <p className="text-emerald-50">Get more visibility, add photos, and attract more customers</p>
+                                </div>
+                                <a
+                                    href={getUpgradeLink(getUserSubscriptionTier(ranges.find(r => {
+                                        const tier = getUserSubscriptionTier(r);
+                                        return tier === 'free' || tier === 'bronze';
+                                    })!), ranges.find(r => {
+                                        const tier = getUserSubscriptionTier(r);
+                                        return tier === 'free' || tier === 'bronze';
+                                    })?.id)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-8 py-4 bg-white text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-all shadow-lg whitespace-nowrap"
+                                >
+                                    Upgrade Now
+                                </a>
                             </div>
-                            <a
-                                href={getUpgradeLink(getUserSubscriptionTier(ranges.find(r => !r.subscription_tier || r.subscription_tier === 'free')!), ranges.find(r => !r.subscription_tier || r.subscription_tier === 'free')?.id)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-6 py-3 bg-white text-emerald-600 font-semibold rounded-lg hover:bg-emerald-50 transition-colors"
-                            >
-                                Upgrade Now
-                            </a>
                         </div>
-                    </div>
-                )}
+                    )}
             </main>
         </div>
     )

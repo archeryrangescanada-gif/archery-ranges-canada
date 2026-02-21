@@ -16,14 +16,15 @@ export async function GET() {
         const { data: ranges, error: rangesError } = await supabase
             .from('ranges')
             .select(`
-        id, 
-        name, 
-        slug,
-        address, 
-        subscription_tier,
-        city:cities(name, slug),
-        province:provinces(name, slug)
-      `)
+                id, 
+                name, 
+                slug,
+                address, 
+                subscription_tier,
+                owner_id,
+                city:cities(name, slug),
+                province:provinces(name, slug)
+            `)
             .eq('owner_id', user.id)
 
         if (rangesError) {
