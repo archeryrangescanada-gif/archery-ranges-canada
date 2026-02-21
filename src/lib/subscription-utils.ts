@@ -25,13 +25,18 @@ export function getUserSubscriptionTier(range: { subscription_tier?: string | nu
 
     const tier = range.subscription_tier?.toLowerCase()
 
-    // Explicit paid tiers
-    if (tier === 'silver' || tier === 'gold') {
-        return tier as SubscriptionTier
+    // 1. Check for Silver / Pro (Database uses 'pro')
+    if (tier === 'silver' || tier === 'pro') {
+        return 'silver'
     }
 
-    // Default to bronze if claimed (has owner_id) or explicitly bronze
-    if (tier === 'bronze' || range.owner_id) {
+    // 2. Check for Gold / Premium (Database uses 'premium')
+    if (tier === 'gold' || tier === 'premium') {
+        return 'gold'
+    }
+
+    // 3. Default to bronze if claimed (has owner_id) or explicitly bronze/basic
+    if (tier === 'bronze' || tier === 'basic' || range.owner_id) {
         return 'bronze'
     }
 

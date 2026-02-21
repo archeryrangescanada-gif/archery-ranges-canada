@@ -79,7 +79,7 @@ export default function AnalyticsPage() {
             // Fetch range info with stats
             const { data: rangeData } = await supabase
                 .from('ranges')
-                .select('id, name, view_count, click_count, inquiry_count, subscription_tier')
+                .select('id, name, view_count, click_count, inquiry_count, subscription_tier, owner_id')
                 .eq('id', rangeId)
                 .eq('owner_id', user.id)
                 .single()
@@ -270,13 +270,15 @@ export default function AnalyticsPage() {
                         </div>
                         <h2 className="text-2xl font-bold text-stone-800 mb-4">Analytics are Locked</h2>
                         <p className="text-stone-600 mb-8 max-w-md mx-auto">
-                            Detailed performance tracking, visitor insights, and review management are available on our paid plans. Upgrade to Bronze to see your views and reviews.
+                            Detailed performance tracking, visitor insights, and review management are available on our Silver and Gold plans.
                         </p>
                         <Link
-                            href="/pricing#bronze"
+                            href={getUpgradeLink(tier, rangeId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98]"
                         >
-                            Upgrade to Bronze
+                            Upgrade to Silver
                         </Link>
                     </div>
                 ) : (
