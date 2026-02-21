@@ -336,9 +336,7 @@ export default function SettingsPage() {
     return (
         <div className="min-h-screen bg-stone-50">
             {/* Header */}
-            <div className="sticky top-0 z-50">
-                <Header />
-            </div>
+            <Header />
 
             {/* Sub-header for navigation back */}
             <div className="bg-white border-b border-stone-200">
@@ -826,14 +824,14 @@ export default function SettingsPage() {
                                         if (tier === 'bronze') {
                                             return (
                                                 <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
-                                                    Upgrade to Silver to add videos
+                                                    Upgrade to Gold to add videos
                                                 </a>
                                             )
                                         }
                                         if (tier === 'silver') {
                                             return (
                                                 <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
-                                                    Upgrade to Gold for unlimited videos
+                                                    Upgrade to Gold to add a video
                                                 </a>
                                             )
                                         }
@@ -843,7 +841,7 @@ export default function SettingsPage() {
 
                                 {TIER_LIMITS[tier].maxVideos === 0 ? (
                                     <div className="bg-stone-50 border border-stone-200 rounded-lg p-6 text-center">
-                                        <p className="text-stone-500 text-sm mb-3">Video embedding is available on Silver and Gold plans.</p>
+                                        <p className="text-stone-500 text-sm mb-3">Video embedding is available on Gold plans.</p>
                                         <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
                                             Upgrade to Add Videos
                                         </a>

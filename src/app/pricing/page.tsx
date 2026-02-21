@@ -52,7 +52,7 @@ const tiers = [
       { text: '"Message Range" Lead Form', included: true },
       { text: 'Read & Reply to Reviews', included: true },
       { text: '5 Photo Gallery', included: true },
-      { text: 'YouTube Video Embed', included: true },
+      { text: 'YouTube Video Embed', included: false },
       { text: 'Events Calendar & Global Feed', included: true },
       { text: 'Advanced Analytics', included: true },
       { text: 'Track Clicks (Web, Call, Directions)', included: true },
@@ -115,9 +115,9 @@ const comparisonFeatures = [
   {
     category: 'Content & Media',
     features: [
-      { name: 'Photos', bronze: '1', silver: '5', gold: 'Unlimited' },
-      { name: 'Description Length', bronze: '350 words', silver: 'Unlimited', gold: 'Unlimited' },
-      { name: 'Video Embed', bronze: false, silver: true, gold: true },
+      { name: 'Photos', bronze: '3', silver: '5', gold: 'Unlimited' },
+      { name: 'Description Length', bronze: '350 words', silver: '300 words', gold: 'Unlimited' },
+      { name: 'Video Embed', bronze: false, silver: false, gold: '1 Video' },
       { name: 'Events Calendar', bronze: false, silver: true, gold: true },
     ],
   },

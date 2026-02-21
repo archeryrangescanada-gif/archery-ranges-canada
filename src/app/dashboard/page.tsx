@@ -166,9 +166,7 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-stone-50">
             {/* Header */}
-            <div className="sticky top-0 z-50">
-                <Header />
-            </div>
+            <Header />
 
             <main className="max-w-6xl mx-auto px-4 py-8">
                 {/* Welcome Section */}

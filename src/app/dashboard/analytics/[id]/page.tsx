@@ -248,9 +248,7 @@ export default function AnalyticsPage() {
     return (
         <div className="min-h-screen bg-stone-50">
             {/* Header */}
-            <div className="sticky top-0 z-50">
-                <Header />
-            </div>
+            <Header />
 
             {/* Sub-header for navigation back */}
             <div className="bg-white border-b border-stone-200">

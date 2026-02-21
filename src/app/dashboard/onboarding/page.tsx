@@ -366,9 +366,7 @@ export default function OnboardingPage() {
   if (mode === 'choose') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
-        <div className="sticky top-0 z-50">
-          <Header />
-        </div>
+        <Header />
         <div className="bg-white border-b border-stone-200">
           <div className="max-w-3xl mx-auto px-4 py-6">
             <h1 className="text-2xl font-bold text-stone-800">Welcome to Archery Ranges Canada!</h1>
@@ -444,9 +442,7 @@ export default function OnboardingPage() {
   if (mode === 'ai') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
-        <div className="sticky top-0 z-50">
-          <Header />
-        </div>
+        <Header />
         <div className="bg-white border-b border-stone-200">
           <div className="max-w-3xl mx-auto px-4 py-6">
             <button
@@ -547,9 +543,7 @@ export default function OnboardingPage() {
   if (mode === 'claim') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
-        <div className="sticky top-0 z-50">
-          <Header />
-        </div>
+        <Header />
         <div className="bg-white border-b border-stone-200">
           <div className="max-w-3xl mx-auto px-4 py-6">
             <button
@@ -682,9 +676,7 @@ export default function OnboardingPage() {
   // Create New Listing Flow (existing code)
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
-      <div className="sticky top-0 z-50">
-        <Header />
-      </div>
+      <Header />
       {/* Header */}
       <div className="bg-white border-b border-stone-200">
         <div className="max-w-3xl mx-auto px-4 py-6">
