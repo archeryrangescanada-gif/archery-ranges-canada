@@ -576,7 +576,11 @@ export default function ListingsPage() {
         })
       })
 
-      if (!res.ok) throw new Error('Failed to update tier')
+      const responseData = await res.json()
+
+      if (!res.ok) {
+        throw new Error(responseData.error || 'Failed to update tier')
+      }
 
       setListings(listings.map(l => l.id === listingId ? { ...l, subscription_tier: newTier, is_premium: isPremium } : l))
 
@@ -585,7 +589,7 @@ export default function ListingsPage() {
       }
 
     } catch (error: any) {
-      alert(error.message)
+      alert(`API Error: ${error.message}`)
     }
   }
 

@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createServerClient } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const authClient = await createServerClient()
+    const { data: { user } } = await authClient.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const { id } = params
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
 
@@ -14,11 +19,8 @@ export async function PATCH(
     // Updates object - typically used for is_featured, is_premium, status
     const updates = { ...body, updated_at: new Date().toISOString() }
 
-    // Use anon key since service role key isn't available in Vercel
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    // Use admin client since service role key bypasses RLS
+    const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('ranges')
       .update(updates)
@@ -44,6 +46,10 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const authClient = await createServerClient()
+    const { data: { user } } = await authClient.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const { id } = params
 
     if (!id) {
@@ -53,11 +59,8 @@ export async function DELETE(
       )
     }
 
-    // Use anon key since service role key isn't available in Vercel
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    // Use admin client since service role key bypasses RLS
+    const supabase = getSupabaseAdmin()
     const { error } = await supabase
       .from('ranges')
       .delete()
