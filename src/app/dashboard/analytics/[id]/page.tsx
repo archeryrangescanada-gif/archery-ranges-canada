@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import Header from '@/components/Header'
 import { ArrowLeft, Eye, TrendingUp, MousePointer, Calendar, BarChart3, Phone, Mail, Globe, Navigation, MapPin, MessageSquare, Lock, Star } from 'lucide-react'
 import { SubscriptionTier, getUserSubscriptionTier, canAccessAnalytics, getUpgradeLink } from '@/lib/subscription-utils'
 
@@ -247,7 +248,12 @@ export default function AnalyticsPage() {
     return (
         <div className="min-h-screen bg-stone-50">
             {/* Header */}
-            <header className="bg-white border-b border-stone-200 sticky top-0 z-50">
+            <div className="sticky top-0 z-50">
+                <Header />
+            </div>
+
+            {/* Sub-header for navigation back */}
+            <div className="bg-white border-b border-stone-200">
                 <div className="max-w-6xl mx-auto px-4 py-4">
                     <Link
                         href="/dashboard"
@@ -259,7 +265,7 @@ export default function AnalyticsPage() {
                     <h1 className="text-2xl font-bold text-stone-800">Analytics</h1>
                     <p className="text-stone-600">{range?.name}</p>
                 </div>
-            </header>
+            </div>
 
             <main className="max-w-6xl mx-auto px-4 py-8">
                 {isFreeTier ? (

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { ArrowLeft, Save, Trash2, MapPin, Loader2 } from 'lucide-react'
 import { PhotoManager } from '@/components/dashboard/PhotoManager'
+import Header from '@/components/Header'
 import { SubscriptionTier, getUserSubscriptionTier, getUpgradeLink } from '@/lib/subscription-utils'
 import { normalizeToArray } from '@/lib/utils/data-normalization'
 import { TIER_LIMITS, BusinessHours, DayOfWeek } from '@/types/range'
@@ -335,7 +336,12 @@ export default function SettingsPage() {
     return (
         <div className="min-h-screen bg-stone-50">
             {/* Header */}
-            <header className="bg-white border-b border-stone-200 sticky top-0 z-50">
+            <div className="sticky top-0 z-50">
+                <Header />
+            </div>
+
+            {/* Sub-header for navigation back */}
+            <div className="bg-white border-b border-stone-200">
                 <div className="max-w-3xl mx-auto px-4 py-4">
                     <Link
                         href="/dashboard"
@@ -347,7 +353,7 @@ export default function SettingsPage() {
                     <h1 className="text-2xl font-bold text-stone-800">Edit Listing</h1>
                     <p className="text-stone-600">{formData.name}</p>
                 </div>
-            </header>
+            </div>
 
             <main className="max-w-3xl mx-auto px-4 py-8">
                 <div className="bg-white rounded-xl border border-stone-200 p-6 md:p-8">
