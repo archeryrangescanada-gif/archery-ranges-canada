@@ -149,6 +149,15 @@ export default function ListingsPage() {
           ? provinceObj[0]?.name
           : provinceObj?.name
 
+        // Map db enum to frontend enum
+        const dbTierMap: Record<string, string> = {
+          'free': 'free',
+          'basic': 'bronze',
+          'pro': 'silver',
+          'premium': 'gold'
+        }
+        const mappedTier = dbTierMap[item.subscription_tier] || item.subscription_tier || 'free'
+
         return {
           id: item.id,
           name: item.name,
@@ -157,7 +166,7 @@ export default function ListingsPage() {
           city_id: item.city_id,
           province_id: item.province_id,
           status: item.status || 'active',
-          subscription_tier: item.subscription_tier || 'free',
+          subscription_tier: mappedTier as any,
           owner_id: item.owner_id,
           is_premium: item.is_premium || false,
           is_featured: item.is_featured || false,

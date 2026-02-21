@@ -30,29 +30,29 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  // Map Stripe price IDs to subscription tiers
+  // Map Stripe price IDs to subscription tiers (DB enum values)
   const PRICE_TO_TIER: Record<string, string> = {
-    // Silver price IDs
-    [process.env.STRIPE_SILVER_PRICE_ID || '']: 'silver',
-    'price_1SsxuqBndelh03vCfGSkseAR': 'silver',
-    // Gold price IDs
-    [process.env.STRIPE_GOLD_PRICE_ID || '']: 'gold',
-    'price_1T0uXWBndelh03vCm83TOM27': 'gold',
+    // Silver (pro) price IDs
+    [process.env.STRIPE_SILVER_PRICE_ID || '']: 'pro',
+    'price_1SsxuqBndelh03vCfGSkseAR': 'pro',
+    // Gold (premium) price IDs
+    [process.env.STRIPE_GOLD_PRICE_ID || '']: 'premium',
+    'price_1T0uXWBndelh03vCm83TOM27': 'premium',
   }
 
   // Map plan name strings to tiers (for metadata-based lookups)
   const PLAN_TO_TIER: Record<string, string> = {
-    silver: 'silver',
-    gold: 'gold',
-    pro: 'silver',
-    premium: 'gold',
+    silver: 'pro',
+    gold: 'premium',
+    pro: 'pro',
+    premium: 'premium',
   }
 
   // Helper: Determine tier from checkout session
   async function getTierFromSession(session: Stripe.Checkout.Session): Promise<string> {
     // 1. Check metadata first (custom checkout sessions)
     if (session.metadata?.planId) {
-      return PLAN_TO_TIER[session.metadata.planId] || 'silver'
+      return PLAN_TO_TIER[session.metadata.planId] || 'pro'
     }
 
     // 2. Retrieve line items to get the price ID (works for payment links)
@@ -69,9 +69,9 @@ export async function POST(request: Request) {
       console.error('Failed to retrieve line items:', err)
     }
 
-    // 3. Default to silver
-    console.warn('Could not determine tier, defaulting to silver')
-    return 'silver'
+    // 3. Default to silver (pro)
+    console.warn('Could not determine tier, defaulting to pro (silver)')
+    return 'pro'
   }
 
   try {
@@ -132,7 +132,7 @@ export async function POST(request: Request) {
           }
 
           if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
-            updates.subscription_tier = 'bronze' // Revert to free/claimed tier
+            updates.subscription_tier = 'basic' // Revert to free/claimed tier (bronze)
             updates.is_featured = false
           }
 

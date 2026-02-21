@@ -19,6 +19,17 @@ export async function PATCH(
     // Updates object - typically used for is_featured, is_premium, status
     const updates = { ...body, updated_at: new Date().toISOString() }
 
+    // Translate frontend subscription_tier enum to backend db enum
+    if (updates.subscription_tier) {
+      const tierMap: Record<string, string> = {
+        'bronze': 'basic',
+        'silver': 'pro',
+        'gold': 'premium',
+        'free': 'free'
+      }
+      updates.subscription_tier = tierMap[updates.subscription_tier] || updates.subscription_tier
+    }
+
     // Use admin client since service role key bypasses RLS
     const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
