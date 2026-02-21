@@ -335,7 +335,7 @@ export default function SettingsPage() {
     return (
         <div className="min-h-screen bg-stone-50">
             {/* Header */}
-            <header className="bg-white border-b border-stone-200">
+            <header className="bg-white border-b border-stone-200 sticky top-0 z-50">
                 <div className="max-w-3xl mx-auto px-4 py-4">
                     <Link
                         href="/dashboard"
