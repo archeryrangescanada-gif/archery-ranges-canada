@@ -298,12 +298,12 @@ export default function AdminRangeAnalyticsPage() {
                     <select
                         value={dateRange}
                         onChange={(e) => setDateRange(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="px-4 py-2 border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 min-w-[140px]"
                     >
-                        <option value="7days">Last 7 Days</option>
-                        <option value="30days">Last 30 Days</option>
-                        <option value="90days">Last 90 Days</option>
-                        <option value="year">Last Year</option>
+                        <option value="7days" className="text-gray-900">Last 7 Days</option>
+                        <option value="30days" className="text-gray-900">Last 30 Days</option>
+                        <option value="90days" className="text-gray-900">Last 90 Days</option>
+                        <option value="year" className="text-gray-900">Last Year</option>
                     </select>
                 </div>
             </div>
