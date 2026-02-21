@@ -5,12 +5,14 @@
 
 import { SubscriptionTier } from '@/types/range';
 
+import { STRIPE_CONFIG } from '@/config/stripe';
+
 export { type SubscriptionTier };
 
-// Stripe Payment Links
+// Stripe Payment Links (centralized in src/config/stripe.ts)
 const STRIPE_LINKS = {
-    silver: process.env.NEXT_PUBLIC_STRIPE_SILVER_URL || 'https://buy.stripe.com/8x214m0Icg1B46B1Rj2oE02',
-    gold: process.env.NEXT_PUBLIC_STRIPE_GOLD_URL || 'https://buy.stripe.com/14A8wO3Uo4iTbz353v2oE03'
+    silver: STRIPE_CONFIG.silver.baseUrl,
+    gold: STRIPE_CONFIG.gold.baseUrl
 };
 
 /**
