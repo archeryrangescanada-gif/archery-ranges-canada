@@ -21,6 +21,7 @@ import {
     Loader2
 } from 'lucide-react'
 import { canAccessAnalytics, getUserSubscriptionTier, getUpgradeLink, getUpgradeMessage } from '@/lib/subscription-utils'
+import { normalizeTier } from '@/types/range'
 // Custom interface for dashboard (some fields use different names)
 interface Range {
     id: string
@@ -261,16 +262,16 @@ export default function DashboardPage() {
                                                 {(() => {
                                                     const tier = getUserSubscriptionTier(range)
                                                     return (
-                                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${tier === 'gold'
-                                                            ? 'bg-amber-100 text-amber-700'
-                                                            : tier === 'silver'
-                                                                ? 'bg-blue-100 text-blue-700'
-                                                                : tier === 'bronze'
+                                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${normalizeTier(tier) === 'gold'
+                                                            ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                                            : normalizeTier(tier) === 'silver'
+                                                                ? 'bg-stone-200 text-stone-800 border border-stone-300'
+                                                                : normalizeTier(tier) === 'bronze'
                                                                     ? 'bg-emerald-100 text-emerald-700'
                                                                     : 'bg-stone-100 text-stone-600'
                                                             }`}>
-                                                            {tier === 'gold' && <Star className="w-3 h-3" />}
-                                                            {tier.charAt(0).toUpperCase() + tier.slice(1)}
+                                                            {normalizeTier(tier) === 'gold' && <Star className="w-3 h-3" />}
+                                                            {normalizeTier(tier).charAt(0).toUpperCase() + normalizeTier(tier).slice(1)}
                                                         </span>
                                                     )
                                                 })()}
@@ -332,7 +333,7 @@ export default function DashboardPage() {
                 {/* Upgrade CTA for free/bronze users */}
                 {ranges.some(r => {
                     const tier = getUserSubscriptionTier(r);
-                    return tier === 'free' || tier === 'bronze';
+                    return normalizeTier(tier) === 'free' || normalizeTier(tier) === 'bronze';
                 }) && (
                         <div className="mt-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-6 text-white text-center sm:text-left">
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -340,7 +341,7 @@ export default function DashboardPage() {
                                     <h3 className="text-xl font-bold mb-1">
                                         {getUpgradeMessage(getUserSubscriptionTier(ranges.find(r => {
                                             const tier = getUserSubscriptionTier(r);
-                                            return tier === 'free' || tier === 'bronze';
+                                            return normalizeTier(tier) === 'free' || normalizeTier(tier) === 'bronze';
                                         })!))}
                                     </h3>
                                     <p className="text-emerald-50">Get more visibility, add photos, and attract more customers</p>
@@ -348,10 +349,10 @@ export default function DashboardPage() {
                                 <a
                                     href={getUpgradeLink(getUserSubscriptionTier(ranges.find(r => {
                                         const tier = getUserSubscriptionTier(r);
-                                        return tier === 'free' || tier === 'bronze';
+                                        return normalizeTier(tier) === 'free' || normalizeTier(tier) === 'bronze';
                                     })!), ranges.find(r => {
                                         const tier = getUserSubscriptionTier(r);
-                                        return tier === 'free' || tier === 'bronze';
+                                        return normalizeTier(tier) === 'free' || normalizeTier(tier) === 'bronze';
                                     })?.id)}
                                     target="_blank"
                                     rel="noopener noreferrer"

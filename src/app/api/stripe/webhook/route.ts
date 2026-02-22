@@ -69,8 +69,8 @@ export async function POST(request: Request) {
       console.error('Failed to retrieve line items:', err)
     }
 
-    // 3. Default to silver (pro)
-    console.warn('Could not determine tier, defaulting to pro (silver)')
+    // 3. Default to pro
+    console.warn('Could not determine tier, defaulting to pro')
     return 'pro'
   }
 

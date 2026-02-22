@@ -7,9 +7,9 @@ import Link from 'next/link'
 import { ArrowLeft, Save, Trash2, MapPin, Loader2 } from 'lucide-react'
 import { PhotoManager } from '@/components/dashboard/PhotoManager'
 import Header from '@/components/Header'
-import { SubscriptionTier, getUserSubscriptionTier, getUpgradeLink } from '@/lib/subscription-utils'
+import { getUserSubscriptionTier, getUpgradeLink } from '@/lib/subscription-utils'
 import { normalizeToArray } from '@/lib/utils/data-normalization'
-import { TIER_LIMITS, BusinessHours, DayOfWeek } from '@/types/range'
+import { SubscriptionTier, TIER_LIMITS, BusinessHours, DayOfWeek, normalizeTier } from '@/types/range'
 
 const DAYS_ORDER: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 const DAY_LABELS: Record<DayOfWeek, string> = {

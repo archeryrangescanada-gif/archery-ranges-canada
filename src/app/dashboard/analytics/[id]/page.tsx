@@ -6,7 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { ArrowLeft, Eye, TrendingUp, MousePointer, Calendar, BarChart3, Phone, Mail, Globe, Navigation, MapPin, MessageSquare, Lock, Star } from 'lucide-react'
-import { SubscriptionTier, getUserSubscriptionTier, canAccessAnalytics, getUpgradeLink } from '@/lib/subscription-utils'
+import { canAccessAnalytics, getUserSubscriptionTier, getUpgradeLink, getUpgradeMessage } from '@/lib/subscription-utils'
+import { SubscriptionTier, normalizeTier } from '@/types/range'
 
 interface Range {
     id: string

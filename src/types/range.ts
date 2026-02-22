@@ -3,7 +3,16 @@
 // src/types/range.ts
 // =====================================================
 
-export type SubscriptionTier = 'free' | 'bronze' | 'silver' | 'gold';
+export type SubscriptionTier = 'free' | 'bronze' | 'silver' | 'gold' | 'basic' | 'pro' | 'premium';
+
+export function normalizeTier(tier: string | undefined | null): 'free' | 'bronze' | 'silver' | 'gold' {
+  if (!tier) return 'free';
+  if (tier === 'basic') return 'bronze';
+  if (tier === 'pro') return 'silver';
+  if (tier === 'premium') return 'gold';
+  if (['free', 'bronze', 'silver', 'gold'].includes(tier)) return tier as any;
+  return 'free';
+}
 
 export type FacilityType = 'indoor' | 'outdoor' | 'both';
 
@@ -190,7 +199,14 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     priorityInSearch: true,
     supportLevel: '24hr_phone',
   },
+  basic: null as any,
+  pro: null as any,
+  premium: null as any,
 };
+
+TIER_LIMITS.basic = TIER_LIMITS.bronze;
+TIER_LIMITS.pro = TIER_LIMITS.silver;
+TIER_LIMITS.premium = TIER_LIMITS.gold;
 
 export interface RangeReview {
   id: string;
