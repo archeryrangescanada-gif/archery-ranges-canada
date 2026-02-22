@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, Save, Loader2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, Trash2, Lock } from 'lucide-react'
 import Link from 'next/link'
 
 interface Province {
@@ -26,6 +26,7 @@ export default function EditListingPage() {
     const [saving, setSaving] = useState(false)
     const [provinces, setProvinces] = useState<Province[]>([])
     const [cities, setCities] = useState<City[]>([])
+    const [isClaimed, setIsClaimed] = useState(false)
 
     const [formData, setFormData] = useState({
         name: '',
@@ -81,6 +82,10 @@ export default function EditListingPage() {
 
             if (error) throw error
             if (!listing) throw new Error('Listing not found')
+
+            if (listing.owner_id) {
+                setIsClaimed(true)
+            }
 
             // 3. Set Form Data
             setFormData({
@@ -197,6 +202,40 @@ export default function EditListingPage() {
     }
 
     if (loading) return <div className="p-8">Loading listing...</div>
+
+    if (isClaimed) {
+        return (
+            <div className="max-w-4xl mx-auto pb-12">
+                <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/admin/listings"
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        >
+                            <ArrowLeft className="w-5 h-5 text-gray-600" />
+                        </Link>
+                        <h1 className="text-2xl font-bold text-gray-900">Edit Locked</h1>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow p-8 text-center max-w-2xl mx-auto mt-12">
+                    <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Lock className="w-8 h-8" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Listing Claimed</h2>
+                    <p className="text-gray-600 mb-8">
+                        This listing has been claimed by its owner. Editing is restricted to the listing owner to maintain data integrity. If you need to make administrative changes or revoke the claim, please use the main admin interface.
+                    </p>
+                    <Link
+                        href="/admin/listings"
+                        className="inline-flex items-center px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                    >
+                        Return to Listings
+                    </Link>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="max-w-4xl mx-auto pb-12">
