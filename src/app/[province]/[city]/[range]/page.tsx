@@ -354,25 +354,6 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   <EventsSection events={events} rangeName={range.name} />
                 )}
 
-                {/* Google Calendar Embed */}
-                {tierLimits.hasEvents && range.google_calendar_embed_url && (
-                  <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-                    <h2 className="text-xl font-semibold text-stone-800 mb-6 flex items-center gap-2">
-                      <Calendar className="w-6 h-6 text-emerald-600" />
-                      Range Calendar & Schedule
-                    </h2>
-                    <div className="w-full overflow-hidden rounded-xl border border-stone-200 bg-stone-50" style={{ height: '500px' }}>
-                      <iframe
-                        src={range.google_calendar_embed_url}
-                        style={{ border: 0, width: '100%', height: '100%' }}
-                        frameBorder="0"
-                        scrolling="yes"
-                        title={`${range.name} Events Calendar`}
-                      ></iframe>
-                    </div>
-                  </section>
-                )}
-
                 {/* Map */}
                 {range.latitude && range.longitude && (
                   <MapSection
@@ -458,6 +439,25 @@ export default async function RangeDetailPage({ params }: PageProps) {
 
               {/* Right Column - Sidebar */}
               <div className="space-y-6">
+                {/* Google Calendar Embed */}
+                {tierLimits.hasEvents && range.google_calendar_embed_url && (
+                  <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+                    <h2 className="text-xl font-semibold text-stone-800 mb-6 flex items-center gap-2 text-sm">
+                      <Calendar className="w-5 h-5 text-emerald-600" />
+                      Range Calendar & Schedule
+                    </h2>
+                    <div className="w-full overflow-hidden rounded-xl border border-stone-200 bg-stone-50" style={{ height: '400px' }}>
+                      <iframe
+                        src={range.google_calendar_embed_url}
+                        style={{ border: 0, width: '100%', height: '100%' }}
+                        frameBorder="0"
+                        scrolling="yes"
+                        title={`${range.name} Events Calendar`}
+                      ></iframe>
+                    </div>
+                  </section>
+                )}
+
                 {/* Contact Card */}
                 <ContactSection
                   phone={range.phone_number}

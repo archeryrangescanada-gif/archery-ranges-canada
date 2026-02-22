@@ -227,6 +227,26 @@ export default function SettingsPage() {
         setError('')
         setSuccess('')
 
+        let cleanCalendarUrl = formData.google_calendar_embed_url || null;
+        if (cleanCalendarUrl) {
+            try {
+                if (!cleanCalendarUrl.includes('calendar.google.com/calendar/embed?src=')) {
+                    const urlObj = new URL(cleanCalendarUrl);
+                    const cid = urlObj.searchParams.get('cid');
+                    if (cid) {
+                        try {
+                            const decoded = atob(cid);
+                            cleanCalendarUrl = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(decoded)}`;
+                        } catch (e) { }
+                    }
+                    const src = urlObj.searchParams.get('src');
+                    if (src && !cid) {
+                        cleanCalendarUrl = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(src)}`;
+                    }
+                }
+            } catch (e) { }
+        }
+
         try {
             const { error: updateError } = await supabase
                 .from('ranges')
@@ -265,7 +285,7 @@ export default function SettingsPage() {
                     longitude: formData.longitude,
                     post_images: formData.post_images,
                     video_urls: formData.video_urls,
-                    google_calendar_embed_url: formData.google_calendar_embed_url || null,
+                    google_calendar_embed_url: cleanCalendarUrl,
                 })
                 .eq('id', rangeId)
 
