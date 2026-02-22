@@ -47,8 +47,8 @@ export default function ReviewsPage() {
                 }
 
                 // Fetch ranges owned by this user
-                const { data: rangesData } = await fetch('/api/dashboard/ranges').then(r => r.json())
-                const fetchedRanges = rangesData || []
+                const data = await fetch('/api/dashboard/ranges').then(r => r.json())
+                const fetchedRanges = data.ranges || []
 
                 // Fetch all reviews for these ranges
                 let fetchedReviews: RangeReview[] = []
