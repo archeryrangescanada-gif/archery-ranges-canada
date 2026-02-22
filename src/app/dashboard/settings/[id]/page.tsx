@@ -49,6 +49,7 @@ interface FormData {
     longitude: number
     post_images: string[]
     video_urls: string[]
+    google_calendar_embed_url?: string
 }
 
 export default function SettingsPage() {
@@ -96,7 +97,8 @@ export default function SettingsPage() {
         latitude: 0,
         longitude: 0,
         post_images: [],
-        video_urls: []
+        video_urls: [],
+        google_calendar_embed_url: ''
     })
     const [deleting, setDeleting] = useState(false)
 
@@ -194,6 +196,7 @@ export default function SettingsPage() {
                     longitude: rangeData.longitude || 0,
                     post_images: normalizeToArray(rangeData.post_images),
                     video_urls: normalizeToArray(rangeData.video_urls),
+                    google_calendar_embed_url: rangeData.google_calendar_embed_url || '',
                 })
                 setTier(getUserSubscriptionTier(rangeData))
                 setLoading(false)
@@ -262,6 +265,7 @@ export default function SettingsPage() {
                     longitude: formData.longitude,
                     post_images: formData.post_images,
                     video_urls: formData.video_urls,
+                    google_calendar_embed_url: formData.google_calendar_embed_url || null,
                 })
                 .eq('id', rangeId)
 
@@ -897,6 +901,46 @@ export default function SettingsPage() {
                                                 );
                                             }
                                         })()}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Calendar & Events Management */}
+                            <div className="pt-6 border-t border-stone-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-lg font-semibold text-stone-800">Events Calendar</h2>
+                                    {tier === 'bronze' && (
+                                        <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                                            Upgrade to Silver for Calendar
+                                        </a>
+                                    )}
+                                </div>
+
+                                {!TIER_LIMITS[tier].hasEvents ? (
+                                    <div className="bg-stone-50 border border-stone-200 rounded-lg p-6 text-center">
+                                        <p className="text-stone-500 text-sm mb-3">Google Calendar embeds are available on Silver and Gold plans.</p>
+                                        <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                                            Upgrade to Add Calendar
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-stone-700 mb-1">
+                                                Google Calendar Public HTML Embed URL
+                                            </label>
+                                            <input
+                                                type="url"
+                                                value={formData.google_calendar_embed_url || ''}
+                                                onChange={(e) => updateField('google_calendar_embed_url', e.target.value)}
+                                                placeholder="https://calendar.google.com/calendar/embed?src=..."
+                                                className="w-full px-4 py-2 rounded-lg border border-stone-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors text-stone-800"
+                                            />
+                                            <p className="mt-1 flex items-start gap-1 text-xs text-stone-500">
+                                                <span className="flex-shrink-0 mt-0.5">•</span>
+                                                Must be a public Google Calendar. Get the URL from your Calendar Settings &gt; Integrate Calendar &gt; Public URL to this calendar.
+                                            </p>
+                                        </div>
                                     </div>
                                 )}
                             </div>

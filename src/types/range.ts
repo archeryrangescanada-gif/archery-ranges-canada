@@ -78,6 +78,7 @@ export interface Range {
   is_featured?: boolean;
   show_reviews?: boolean;
   events_enabled?: boolean;
+  google_calendar_embed_url?: string;
   featured_in_top_ranges?: boolean;
   featured_on_homepage?: boolean;
   custom_page_design?: Record<string, unknown>;
