@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
 
-        if (session.payment_status === 'paid') {
+        if (session.payment_status === 'paid' || session.payment_status === 'no_payment_required') {
           // Check for rangeId in metadata OR client_reference_id
           const rangeId = session.metadata?.rangeId || session.client_reference_id
 
