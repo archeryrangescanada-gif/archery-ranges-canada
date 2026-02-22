@@ -127,7 +127,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasContactForm: false,
     hasClickableContact: false,
     hasSocialLinks: false,
-    hasReviews: false,
+    hasReviews: true,
     hasEvents: false,
     featuredBadge: false,
     bronzeBadge: false,
@@ -147,7 +147,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasContactForm: true,
     hasClickableContact: true,
     hasSocialLinks: false,
-    hasReviews: false,
+    hasReviews: true,
     hasEvents: false,
     featuredBadge: true,
     bronzeBadge: true,
@@ -216,6 +216,8 @@ export interface RangeReview {
   reviewer_name?: string;
   rating: number;
   review_text?: string;
+  owner_reply?: string;
+  owner_reply_created_at?: string;
   is_approved: boolean;
   created_at: string;
   updated_at: string;

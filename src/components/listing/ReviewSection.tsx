@@ -15,6 +15,8 @@ interface Review {
         full_name: string | null;
         avatar_url: string | null;
     };
+    owner_reply?: string;
+    owner_reply_created_at?: string;
 }
 
 interface ReviewSectionProps {
@@ -200,7 +202,7 @@ export function ReviewSection({ listingId, initialReviews = [] }: ReviewSectionP
                         <textarea
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border border-stone-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                            className="w-full px-4 py-3 rounded-lg border border-stone-300 focus:ring-2 focus:ring-emerald-500 outline-none text-stone-900 bg-white"
                             rows={4}
                             placeholder="Share your experience..."
                             required
@@ -252,7 +254,24 @@ export function ReviewSection({ listingId, initialReviews = [] }: ReviewSectionP
                                     ))}
                                 </div>
                             </div>
-                            <p className="text-stone-600 leading-relaxed">{review.comment}</p>
+                            <p className="text-stone-600 leading-relaxed mb-2">{review.comment}</p>
+
+                            {review.owner_reply && (
+                                <div className="mt-4 bg-stone-50 rounded-lg p-4 border border-stone-200 ml-4 lg:ml-8 relative before:content-[''] before:absolute before:left-[-1rem] before:top-4 before:w-4 before:h-4 before:border-l-2 before:border-b-2 before:border-stone-300 before:rounded-bl-lg">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                                            Owner Response
+                                        </span>
+                                        {review.owner_reply_created_at && (
+                                            <span className="text-xs text-stone-500">
+                                                {new Date(review.owner_reply_created_at).toLocaleDateString()}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-stone-600">{review.owner_reply}</p>
+                                </div>
+                            )}
+
 
                             {userId === review.user_id && !showForm && (
                                 <div className="mt-3 flex gap-4 text-sm">

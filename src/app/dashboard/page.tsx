@@ -21,7 +21,7 @@ import {
     Loader2
 } from 'lucide-react'
 import { canAccessAnalytics, getUserSubscriptionTier, getUpgradeLink, getUpgradeMessage } from '@/lib/subscription-utils'
-import { normalizeTier } from '@/types/range'
+import { normalizeTier, RangeReview } from '@/types/range'
 // Custom interface for dashboard (some fields use different names)
 interface Range {
     id: string
@@ -48,6 +48,7 @@ export default function DashboardPage() {
 
     const [user, setUser] = useState<User | null>(null)
     const [ranges, setRanges] = useState<Range[]>([])
+    const [recentReviews, setRecentReviews] = useState<RangeReview[]>([])
     const [loading, setLoading] = useState(true)
     const [loadingMessage, setLoadingMessage] = useState('Initializing...')
     const [error, setError] = useState<string | null>(null)
@@ -98,9 +99,27 @@ export default function DashboardPage() {
                 }
 
                 const data = await response.json()
+                const fetchedRanges = (data.ranges as Range[]) || []
+
+                // 3. Fetch Recent Reviews
+                let fetchedReviews: RangeReview[] = []
+                if (fetchedRanges.length > 0) {
+                    const rangeIds = fetchedRanges.map((r) => r.id)
+                    const { data: revData } = await supabase
+                        .from('reviews')
+                        .select('*')
+                        .in('listing_id', rangeIds)
+                        .order('created_at', { ascending: false })
+                        .limit(3)
+
+                    if (revData) {
+                        fetchedReviews = revData as unknown as RangeReview[]
+                    }
+                }
 
                 if (mounted) {
-                    setRanges((data.ranges as Range[]) || [])
+                    setRanges(fetchedRanges)
+                    setRecentReviews(fetchedReviews)
                     setLoading(false)
                 }
             } catch (err: any) {
@@ -217,153 +236,180 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Listings Section */}
-                <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
-                    <div className="p-6 border-b border-stone-200 flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-stone-800">Your Listings</h2>
-                        <Link
-                            href="/dashboard/onboarding"
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors text-sm"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Add Listing
-                        </Link>
-                    </div>
+                {/* Main Content Grid */}
+                <div className="flex flex-col lg:flex-row gap-8">
+                    {/* Left Column (Listings) */}
+                    <div className="flex-1 min-w-0 space-y-8">
+                        {/* Listings Section */}
+                        <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+                            <div className="p-6 border-b border-stone-200 flex items-center justify-between">
+                                <h2 className="text-lg font-semibold text-stone-800">Your Listings</h2>
+                                <Link
+                                    href="/dashboard/onboarding"
+                                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors text-sm"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Add Listing
+                                </Link>
+                            </div>
 
-                    {ranges.length === 0 ? (
-                        <div className="p-12 text-center">
-                            <MapPin className="w-12 h-12 text-stone-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-stone-700 mb-2">No listings yet</h3>
-                            <p className="text-stone-500 mb-6">Create your first listing to start attracting customers</p>
-                            <Link
-                                href="/dashboard/onboarding"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors"
-                            >
-                                <Plus className="w-5 h-5" />
-                                Add Your First Range
-                            </Link>
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-stone-200">
-                            {ranges.map((range) => (
-                                <div key={range.id} className="p-6 flex items-center justify-between">
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                                            <MapPin className="w-6 h-6 text-emerald-600" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-medium text-stone-800">{range.name}</h3>
-                                            <p className="text-sm text-stone-500">
-                                                {range.address}
-                                                {range.city && `, ${range.city.name}`}
-                                                {range.province && `, ${range.province.name}`}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                {(() => {
-                                                    const tier = getUserSubscriptionTier(range)
-                                                    return (
-                                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${normalizeTier(tier) === 'gold'
-                                                            ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                                                            : normalizeTier(tier) === 'silver'
-                                                                ? 'bg-stone-200 text-stone-800 border border-stone-300'
-                                                                : normalizeTier(tier) === 'bronze'
-                                                                    ? 'bg-emerald-100 text-emerald-700'
-                                                                    : 'bg-stone-100 text-stone-600'
-                                                            }`}>
-                                                            {normalizeTier(tier) === 'gold' && <Star className="w-3 h-3" />}
-                                                            {normalizeTier(tier).charAt(0).toUpperCase() + normalizeTier(tier).slice(1)}
-                                                        </span>
-                                                    )
-                                                })()}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Link
-                                            href={`/${range.province?.slug}/${range.city?.slug}/${range.slug}`}
-                                            target="_blank"
-                                            className="p-2 text-stone-400 hover:text-stone-600 transition-colors"
-                                            title="View listing"
-                                        >
-                                            <ExternalLink className="w-5 h-5" />
-                                        </Link>
-                                        {canAccessAnalytics(getUserSubscriptionTier(range)) ? (
-                                            <Link
-                                                href={`/dashboard/analytics/${range.id}`}
-                                                className="p-2 text-stone-400 hover:text-stone-600 transition-colors"
-                                                title="View analytics"
-                                            >
-                                                <BarChart3 className="w-5 h-5" />
-                                            </Link>
-                                        ) : (
-                                            <>
-                                                <div
-                                                    className="p-2 text-stone-300 cursor-not-allowed group relative"
-                                                    title="Upgrade for Advanced Analytics"
-                                                >
-                                                    <Lock className="w-4 h-4" />
-                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">
-                                                        Upgrade for Advanced Analytics
+                            {ranges.length === 0 ? (
+                                <div className="p-12 text-center">
+                                    <MapPin className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+                                    <h3 className="text-lg font-medium text-stone-700 mb-2">No listings yet</h3>
+                                    <p className="text-stone-500 mb-6">Create your first listing to start attracting customers</p>
+                                    <Link
+                                        href="/dashboard/onboarding"
+                                        className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors"
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                        Add Your First Range
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-stone-200">
+                                    {ranges.map((range) => (
+                                        <div key={range.id} className="p-6 flex items-center justify-between">
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                                    <MapPin className="w-6 h-6 text-emerald-600" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-medium text-stone-800">{range.name}</h3>
+                                                    <p className="text-sm text-stone-500">
+                                                        {range.address}
+                                                        {range.city && `, ${range.city.name}`}
+                                                        {range.province && `, ${range.province.name}`}
+                                                    </p>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        {(() => {
+                                                            const tier = getUserSubscriptionTier(range)
+                                                            return (
+                                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${normalizeTier(tier) === 'gold'
+                                                                    ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                                                    : normalizeTier(tier) === 'silver'
+                                                                        ? 'bg-stone-200 text-stone-800 border border-stone-300'
+                                                                        : normalizeTier(tier) === 'bronze'
+                                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                                            : 'bg-stone-100 text-stone-600'
+                                                                    }`}>
+                                                                    {normalizeTier(tier) === 'gold' && <Star className="w-3 h-3" />}
+                                                                    {normalizeTier(tier).charAt(0).toUpperCase() + normalizeTier(tier).slice(1)}
+                                                                </span>
+                                                            )
+                                                        })()}
                                                     </div>
                                                 </div>
-                                                <a
-                                                    href={getUpgradeLink(getUserSubscriptionTier(range), range.id)}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Link
+                                                    href={`/${range.province?.slug}/${range.city?.slug}/${range.slug}`}
                                                     target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded shadow-sm transition-colors whitespace-nowrap"
+                                                    className="p-2 text-stone-400 hover:text-stone-600 transition-colors"
+                                                    title="View listing"
                                                 >
-                                                    Upgrade
-                                                </a>
-                                            </>
-                                        )}
-                                        <Link
-                                            href={`/dashboard/settings/${range.id}`}
-                                            className="p-2 text-stone-400 hover:text-stone-600 transition-colors"
-                                            title="Edit listing"
-                                        >
-                                            <Settings className="w-5 h-5" />
-                                        </Link>
-                                    </div>
+                                                    <ExternalLink className="w-5 h-5" />
+                                                </Link>
+                                                {canAccessAnalytics(getUserSubscriptionTier(range)) ? (
+                                                    <Link
+                                                        href={`/dashboard/analytics/${range.id}`}
+                                                        className="p-2 text-stone-400 hover:text-stone-600 transition-colors"
+                                                        title="View analytics"
+                                                    >
+                                                        <BarChart3 className="w-5 h-5" />
+                                                    </Link>
+                                                ) : (
+                                                    <>
+                                                        <div
+                                                            className="p-2 text-stone-300 cursor-not-allowed group relative"
+                                                            title="Upgrade for Advanced Analytics"
+                                                        >
+                                                            <Lock className="w-4 h-4" />
+                                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">
+                                                                Upgrade for Advanced Analytics
+                                                            </div>
+                                                        </div>
+                                                        <a
+                                                            href={getUpgradeLink(getUserSubscriptionTier(range), range.id)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded shadow-sm transition-colors whitespace-nowrap"
+                                                        >
+                                                            Upgrade
+                                                        </a>
+                                                    </>
+                                                )}
+                                                <Link
+                                                    href={`/dashboard/settings/${range.id}`}
+                                                    className="p-2 text-stone-400 hover:text-stone-600 transition-colors"
+                                                    title="Edit listing"
+                                                >
+                                                    <Settings className="w-5 h-5" />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            )}
                         </div>
-                    )}
-                </div>
+                    </div>
 
-                {/* Upgrade CTA for free/bronze users */}
-                {ranges.some(r => {
-                    const tier = getUserSubscriptionTier(r);
-                    return normalizeTier(tier) === 'free' || normalizeTier(tier) === 'bronze';
-                }) && (
-                        <div className="mt-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-6 text-white text-center sm:text-left">
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                                <div>
-                                    <h3 className="text-xl font-bold mb-1">
-                                        {getUpgradeMessage(getUserSubscriptionTier(ranges.find(r => {
-                                            const tier = getUserSubscriptionTier(r);
-                                            return normalizeTier(tier) === 'free' || normalizeTier(tier) === 'bronze';
-                                        })!))}
-                                    </h3>
-                                    <p className="text-emerald-50">Get more visibility, add photos, and attract more customers</p>
+                    {/* Right Column (Recent Reviews) */}
+                    <div className="w-full lg:w-80 flex-shrink-0 space-y-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+                            <div className="p-5 border-b border-stone-100 flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                                    <Star className="w-4 h-4 text-amber-600" />
                                 </div>
-                                <a
-                                    href={getUpgradeLink(getUserSubscriptionTier(ranges.find(r => {
-                                        const tier = getUserSubscriptionTier(r);
-                                        return normalizeTier(tier) === 'free' || normalizeTier(tier) === 'bronze';
-                                    })!), ranges.find(r => {
-                                        const tier = getUserSubscriptionTier(r);
-                                        return normalizeTier(tier) === 'free' || normalizeTier(tier) === 'bronze';
-                                    })?.id)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-8 py-4 bg-white text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-all shadow-lg whitespace-nowrap"
+                                <h2 className="font-semibold text-stone-800">Recent Reviews</h2>
+                            </div>
+
+                            <div className="divide-y divide-stone-100">
+                                {recentReviews.length === 0 ? (
+                                    <div className="p-6 text-center text-stone-500 text-sm">
+                                        No reviews yet. Check back later!
+                                    </div>
+                                ) : (
+                                    recentReviews.map((review: any) => {
+                                        const rangeName = ranges.find(r => r.id === review.listing_id)?.name || 'Unknown Range';
+                                        return (
+                                            <div key={review.id} className="p-5">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                                                        {rangeName}
+                                                    </span>
+                                                    <div className="flex items-center gap-0.5 text-amber-400">
+                                                        <Star className="w-3.5 h-3.5 fill-current" />
+                                                        <span className="text-xs font-medium text-stone-600 ml-1">{review.rating}</span>
+                                                    </div>
+                                                </div>
+                                                {review.comment && (
+                                                    <p className="text-sm text-stone-600 line-clamp-3 mb-3">
+                                                        "{review.comment}"
+                                                    </p>
+                                                )}
+                                                <div className="flex items-center justify-between text-xs text-stone-400">
+                                                    <span>{review.reviewer_name || 'Anonymous'}</span>
+                                                    <span>{new Date(review.created_at).toLocaleDateString()}</span>
+                                                </div>
+                                            </div>
+                                        )
+                                    })
+                                )}
+                            </div>
+
+                            <div className="p-4 bg-stone-50 border-t border-stone-100">
+                                <Link
+                                    href="/dashboard/reviews"
+                                    className="block w-full text-center px-4 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-medium rounded-lg transition-colors text-sm"
                                 >
-                                    Upgrade Now
-                                </a>
+                                    Manage All Reviews
+                                </Link>
                             </div>
                         </div>
-                    )}
-            </main>
-        </div>
+                    </div>
+                </div>
+            </main >
+        </div >
     )
 }
