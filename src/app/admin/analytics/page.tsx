@@ -381,9 +381,9 @@ export default function AnalyticsPage() {
         {analytics.categoryStats.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {analytics.categoryStats.map((cat) => (
-              <div key={cat.slug} className="bg-yellow-50 rounded-lg p-4 text-center border border-yellow-200">
-                <p className="text-2xl font-bold text-yellow-700">{cat.clicks.toLocaleString()}</p>
-                <p className="text-sm text-yellow-600 mt-1">{cat.name}</p>
+              <div key={cat.slug} className="bg-amber-50 rounded-lg p-4 text-center border border-amber-200">
+                <p className="text-2xl font-bold text-amber-900">{cat.clicks.toLocaleString()}</p>
+                <p className="text-sm font-medium text-stone-800 mt-1">{cat.name}</p>
               </div>
             ))}
           </div>

@@ -89,12 +89,35 @@ export async function POST(request: Request) {
 
             console.log(`Checkout completed: Upgrading range ${rangeId} to ${subscriptionTier}`)
 
+            // Fetch existing range data to see if there's already an active Stripe subscription
+            const { data: existingRange } = await supabaseAdmin
+              .from('ranges')
+              .select('stripe_subscription_id')
+              .eq('id', rangeId)
+              .single()
+
+            const oldSubscriptionId = existingRange?.stripe_subscription_id
+            const newSubscriptionId = session.subscription as string
+
+            // Cancel old subscription if it exists and is different from the newly purchased one
+            if (oldSubscriptionId && oldSubscriptionId !== newSubscriptionId) {
+              console.log(`Found existing subscription ${oldSubscriptionId} for range ${rangeId}. Canceling to prevent duplicates.`)
+              try {
+                // Cancel at the end of the current billing cycle or immediately
+                await stripe.subscriptions.cancel(oldSubscriptionId)
+                console.log(`Successfully canceled old subscription: ${oldSubscriptionId}`)
+              } catch (cancelError) {
+                console.error(`Failed to cancel old subscription ${oldSubscriptionId}:`, cancelError)
+                // We proceed with DB update even if Stripe cancel fails, to log the new subscription
+              }
+            }
+
             const { error } = await supabaseAdmin
               .from('ranges')
               .update({
                 subscription_tier: subscriptionTier,
                 stripe_customer_id: session.customer as string,
-                stripe_subscription_id: session.subscription as string,
+                stripe_subscription_id: newSubscriptionId,
                 subscription_status: 'active',
                 subscription_updated_at: new Date().toISOString(),
                 is_featured: true, // All paid tiers are featured

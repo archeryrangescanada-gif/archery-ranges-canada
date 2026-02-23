@@ -47,49 +47,115 @@ export default function SubscriptionsPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      // 1. Fetch Plans
-      const { data: plansData, error: plansError } = await supabase
-        .from('subscription_plans')
-        .select('*')
-        .order('price', { ascending: true })
+      // 1. Hardcoded Plans (Since RLS blocks client reads on subscription_plans)
+      const processedPlans: SubscriptionPlan[] = [
+        {
+          id: 'bronze-plan-id',
+          name: 'Bronze',
+          description: 'Free listing',
+          price: 0,
+          interval: 'month',
+          activeCount: 0,
+          features: ['Basic listing', 'Contact information', '✗ Photos', '✗ Featured placement'],
+          badgeImage: '/bronze-badge.png',
+          color: 'amber',
+          is_public: true
+        },
+        {
+          id: 'silver-plan-id',
+          name: 'Silver',
+          description: 'Enhanced visibility',
+          price: 49.99,
+          interval: 'month',
+          activeCount: 0,
+          features: ['Everything in Bronze', 'Up to 10 photos', 'Business hours', '✗ Featured placement'],
+          badgeImage: '/silver-badge.png',
+          color: 'slate',
+          is_public: true
+        },
+        {
+          id: 'gold-plan-id',
+          name: 'Gold',
+          description: 'Full featured exposure',
+          price: 149.99,
+          interval: 'month',
+          activeCount: 0,
+          features: ['Everything in Silver', 'Unlimited photos', 'Featured placement', 'Priority support'],
+          badgeImage: '/gold-badge.png',
+          color: 'yellow',
+          is_public: true
+        }
+      ]
 
-      if (plansError) throw plansError
-
-      // 2. Fetch Subscriptions with Profile and Plan details
-      // Note: We need to join manually if deep select isn't perfectly inferred, 
-      // but usually '*, profiles!inner(email, full_name), subscription_plans(*)' works if FKs exist.
-      // Since specific FKs to profiles might rely on auth linkage, we might need a workaround if schema isn't perfect.
-      // Let's try direct select first assuming standardSupabase relations from previous context.
-      // Actually, profiles usually links on id=id.
-
+      // 2. Fetch Active Subscriptions from ranges table
       const { data: subsData, error: subsError } = await supabase
-        .from('subscriptions')
+        .from('ranges')
         .select(`
-          *,
-          profiles:user_id (email, full_name),
-          plan:plan_id (name, price, interval)
+          id,
+          name,
+          subscription_tier,
+          subscription_status,
+          subscription_updated_at,
+          stripe_subscription_id,
+          owner_id
         `)
+        .not('subscription_tier', 'in', '("free","basic","bronze")')
 
       if (subsError) throw subsError
 
+      // 3. Fetch user profiles manually for these ranges
+      const ownerIdsArray = (subsData || []).map((r: any) => r.owner_id).filter(Boolean)
+      const ownerIds = Array.from(new Set(ownerIdsArray)) as string[]
+      let profilesMap: Record<string, any> = {}
+
+      if (ownerIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', ownerIds)
+
+        if (profilesData) {
+          profilesData.forEach((p: any) => {
+            profilesMap[p.id] = p
+          })
+        }
+      }
+
       // Process Subscriptions
-      const processedSubs: ActiveSubscription[] = (subsData || []).map((sub: any) => ({
-        id: sub.id,
-        customerName: sub.profiles?.full_name || 'Unknown User',
-        email: sub.profiles?.email || 'No Email',
-        planName: sub.plan?.name || 'Unknown Plan',
-        status: sub.status,
-        startDate: new Date(sub.start_date).toLocaleDateString(),
-        nextBilling: sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString() : 'N/A',
-        revenue: `$${sub.plan?.price || 0}/${sub.plan?.interval || 'mo'}`,
-        planId: sub.plan_id
-      }))
+      const processedSubs: ActiveSubscription[] = (subsData || []).map((sub: any) => {
+        const profile = profilesMap[sub.owner_id] || {}
+
+        let planId = 'bronze-plan-id'
+        let planName = 'Bronze'
+        let revenueStr = '$0/mo'
+
+        if (sub.subscription_tier === 'pro' || sub.subscription_tier === 'silver') {
+          planId = 'silver-plan-id'
+          planName = 'Silver'
+          revenueStr = '$49.99/mo'
+        } else if (sub.subscription_tier === 'premium' || sub.subscription_tier === 'gold') {
+          planId = 'gold-plan-id'
+          planName = 'Gold'
+          revenueStr = '$149.99/mo'
+        }
+
+        return {
+          id: sub.id,
+          customerName: profile.full_name || 'Unknown User',
+          email: profile.email || 'No Email',
+          planName: planName,
+          status: sub.subscription_status || 'active',
+          startDate: sub.subscription_updated_at ? new Date(sub.subscription_updated_at).toLocaleDateString() : 'N/A',
+          nextBilling: 'Managed in Stripe', // Next billing isn't stored locally by default
+          revenue: revenueStr,
+          planId: planId
+        }
+      })
 
       setSubscriptions(processedSubs)
 
       // Calculate Revenue
       const monthlyRev = processedSubs.reduce((acc, sub) => {
-        // Simple calculation: assume all are monthly for the dashboard summary
         const price = parseFloat(sub.revenue.replace(/[^0-9.]/g, ''))
         return acc + (isNaN(price) ? 0 : price)
       }, 0)
@@ -101,25 +167,15 @@ export default function SubscriptionsPage() {
         return acc
       }, {})
 
-      const processedPlans: SubscriptionPlan[] = (plansData || []).map((plan: any) => ({
-        id: plan.id,
-        name: plan.name,
-        description: plan.description || '',
-        price: Number(plan.price),
-        interval: plan.interval,
-        activeCount: counts[plan.id] || 0,
-        features: Array.isArray(plan.features) ? plan.features : [],
-        badgeImage: plan.badge_image || '/placeholder-badge.png',
-        color: plan.color || 'slate',
-        is_public: plan.is_public !== false,
-        max_quantity: plan.max_quantity
+      const plansWithCounts = processedPlans.map(plan => ({
+        ...plan,
+        activeCount: counts[plan.id] || 0
       }))
 
-      setPlans(processedPlans)
+      setPlans(plansWithCounts)
 
     } catch (error) {
       console.error('Error fetching data:', error)
-      // Fallback for demo if DB is empty - handled by empty arrays
     } finally {
       setLoading(false)
     }
@@ -127,16 +183,14 @@ export default function SubscriptionsPage() {
 
   const handleDeletePlan = async (id: string) => {
     if (!confirm('Are you sure? This will hide the plan, not delete it if used.')) return
-    // In production, you'd soft delete or check usage.
-    // For now, client side optimistic update or simple console log since actions aren't fully hooked up.
     console.log('Delete plan', id)
   }
 
   const handleDeleteSubscription = async (id: string) => {
-    if (!confirm('Cancel this subscription?')) return
+    if (!confirm('Revoke this subscription and revert to Bronze?')) return
     const { error } = await supabase
-      .from('subscriptions')
-      .update({ status: 'cancelled' })
+      .from('ranges')
+      .update({ subscription_tier: 'basic', subscription_status: 'canceled' })
       .eq('id', id)
 
     if (error) {
