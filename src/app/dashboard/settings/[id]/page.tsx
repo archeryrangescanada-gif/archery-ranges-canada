@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { ArrowLeft, Save, Trash2, MapPin, Loader2 } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, MapPin, Loader2, Wand2, CheckCircle2 } from 'lucide-react'
 import { PhotoManager } from '@/components/dashboard/PhotoManager'
 import Header from '@/components/Header'
 import { getUserSubscriptionTier, getUpgradeLink } from '@/lib/subscription-utils'
@@ -50,6 +50,7 @@ interface FormData {
     post_images: string[]
     video_urls: string[]
     google_calendar_embed_url?: string
+    whatsapp_number?: string
 }
 
 export default function SettingsPage() {
@@ -64,6 +65,13 @@ export default function SettingsPage() {
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
+
+    // SAM AI Generation State
+    const [isGeneratingSam, setIsGeneratingSam] = useState(false)
+    const [samTone, setSamTone] = useState<'Professional' | 'Friendly' | 'Dynamic'>('Professional')
+    const [samWordCount, setSamWordCount] = useState<100 | 200 | 300>(100)
+    const [samInput, setSamInput] = useState('')
+
     const [tier, setTier] = useState<SubscriptionTier>('free')
 
     const [formData, setFormData] = useState<FormData>({
@@ -98,7 +106,8 @@ export default function SettingsPage() {
         longitude: 0,
         post_images: [],
         video_urls: [],
-        google_calendar_embed_url: ''
+        google_calendar_embed_url: '',
+        whatsapp_number: ''
     })
     const [deleting, setDeleting] = useState(false)
 
@@ -197,6 +206,7 @@ export default function SettingsPage() {
                     post_images: normalizeToArray(rangeData.post_images),
                     video_urls: normalizeToArray(rangeData.video_urls),
                     google_calendar_embed_url: rangeData.google_calendar_embed_url || '',
+                    whatsapp_number: rangeData.whatsapp_number || '',
                 })
                 setTier(getUserSubscriptionTier(rangeData))
                 setLoading(false)
@@ -220,6 +230,40 @@ export default function SettingsPage() {
     const updateField = (field: keyof FormData, value: string | boolean | string[] | number | BusinessHours) => {
         setFormData(prev => ({ ...prev, [field]: value }))
         setSuccess('')
+    }
+
+    const handleGenerateSamDescription = async () => {
+        setIsGeneratingSam(true);
+        setError('');
+
+        try {
+            const response = await fetch('/api/owner/generate-description', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    rangeId,
+                    tone: samTone,
+                    wordCount: samWordCount,
+                    ownerInput: samInput
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to generate description');
+            }
+
+            // Success - update the description field
+            updateField('description', data.description);
+            setSuccess('Description generated successfully! Review and click Save when ready.');
+
+        } catch (err: any) {
+            console.error('SAM Generation Error:', err);
+            setError(err.message || 'An error occurred while generating the description.');
+        } finally {
+            setIsGeneratingSam(false);
+        }
     }
 
     const handleSave = async () => {
@@ -286,6 +330,7 @@ export default function SettingsPage() {
                     post_images: formData.post_images,
                     video_urls: formData.video_urls,
                     google_calendar_embed_url: cleanCalendarUrl,
+                    whatsapp_number: formData.whatsapp_number || null,
                 })
                 .eq('id', rangeId)
 
@@ -431,19 +476,114 @@ export default function SettingsPage() {
                                         rows={5}
                                         className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
                                     />
-                                    <div className="flex justify-end mt-1">
+                                    <div className="flex justify-between items-start mt-1">
+                                        <p className="text-xs text-stone-500 max-w-xl">
+                                            Tell visitors about your range, history, specific rules, and what to expect.
+                                        </p>
                                         {(() => {
                                             const wordCount = formData.description.trim().split(/\s+/).filter(Boolean).length;
                                             const limit = TIER_LIMITS[tier].descriptionWordLimit;
                                             const isOver = limit !== -1 && wordCount > limit;
 
                                             return (
-                                                <div className={`text-xs ${isOver ? 'text-red-500 font-bold' : 'text-stone-400'}`}>
+                                                <div className={`text-xs whitespace-nowrap ${isOver ? 'text-red-500 font-bold' : 'text-stone-400'}`}>
                                                     {wordCount} / {limit === -1 ? 'Unlimited' : limit} words
-                                                    {isOver && <span className="ml-1">(Please shorten description)</span>}
+                                                    {isOver && <span className="ml-1 block sm:inline">(Please shorten description)</span>}
                                                 </div>
                                             );
                                         })()}
+                                    </div>
+
+                                    {/* SAM AI Generation tool */}
+                                    <div className="mt-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 p-5 shadow-sm">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
+                                                <Wand2 className="w-4 h-4" />
+                                            </div>
+                                            <h3 className="font-semibold text-indigo-900 text-sm">Generate with SAM (Smart Archery Manager)</h3>
+                                        </div>
+                                        <p className="text-xs text-indigo-700 mb-4">
+                                            Let our AI write an SEO-optimized, highly converting description for your facility based on your settings.
+                                        </p>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label className="block text-xs font-medium text-indigo-900 mb-1">Tone of Voice</label>
+                                                <select
+                                                    value={samTone}
+                                                    onChange={(e) => setSamTone(e.target.value as any)}
+                                                    className="w-full text-sm px-3 py-2 rounded-lg border border-indigo-200 bg-white text-stone-800 focus:ring-2 focus:ring-indigo-500"
+                                                >
+                                                    <option value="Professional">Professional (Authoritative & Trustworthy)</option>
+                                                    <option value="Friendly">Friendly (Welcoming & Approachable)</option>
+                                                    <option value="Dynamic">Dynamic (Energetic & Action-Oriented)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-indigo-900 mb-1">Target Word Count</label>
+                                                <select
+                                                    value={samWordCount}
+                                                    onChange={(e) => setSamWordCount(Number(e.target.value) as any)}
+                                                    className="w-full text-sm px-3 py-2 rounded-lg border border-indigo-200 bg-white text-stone-800 focus:ring-2 focus:ring-indigo-500"
+                                                >
+                                                    <option value={100}>100 Words (Short & Punchy)</option>
+                                                    {(tier === 'silver' || tier === 'gold') && (
+                                                        <option value={200}>200 Words (Detailed)</option>
+                                                    )}
+                                                    {(tier === 'gold') && (
+                                                        <option value={300}>300 Words (Comprehensive)</option>
+                                                    )}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-4">
+                                            <label className="block text-xs font-medium text-indigo-900 mb-1">Additional Context (Optional)</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g., 'We just hosted the 2024 Provincials' or 'Family owned since 1995'"
+                                                value={samInput}
+                                                onChange={(e) => setSamInput(e.target.value)}
+                                                className="w-full text-sm px-3 py-2 rounded-lg border border-indigo-200 bg-white text-stone-800 focus:ring-2 focus:ring-indigo-500 placeholder-indigo-300"
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={handleGenerateSamDescription}
+                                            disabled={isGeneratingSam}
+                                            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 disabled:bg-indigo-400 disabled:cursor-not-allowed"
+                                        >
+                                            {isGeneratingSam ? (
+                                                <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                                            ) : (
+                                                <><Wand2 className="w-4 h-4" /> Generate Description</>
+                                            )}
+                                        </button>
+
+                                        <div className="mt-5 pt-4 border-t border-indigo-200/60">
+                                            <h4 className="font-semibold text-indigo-900 text-sm mb-2">Why use SAM?</h4>
+                                            <p className="text-xs text-indigo-800 mb-3">
+                                                Google and AI search tools prioritize descriptions that are clear, specific, and optimized for search. When your listing appears in Google results or AI search summaries, a SAM-generated description means:
+                                            </p>
+                                            <ul className="text-xs text-indigo-800 space-y-2 mb-3">
+                                                <li className="flex items-start gap-2">
+                                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                                                    <span>Higher chance of appearing in Google search results for "archery ranges near [your city]"</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                                                    <span>More likely to be featured in AI summaries (ChatGPT, Claude, Perplexity)</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                                                    <span>Better conversion — visitors who find you are already looking for exactly what you offer</span>
+                                                </li>
+                                            </ul>
+                                            <p className="text-xs font-semibold text-indigo-900">
+                                                In short: better description = more qualified visitors to your range.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -476,6 +616,28 @@ export default function SettingsPage() {
                                         onChange={(e) => updateField('email', e.target.value)}
                                         className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                     />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="block text-sm font-medium text-stone-700">
+                                            WhatsApp Number
+                                        </label>
+                                        {!TIER_LIMITS[tier].hasWhatsapp && (
+                                            <a href={getUpgradeLink(tier, rangeId)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                                                Upgrade to Silver to enable WhatsApp
+                                            </a>
+                                        )}
+                                    </div>
+                                    <input
+                                        type="tel"
+                                        value={formData.whatsapp_number || ''}
+                                        onChange={(e) => updateField('whatsapp_number', e.target.value)}
+                                        disabled={!TIER_LIMITS[tier].hasWhatsapp}
+                                        placeholder="e.g. 14165550123 (include country code)"
+                                        className="w-full px-4 py-3 rounded-lg border border-stone-300 text-stone-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-stone-50 disabled:text-stone-400"
+                                    />
+                                    <p className="mt-1 text-xs text-stone-500">Enter digits only, including your country code (e.g. 1 for US/Canada). This replaces the standard email contact form on your listing.</p>
                                 </div>
 
                                 <div className="md:col-span-2">

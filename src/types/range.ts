@@ -44,6 +44,7 @@ export interface Range {
   latitude?: number;
   longitude?: number;
   phone_number?: string;
+  whatsapp_number?: string;
   email?: string;
   website?: string;
   facebook_url?: string;
@@ -105,6 +106,7 @@ export interface TierLimits {
   hasContactForm: boolean;
   hasClickableContact: boolean;
   hasSocialLinks: boolean;
+  hasWhatsapp: boolean;
   hasReviews: boolean;
   hasEvents: boolean;
   featuredBadge: boolean;
@@ -128,6 +130,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasContactForm: false,
     hasClickableContact: false,
     hasSocialLinks: false,
+    hasWhatsapp: false,
     hasReviews: false,
     hasEvents: false,
     featuredBadge: false,
@@ -149,6 +152,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasContactForm: false,
     hasClickableContact: false,
     hasSocialLinks: false,
+    hasWhatsapp: false,
     hasReviews: false,
     hasEvents: false,
     featuredBadge: false,
@@ -170,6 +174,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasContactForm: true,
     hasClickableContact: true,
     hasSocialLinks: true,
+    hasWhatsapp: true,
     hasReviews: true,
     hasEvents: false,
     featuredBadge: false,
@@ -191,6 +196,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasContactForm: true,
     hasClickableContact: true,
     hasSocialLinks: true,
+    hasWhatsapp: true,
     hasReviews: true,
     hasEvents: true,
     featuredBadge: true,

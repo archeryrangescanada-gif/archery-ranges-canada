@@ -485,7 +485,7 @@ export default async function RangeDetailPage({ params }: PageProps) {
 
                 {/* Contact Form (Basic+) */}
                 {tierLimits.hasContactForm && (
-                  <ContactForm rangeId={range.id} rangeName={range.name} />
+                  <ContactForm rangeId={range.id} rangeName={range.name} whatsappNumber={range.whatsapp_number} />
                 )}
 
                 {/* Gold Sponsor Ad (Free/Bronze only) */}
