@@ -90,7 +90,10 @@ export default function SubscriptionsPage() {
       // Set default layout first in case of query fail
       setPlans(processedPlans)
 
-      // 2. Fetch Active Subscriptions from ranges table
+      // 2. Fetch Active Subscriptions from ranges table safely
+      // Because the subscription_tier column has an extremely strict Postgres Enum applied to it,
+      // using an `.in()` array with mixed values like 'premium' or 'pro' throws a DB error and halts fetching.
+      // Instead, we will fetch any range that is claimed and not purely on the free tier.
       const { data: subsData, error: subsError } = await supabase
         .from('ranges')
         .select(`
@@ -102,11 +105,10 @@ export default function SubscriptionsPage() {
           stripe_subscription_id,
           owner_id
         `)
-        .in('subscription_tier', ['silver', 'gold', 'pro', 'premium', 'basic', 'bronze'])
+        .not('owner_id', 'is', null)
 
       if (subsError) {
         console.error('Error fetching ranges subscriptions:', subsError);
-        throw subsError;
       }
 
       // 3. Fetch user profiles manually for these ranges
@@ -127,8 +129,10 @@ export default function SubscriptionsPage() {
         }
       }
 
-      // Process Subscriptions
-      const processedSubs: ActiveSubscription[] = (subsData || []).map((sub: any) => {
+      // Process Subscriptions safely mapping them in memory instead
+      const activeRows = (subsData || []).filter((sub: any) => sub.subscription_tier !== 'free');
+
+      const processedSubs: ActiveSubscription[] = activeRows.map((sub: any) => {
         const profile = profilesMap[sub.owner_id] || {}
 
         let planId = 'bronze-plan-id'
