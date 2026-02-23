@@ -1,5 +1,5 @@
 import { DollarSign, Users, Calendar, GraduationCap, AlertCircle, Phone } from 'lucide-react';
-import { SubscriptionTier } from '@/types/range';
+import { SubscriptionTier, getTierLimits } from '@/types/range';
 
 interface PricingInfoProps {
   membershipRequired?: boolean;
@@ -11,7 +11,9 @@ interface PricingInfoProps {
 
 export function PricingInfo({ membershipRequired, membershipPrice, dropInPrice, lessonPriceRange, tier = 'free' }: PricingInfoProps) {
   // Bronze/free tier: show "Contact range for prices"
-  if (tier === 'free') {
+  const { hasPricing: tierHasPricing } = getTierLimits(tier);
+
+  if (!tierHasPricing) {
     return (
       <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
         <h2 className="text-xl font-semibold text-stone-800 mb-6 flex items-center gap-2">

@@ -19,6 +19,7 @@ import { SubscriptionBadge } from '@/components/listing/SubscriptionBadge';
 import { BreadcrumbNav } from '@/components/listing/BreadcrumbNav';
 import { UpgradeCTA } from '@/components/listing/UpgradeCTA';
 import { ClaimListingBanner } from '@/components/listing/ClaimListingBanner';
+import { GoldSponsorAd } from '@/components/listing/GoldSponsorAd';
 import { RangeAnalyticsProvider } from '@/components/RangeAnalyticsProvider';
 import { normalizeToArray } from '@/lib/utils/data-normalization';
 import Link from 'next/link';
@@ -229,7 +230,7 @@ export default async function RangeDetailPage({ params }: PageProps) {
           {/* Hero Section with Media */}
           <section className="relative">
             <MediaSection
-              images={normalizeToArray(range.post_images)}
+              images={tierLimits.maxPhotos !== -1 ? normalizeToArray(range.post_images).slice(0, tierLimits.maxPhotos) : normalizeToArray(range.post_images)}
               videos={normalizeToArray(range.video_urls)}
               rangeName={range.name}
               tier={range.subscription_tier}
@@ -290,7 +291,15 @@ export default async function RangeDetailPage({ params }: PageProps) {
                       About {range.name}
                     </h2>
                     <div className="text-stone-600 leading-relaxed whitespace-pre-line">
-                      {range.post_content}
+                      {range.post_content && tierLimits.descriptionWordLimit !== -1 && range.post_content.split(' ').length > tierLimits.descriptionWordLimit
+                        ? <>
+                          {range.post_content.split(' ').slice(0, tierLimits.descriptionWordLimit).join(' ')}...
+                          <br /><br />
+                          <Link href="/dashboard" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:underline inline-flex items-center gap-1 transition-colors">
+                            Claim and upgrade listing to read more →
+                          </Link>
+                        </>
+                        : range.post_content}
                     </div>
 
                     {range.post_tags && (
@@ -479,7 +488,13 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   <ContactForm rangeId={range.id} rangeName={range.name} />
                 )}
 
-
+                {/* Gold Sponsor Ad (Free/Bronze only) */}
+                {!tierLimits.featuredBadge && (
+                  <GoldSponsorAd
+                    provinceSlug={params.province}
+                    currentRangeId={range.id}
+                  />
+                )}
 
                 {/* Upgrade CTA for claimed free tier listings */}
                 {range.subscription_tier === 'free' && range.owner_id && (

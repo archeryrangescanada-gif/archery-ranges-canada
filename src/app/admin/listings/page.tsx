@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import { Search, Filter, Plus, Edit, Trash2, Eye, Star, Upload, FileUp, BarChart3, UserCheck, UserX, Loader2 } from 'lucide-react'
+import { Search, Filter, Plus, Edit, Trash2, Eye, Star, Upload, FileUp, BarChart3, UserCheck, UserX, Loader2, Lock } from 'lucide-react'
 import Link from 'next/link'
 import Papa from 'papaparse'
 import { createClient } from '@/lib/supabase/client'
@@ -883,13 +883,22 @@ export default function ListingsPage() {
                       >
                         <BarChart3 className="w-4 h-4" />
                       </Link>
-                      <Link
-                        href={`/admin/listings/${listing.id}/edit`}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="Edit Listing"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Link>
+                      {listing.claimed ? (
+                        <div
+                          className="text-gray-400 cursor-not-allowed"
+                          title="Cannot edit a claimed listing"
+                        >
+                          <Lock className="w-4 h-4" />
+                        </div>
+                      ) : (
+                        <Link
+                          href={`/admin/listings/${listing.id}/edit`}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Edit Listing"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                      )}
                       <button
                         onClick={() => toggleFeatured(listing.id)}
                         className={listing.is_featured ? 'text-yellow-600' : 'text-gray-400 hover:text-yellow-600'}
