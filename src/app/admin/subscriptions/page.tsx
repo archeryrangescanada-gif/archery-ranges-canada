@@ -87,6 +87,9 @@ export default function SubscriptionsPage() {
         }
       ]
 
+      // Set default layout first in case of query fail
+      setPlans(processedPlans)
+
       // 2. Fetch Active Subscriptions from ranges table
       const { data: subsData, error: subsError } = await supabase
         .from('ranges')
@@ -99,9 +102,12 @@ export default function SubscriptionsPage() {
           stripe_subscription_id,
           owner_id
         `)
-        .not('subscription_tier', 'in', '("free","basic","bronze")')
+        .in('subscription_tier', ['silver', 'gold', 'pro', 'premium', 'basic', 'bronze'])
 
-      if (subsError) throw subsError
+      if (subsError) {
+        console.error('Error fetching ranges subscriptions:', subsError);
+        throw subsError;
+      }
 
       // 3. Fetch user profiles manually for these ranges
       const ownerIdsArray = (subsData || []).map((r: any) => r.owner_id).filter(Boolean)
