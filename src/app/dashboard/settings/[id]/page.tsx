@@ -956,10 +956,23 @@ export default function SettingsPage() {
                                                 placeholder="https://calendar.google.com/calendar/embed?src=..."
                                                 className="w-full px-4 py-2 rounded-lg border border-stone-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors text-stone-800"
                                             />
-                                            <p className="mt-1 flex items-start gap-1 text-xs text-stone-500">
-                                                <span className="flex-shrink-0 mt-0.5">•</span>
-                                                Must be a public Google Calendar. Get the URL from your Calendar Settings &gt; Integrate Calendar &gt; Public URL to this calendar.
-                                            </p>
+                                            <div className="mt-2 flex flex-col gap-1.5 text-xs text-stone-600 bg-emerald-50 border border-emerald-100 p-3 rounded-md leading-relaxed">
+                                                <strong className="text-emerald-800 flex items-center gap-1">
+                                                    <span className="text-sm">⚠️</span> Important: Make your calendar public first
+                                                </strong>
+                                                <span className="flex items-start gap-1">
+                                                    <span className="font-bold">1.</span>
+                                                    <span>In Google Calendar, click the three dots next to your calendar and select <b>Settings and sharing</b>.</span>
+                                                </span>
+                                                <span className="flex items-start gap-1">
+                                                    <span className="font-bold">2.</span>
+                                                    <span>Under <b>Access permissions for events</b>, check the box that says <b>Make available to public</b> (ensure "See all event details" is selected).</span>
+                                                </span>
+                                                <span className="flex items-start gap-1">
+                                                    <span className="font-bold">3.</span>
+                                                    <span>Scroll down to <b>Integrate calendar</b> and copy the link under <b>Public URL to this calendar</b>.</span>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
