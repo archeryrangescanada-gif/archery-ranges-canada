@@ -56,7 +56,7 @@ export default function SubscriptionsPage() {
           price: 0,
           interval: 'month',
           activeCount: 0,
-          features: ['Basic listing', 'Contact information', '✗ Photos', '✗ Featured placement'],
+          features: ['1 photo', '100 words', 'Shows amenities', 'Non clickable website, email, phone', 'Address', 'Map location', 'Bow types'],
           badgeImage: '/bronze-badge.png',
           color: 'amber',
           is_public: true
@@ -68,7 +68,7 @@ export default function SubscriptionsPage() {
           price: 49.99,
           interval: 'month',
           activeCount: 0,
-          features: ['Everything in Bronze', 'Up to 10 photos', 'Business hours', '✗ Featured placement'],
+          features: ['Everything in bronze', '200 words', '5 photos', 'Analytics', 'Social media links', 'Clickable phone, email, website', 'Shows pricing', 'Reply to reviews'],
           badgeImage: '/silver-badge.png',
           color: 'slate',
           is_public: true
@@ -77,10 +77,10 @@ export default function SubscriptionsPage() {
           id: 'gold-plan-id',
           name: 'Gold',
           description: 'Full featured exposure',
-          price: 149.99,
+          price: 129.99,
           interval: 'month',
           activeCount: 0,
-          features: ['Everything in Silver', 'Unlimited photos', 'Featured placement', 'Priority support'],
+          features: ['Everything in silver', 'Featured listing', 'Ad of your club in free listings', 'Calender-agenda', 'Unlimited photos', '300 word description', 'Youtube Video Integration', 'Send a message'],
           badgeImage: '/gold-badge.png',
           color: 'yellow',
           is_public: true
@@ -146,7 +146,7 @@ export default function SubscriptionsPage() {
         } else if (sub.subscription_tier === 'premium' || sub.subscription_tier === 'gold') {
           planId = 'gold-plan-id'
           planName = 'Gold'
-          revenueStr = '$149.99/mo'
+          revenueStr = '$129.99/mo'
         }
 
         return {

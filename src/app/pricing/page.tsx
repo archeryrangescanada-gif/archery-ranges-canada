@@ -20,17 +20,13 @@ const tiers = [
     yearlyPrice: 0,
     searchRank: 'Standard (Boosted)',
     features: [
-      { text: 'Bronze Badge', included: true },
-      { text: 'Map Pin Visibility', included: true },
-      { text: 'Basic Listing Card', included: true },
-      { text: '1 Photo Gallery', included: true },
-      { text: '350 Word Description', included: true },
-      { text: 'Basic Amenity Tags', included: true },
-      { text: 'Analytics Dashboard', included: true },
-      { text: 'Clickable Website Link', included: false },
-      { text: 'Phone Number Display', included: false },
-      { text: 'Email Address Display', included: false },
-      { text: 'Social Media Links', included: false },
+      { text: '1 photo', included: true },
+      { text: '100 words', included: true },
+      { text: 'Shows amenities', included: true },
+      { text: 'Non clickable website, email, phone', included: true },
+      { text: 'Address', included: true },
+      { text: 'Map location', included: true },
+      { text: 'Bow types', included: true },
     ],
     cta: 'Get Started Free',
     ctaLink: '/auth/signup',
@@ -41,22 +37,19 @@ const tiers = [
     name: 'Silver',
     tagline: 'The Marketer',
     description: 'Growth package for commercial ranges driving traffic',
-    badge: '/gold-badge.png',
-    monthlyPrice: 149,
-    yearlyPrice: 1500,
+    badge: '/silver-badge.png',
+    monthlyPrice: 49.99,
+    yearlyPrice: 499,
     searchRank: 'Priority (Top of Results)',
     features: [
-      { text: 'Silver Badge', included: true },
-      { text: 'Priority Search Placement', included: true },
-      { text: 'All Bronze Features', included: true },
-      { text: '"Message Range" Lead Form', included: true },
-      { text: 'Read & Reply to Reviews', included: true },
-      { text: '5 Photo Gallery', included: true },
-      { text: 'YouTube Video Embed', included: false },
-      { text: 'Events Calendar & Global Feed', included: true },
-      { text: 'Advanced Analytics', included: true },
-      { text: 'Track Clicks (Web, Call, Directions)', included: true },
-      { text: 'Home Page Feature', included: false },
+      { text: 'Everything in bronze', included: true },
+      { text: '200 words', included: true },
+      { text: '5 photos', included: true },
+      { text: 'Analytics', included: true },
+      { text: 'Social media links', included: true },
+      { text: 'Clickable phone, email, website', included: true },
+      { text: 'Shows pricing', included: true },
+      { text: 'Reply to reviews', included: true },
     ],
     cta: 'Start Silver',
     ctaLink: process.env.NEXT_PUBLIC_STRIPE_SILVER_URL || '/auth/signup?plan=silver',
@@ -68,22 +61,19 @@ const tiers = [
     name: 'Gold',
     tagline: 'The Partner',
     description: 'Dominance package with exclusive visibility + SaaS tools',
-    badge: '/platinum-badge.png',
-    monthlyPrice: 399,
-    yearlyPrice: 3999,
+    badge: '/gold-badge.png',
+    monthlyPrice: 129.99,
+    yearlyPrice: 1299,
     searchRank: 'Maximum (Pinned Above All)',
     features: [
-      { text: 'Gold Badge + Verified ✓', included: true },
-      { text: 'Pinned Top of All Searches', included: true },
-      { text: 'All Silver Features', included: true },
-      { text: 'Home Page Hero (50km radius)', included: true },
-      { text: 'No Competitor Ads on Profile', included: true },
-      { text: 'Digital Waiver System', included: true },
-      { text: 'iPad Kiosk Mode', included: true },
-      { text: 'Waiver Dashboard & Search', included: true },
-      { text: 'Expiry Tracking & Auto-Emails', included: true },
-      { text: 'PDF Export of Waivers', included: true },
-      { text: 'Priority Phone Support', included: true },
+      { text: 'Everything in silver', included: true },
+      { text: 'Featured listing', included: true },
+      { text: 'Ad of your club in free listings', included: true },
+      { text: 'Calender-agenda', included: true },
+      { text: 'Unlimited photos', included: true },
+      { text: '300 word description', included: true },
+      { text: 'Youtube Video Integration', included: true },
+      { text: 'Send a message', included: true },
     ],
     cta: 'Start Gold',
     ctaLink: process.env.NEXT_PUBLIC_STRIPE_GOLD_URL || '/auth/signup?plan=gold',
@@ -348,8 +338,8 @@ export default function PricingPage() {
             <div className="grid grid-cols-4 border-b border-stone-200 bg-stone-50">
               <div className="p-4 font-semibold text-stone-700">Price</div>
               <div className="p-4 text-center font-bold text-stone-800">Free</div>
-              <div className="p-4 text-center font-bold text-green-600 bg-green-50">$149/mo</div>
-              <div className="p-4 text-center font-bold text-stone-800">$399/mo</div>
+              <div className="p-4 text-center font-bold text-green-600 bg-green-50">$49.99/mo</div>
+              <div className="p-4 text-center font-bold text-stone-800">$129.99/mo</div>
             </div>
 
             {/* Feature Categories */}
@@ -454,7 +444,7 @@ export default function PricingPage() {
                   href={process.env.NEXT_PUBLIC_STRIPE_GOLD_URL || "/auth/signup?plan=gold"}
                   className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg"
                 >
-                  Start Gold - $399/mo
+                  Start Gold - $129.99/mo
                 </Link>
                 <Link
                   href="/contact?subject=gold"

@@ -8,67 +8,66 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // Pricing tiers
 // Support both naming conventions for backward compatibility
 export const PRICING_TIERS = {
-  basic: {
-    name: 'Basic',
+  bronze: {
+    name: 'Bronze',
+    monthly: {
+      priceId: '',
+      amount: 0,
+    },
+    yearly: {
+      priceId: '',
+      amount: 0,
+    },
+    features: [
+      '1 photo',
+      '100 words',
+      'Shows amenities',
+      'Non clickable website, email, phone',
+      'Address',
+      'Map location',
+      'Bow types',
+    ],
+  },
+  silver: {
+    name: 'Silver',
     monthly: {
       priceId: process.env.STRIPE_SILVER_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_BASIC_MONTHLY_PRICE_ID || '',
-      amount: 2900, // $29.00 in cents
+      amount: 4999, // $49.99 in cents
     },
     yearly: {
       priceId: process.env.NEXT_PUBLIC_STRIPE_BASIC_YEARLY_PRICE_ID || '',
-      amount: 29000, // $290.00 in cents (save $58)
+      amount: 49990, // $499.90 in cents
     },
     features: [
-      'Edit your own description (350 words)',
-      'Upload 1 photo',
-      'Featured badge',
-      'Basic analytics',
-      'Contact form',
-      'Priority in search results',
+      'Everything in bronze',
+      '200 words',
+      '5 photos',
+      'Analytics',
+      'Social media links',
+      'Clickable phone, email, website',
+      'Shows pricing',
+      'Reply to reviews',
     ],
   },
-  pro: {
-    name: 'Pro',
+  gold: {
+    name: 'Gold',
     monthly: {
       priceId: process.env.STRIPE_GOLD_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID || '',
-      amount: 7900, // $79.00 in cents
+      amount: 12999, // $129.99 in cents
     },
     yearly: {
       priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID || '',
-      amount: 79000, // $790.00 in cents (save $158)
+      amount: 129990, // $1299.90 in cents
     },
     features: [
-      'Everything in Basic',
-      'Upload 5 photos',
-      'Embed 1 video',
-      'Review system',
-      'Event calendar',
-      'Advanced analytics',
-      'Pro badge',
-      'Priority support',
-    ],
-  },
-  premium: {
-    name: 'Premium',
-    monthly: {
-      priceId: process.env.STRIPE_PLATINUM_PRICE_ID || process.env.STRIPE_PLATNIUM_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PREMIUM_MONTHLY_PRICE_ID || '',
-      amount: 14900, // $149.00 in cents
-    },
-    yearly: {
-      priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_YEARLY_PRICE_ID || '',
-      amount: 149000, // $1,490.00 in cents (save $298)
-    },
-    features: [
-      'Everything in Pro',
+      'Everything in silver',
+      'Featured listing',
+      'Ad of your club in free listings',
+      'Calender-agenda',
       'Unlimited photos',
-      'Multiple videos',
-      'Featured on homepage',
-      'Social media promotion',
-      'Newsletter feature',
-      'Dedicated account manager',
-      'Custom page design',
-      'Premium analytics',
-      '24hr priority support',
+      '300 word description',
+      'Youtube Video Integration',
+      'Send a message',
     ],
   },
 }
