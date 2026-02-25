@@ -22,6 +22,8 @@ export async function GET() {
                 address, 
                 subscription_tier,
                 owner_id,
+                view_count,
+                inquiry_count,
                 city:cities(name, slug),
                 province:provinces(name, slug)
             `)

@@ -22,7 +22,6 @@ import {
 } from 'lucide-react'
 import { canAccessAnalytics, getUserSubscriptionTier, getUpgradeLink, getUpgradeMessage } from '@/lib/subscription-utils'
 import { normalizeTier, RangeReview } from '@/types/range'
-// Custom interface for dashboard (some fields use different names)
 interface Range {
     id: string
     name: string
@@ -30,6 +29,8 @@ interface Range {
     address?: string | null
     subscription_tier?: string | null
     owner_id?: string | null
+    view_count?: number
+    inquiry_count?: number
     city?: { name: string; slug: string } | null
     province?: { name: string; slug: string } | null
 }
@@ -49,6 +50,8 @@ export default function DashboardPage() {
     const [user, setUser] = useState<User | null>(null)
     const [ranges, setRanges] = useState<Range[]>([])
     const [recentReviews, setRecentReviews] = useState<RangeReview[]>([])
+    const [monthlyViews, setMonthlyViews] = useState(0)
+    const [totalInquiries, setTotalInquiries] = useState(0)
     const [loading, setLoading] = useState(true)
     const [loadingMessage, setLoadingMessage] = useState('Initializing...')
     const [error, setError] = useState<string | null>(null)
@@ -101,10 +104,15 @@ export default function DashboardPage() {
                 const data = await response.json()
                 const fetchedRanges = (data.ranges as Range[]) || []
 
-                // 3. Fetch Recent Reviews
+                // 3. Fetch Recent Reviews & Monthly Views
                 let fetchedReviews: RangeReview[] = []
+                let currentMonthlyViews = 0
+                let totalInqs = 0
+
                 if (fetchedRanges.length > 0) {
                     const rangeIds = fetchedRanges.map((r) => r.id)
+                    totalInqs = fetchedRanges.reduce((acc, r) => acc + (r.inquiry_count || 0), 0)
+
                     const { data: revData } = await supabase
                         .from('reviews')
                         .select('*')
@@ -115,11 +123,25 @@ export default function DashboardPage() {
                     if (revData) {
                         fetchedReviews = revData as unknown as RangeReview[]
                     }
+
+                    const thirtyDaysAgo = new Date()
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+                    const { count: viewCount } = await supabase
+                        .from('range_analytics')
+                        .select('*', { count: 'exact', head: true })
+                        .in('range_id', rangeIds)
+                        .eq('event_type', 'view')
+                        .gte('created_at', thirtyDaysAgo.toISOString())
+
+                    currentMonthlyViews = viewCount || 0
                 }
 
                 if (mounted) {
                     setRanges(fetchedRanges)
                     setRecentReviews(fetchedReviews)
+                    setMonthlyViews(currentMonthlyViews)
+                    setTotalInquiries(totalInqs)
                     setLoading(false)
                 }
             } catch (err: any) {
@@ -217,7 +239,7 @@ export default function DashboardPage() {
                                 <Eye className="w-5 h-5 text-blue-600" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-stone-800">--</p>
+                                <p className="text-2xl font-bold text-stone-800">{monthlyViews.toLocaleString()}</p>
                                 <p className="text-sm text-stone-500">Monthly Views</p>
                             </div>
                         </div>
@@ -229,7 +251,7 @@ export default function DashboardPage() {
                                 <TrendingUp className="w-5 h-5 text-amber-600" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-stone-800">--</p>
+                                <p className="text-2xl font-bold text-stone-800">{totalInquiries.toLocaleString()}</p>
                                 <p className="text-sm text-stone-500">Inquiries</p>
                             </div>
                         </div>
