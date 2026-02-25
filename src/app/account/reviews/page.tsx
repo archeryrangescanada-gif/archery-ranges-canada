@@ -10,6 +10,12 @@ import { Star, Edit, Trash2, Compass } from 'lucide-react';
 interface RangeInfo {
     name: string;
     slug: string;
+    cities: {
+        slug: string;
+        provinces: {
+            slug: string;
+        };
+    } | null;
 }
 
 interface Review {
@@ -57,7 +63,13 @@ export default function ReviewsPage() {
           listing_id,
           ranges:listing_id (
             name,
-            slug
+            slug,
+            cities:city_id (
+              slug,
+              provinces:province_id (
+                slug
+              )
+            )
           )
         `)
                 .eq('user_id', user.id);
@@ -75,7 +87,7 @@ export default function ReviewsPage() {
         }
 
         getReviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleEditClick = (review: Review) => {
@@ -214,7 +226,13 @@ export default function ReviewsPage() {
                                     ) : (
                                         <>
                                             <div className="flex justify-between items-start mb-2">
-                                                <Link href={`/${review.ranges.slug}`} className="font-bold text-lg text-stone-900 hover:text-emerald-600">
+                                                <Link
+                                                    href={review.ranges.cities?.provinces?.slug && review.ranges.cities?.slug
+                                                        ? `/${review.ranges.cities.provinces.slug}/${review.ranges.cities.slug}/${review.ranges.slug}`
+                                                        : `/${review.ranges.slug}`
+                                                    }
+                                                    className="font-bold text-lg text-stone-900 hover:text-emerald-600"
+                                                >
                                                     {review.ranges.name}
                                                 </Link>
                                                 <span className="text-sm text-stone-400">
