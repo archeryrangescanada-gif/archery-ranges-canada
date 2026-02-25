@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { MapPin, Phone, Building2, TreePine, ImageIcon } from 'lucide-react';
 import { Range, getBadgeType, FacilityType } from '@/types/range';
 import { SubscriptionBadgeInline } from './SubscriptionBadge';
+import { normalizeToArray } from '@/lib/utils/data-normalization';
 
 interface RangeCardProps {
   range: Range;
@@ -18,8 +19,9 @@ const facilityIcons: Record<FacilityType, React.ReactNode> = {
 
 export function RangeCard({ range, provinceSlug, citySlug }: RangeCardProps) {
   const badgeType = getBadgeType(range.subscription_tier);
-  const hasImage = range.post_images && range.post_images.length > 0;
-  const imageUrl = hasImage ? range.post_images![0] : null;
+  const normalizedImages = normalizeToArray(range.post_images);
+  const hasImage = normalizedImages.length > 0;
+  const imageUrl = hasImage ? normalizedImages[0] : null;
 
   const shortDescription = range.post_content
     ? range.post_content.substring(0, 120) + (range.post_content.length > 120 ? '...' : '')
@@ -95,8 +97,9 @@ export function RangeCard({ range, provinceSlug, citySlug }: RangeCardProps) {
 // Featured/Large Card Variant
 export function RangeCardFeatured({ range, provinceSlug, citySlug }: RangeCardProps) {
   const badgeType = getBadgeType(range.subscription_tier);
-  const hasImage = range.post_images && range.post_images.length > 0;
-  const imageUrl = hasImage ? range.post_images![0] : null;
+  const normalizedImages = normalizeToArray(range.post_images);
+  const hasImage = normalizedImages.length > 0;
+  const imageUrl = hasImage ? normalizedImages[0] : null;
 
   return (
     <Link
@@ -162,6 +165,7 @@ export function RangeCardFeatured({ range, provinceSlug, citySlug }: RangeCardPr
 // Compact/List Card Variant
 export function RangeCardCompact({ range, provinceSlug, citySlug }: RangeCardProps) {
   const badgeType = getBadgeType(range.subscription_tier);
+  const normalizedImages = normalizeToArray(range.post_images);
 
   return (
     <Link
@@ -170,8 +174,8 @@ export function RangeCardCompact({ range, provinceSlug, citySlug }: RangeCardPro
     >
       {/* Small Image */}
       <div className="relative w-20 h-20 rounded-lg bg-stone-100 overflow-hidden flex-shrink-0">
-        {range.post_images?.[0] ? (
-          <Image src={range.post_images[0]} alt={range.name} fill className="object-cover" />
+        {normalizedImages[0] ? (
+          <Image src={normalizedImages[0]} alt={range.name} fill className="object-cover" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <ImageIcon className="w-8 h-8 text-stone-300" />

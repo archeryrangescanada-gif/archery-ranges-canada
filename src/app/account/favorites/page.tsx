@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Heart, MapPin, ImageIcon, Building2, TreePine, Compass } from 'lucide-react';
+import { normalizeToArray } from '@/lib/utils/data-normalization';
 
 interface FavoriteRange {
     id: string;
@@ -163,8 +164,9 @@ export default function FavoritesPage() {
     }
 
     function RangeCard({ range, onRemove }: { range: FavoriteRange | SuggestedRange; onRemove?: (e: React.MouseEvent) => void }) {
-        const hasImage = range.post_images && range.post_images.length > 0;
-        const imageUrl = hasImage ? range.post_images![0] : null;
+        const normalizedImages = normalizeToArray(range.post_images);
+        const hasImage = normalizedImages.length > 0;
+        const imageUrl = hasImage ? normalizedImages[0] : null;
         const desc = getShortDescription(range);
 
         return (
