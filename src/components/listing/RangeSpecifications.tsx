@@ -18,11 +18,12 @@ const bowTypeData: Record<BowType, { label: string; icon: React.ReactNode }> = {
 };
 
 export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, bowTypesAllowed, maxDrawWeight }: RangeSpecificationsProps) {
-  const allowedBows = Array.isArray(bowTypesAllowed)
-    ? bowTypesAllowed
+  const allowedBows = (Array.isArray(bowTypesAllowed)
+    ? bowTypesAllowed.flatMap(s => typeof s === 'string' ? s.split(',') : s)
     : typeof bowTypesAllowed === 'string'
-      ? bowTypesAllowed.split(',').map(s => s.trim().toLowerCase() as BowType).filter(Boolean)
-      : [];
+      ? bowTypesAllowed.split(',')
+      : []
+  ).map((s: string) => s.trim().toLowerCase() as BowType).filter(Boolean);
 
   const allBowTypes: BowType[] = ['recurve', 'compound', 'longbow', 'crossbow', 'traditional'];
   const availableBows = allBowTypes.filter(type => allowedBows.includes(type));

@@ -91,12 +91,8 @@ async function getRange(provinceSlug: string, citySlug: string, rangeSlug: strin
     cities: cities,
     post_images: normalizeToArray(data.post_images),
     video_urls: normalizeToArray(data.video_urls),
-    post_tags: typeof data.post_tags === 'string'
-      ? data.post_tags.split(',').map((s: string) => s.trim()).filter(Boolean)
-      : Array.isArray(data.post_tags) ? data.post_tags : [],
-    bow_types_allowed: typeof data.bow_types_allowed === 'string'
-      ? data.bow_types_allowed.split(',').map((s: string) => s.trim()).filter(Boolean)
-      : Array.isArray(data.bow_types_allowed) ? data.bow_types_allowed : [],
+    post_tags: normalizeToArray(data.post_tags),
+    bow_types_allowed: normalizeToArray(data.bow_types_allowed),
     business_hours: typeof data.business_hours === 'string' && data.business_hours.startsWith('{')
       ? (() => {
         try {

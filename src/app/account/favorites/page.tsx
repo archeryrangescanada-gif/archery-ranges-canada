@@ -12,15 +12,15 @@ interface FavoriteRange {
     id: string;
     name: string;
     slug: string;
-    city: string;
-    province: string;
     facility_type: string | null;
     post_images: string[] | null;
     post_content: string | null;
     description: string | null;
     cities: {
+        name: string;
         slug: string;
         provinces: {
+            name: string;
             slug: string;
         };
     } | null;
@@ -36,16 +36,16 @@ interface SuggestedRange {
     id: string;
     name: string;
     slug: string;
-    city: string;
-    province: string;
     facility_type: string | null;
     post_images: string[] | null;
     post_content: string | null;
     description: string | null;
     subscription_tier: string;
     cities: {
+        name: string;
         slug: string;
         provinces: {
+            name: string;
             slug: string;
         };
     } | null;
@@ -70,15 +70,15 @@ export default function FavoritesPage() {
                     id,
                     name,
                     slug,
-                    city,
-                    province,
                     facility_type,
                     post_images,
                     post_content,
                     description,
                     cities:city_id (
+                        name,
                         slug,
                         provinces:province_id (
+                            name,
                             slug
                         )
                     )
@@ -104,16 +104,16 @@ export default function FavoritesPage() {
                 id,
                 name,
                 slug,
-                city,
-                province,
                 facility_type,
                 post_images,
                 post_content,
                 description,
                 subscription_tier,
                 cities:city_id (
+                    name,
                     slug,
                     provinces:province_id (
+                        name,
                         slug
                     )
                 )
@@ -127,7 +127,7 @@ export default function FavoritesPage() {
 
     useEffect(() => {
         getFavorites();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleRemove = async (e: React.MouseEvent, favId: string) => {
@@ -206,7 +206,7 @@ export default function FavoritesPage() {
                     <h3 className="text-lg font-bold text-stone-800 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-1">{range.name}</h3>
                     <div className="flex items-center gap-1.5 text-stone-500 text-sm mb-3">
                         <MapPin className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                        <span className="truncate">{range.city}, {range.province}</span>
+                        <span className="truncate">{range.cities?.name || 'Unknown City'}, {range.cities?.provinces?.name || 'Unknown Province'}</span>
                     </div>
                     {desc && <p className="text-sm text-stone-600 line-clamp-2">{desc}</p>}
                 </div>
