@@ -62,7 +62,8 @@ export const config = {
      * - _next/image (image optimization)
      * - favicon.ico (browser icon)
      * - public files (images, etc.)
+     * - api/telegram/webhook (must respond directly to Telegram without auth middleware)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/telegram/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

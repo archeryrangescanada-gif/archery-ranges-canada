@@ -31,6 +31,23 @@
 
 ## 🔵 Queued — Ready to Build
 
+### [ ] Fix Telegram Webhook 307 Redirect Error
+*URGENT — messages from Josh's phone are queued but not being delivered*
+
+**Problem:** Telegram is getting a `307 Temporary Redirect` when it POSTs to `https://archeryrangescanada.ca/api/telegram/webhook`. This means the route is redirecting instead of responding directly.
+
+**Likely causes:**
+1. The webhook route at `src/app/api/telegram/webhook/route.ts` may be missing `export const dynamic = 'force-dynamic'` causing Next.js to try to statically render it
+2. Or there's a middleware redirect hitting the route before it can respond
+
+**Fix needed:**
+- Open `src/app/api/telegram/webhook/route.ts` and add `export const dynamic = 'force-dynamic'` at the top
+- Make sure the route returns a `200 OK` response immediately, even before processing
+- Check `src/middleware.ts` to ensure the `/api/telegram/webhook` path is excluded from any redirects or auth middleware
+- Commit and push — Vercel will redeploy automatically
+
+**Done when:** `getWebhookInfo` shows no `last_error_message` and pending messages drop to 0.
+
 ### [x] Build Telegram Webhook Endpoint
 *Completed by Antigravity — webhook API route live, SQL migration script ready*
 
