@@ -284,7 +284,9 @@ export default function Home() {
 
       if (nearby.length < 3) {
         // Fallback to nationwide top-tier if local is sparse
-        const additional = featuredCandidateList.filter(r => !nearby.some(n => n.id === r.id));
+        const additional = featuredCandidateList
+          .filter(r => !nearby.some(n => n.id === r.id))
+          .map(r => ({ ...r, distance: Infinity }));
         nearby = [...nearby, ...additional].slice(0, 6);
       } else {
         nearby = nearby.slice(0, 6);
