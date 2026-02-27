@@ -263,6 +263,55 @@ export default function DashboardPage() {
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Left Column (Listings) */}
                     <div className="flex-1 min-w-0 space-y-8">
+                        {/* Promote Your Range Section */}
+                        {ranges.length > 0 && (
+                            <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+                                <div className="p-6 border-b border-stone-200">
+                                    <h2 className="text-lg font-semibold text-stone-800">Promote Your Range</h2>
+                                </div>
+                                <div className="p-6">
+                                    <p className="text-stone-600 mb-6 font-medium">Add this Verified Badge to your website to show you are listed on Archery Ranges Canada.</p>
+                                    <div className="space-y-6">
+                                        {ranges.map(range => {
+                                            const rangeUrl = `https://archeryrangescanada.ca/${range.province?.slug}/${range.city?.slug}/${range.slug}`
+                                            const badgeHtml = `<a href="${rangeUrl}" target="_blank" rel="noopener">\n  <img src="https://archeryrangescanada.ca/find-us-on-badge.png" alt="Verified Archery Range Canada" width="200" height="200" style="border:none;" />\n</a>`
+
+                                            return (
+                                                <div key={range.id} className="bg-stone-50 rounded-lg p-5 border border-stone-200">
+                                                    {ranges.length > 1 && <h3 className="font-medium text-stone-800 mb-3">{range.name}</h3>}
+                                                    <div className="flex flex-col md:flex-row gap-6 items-start">
+                                                        <div className="flex-shrink-0 bg-white p-4 rounded-lg border border-stone-200 flex items-center justify-center">
+                                                            <img src="/find-us-on-badge.png" alt="Verified Archery Range Canada Badge" className="w-32 h-32 object-contain" />
+                                                        </div>
+                                                        <div className="flex-1 w-full flex flex-col items-start space-y-3">
+                                                            <textarea
+                                                                readOnly
+                                                                value={badgeHtml}
+                                                                className="w-full h-32 p-3 text-sm font-mono text-stone-600 bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                                                                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+                                                            />
+                                                            <button
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(badgeHtml);
+                                                                    setCopiedId(range.id);
+                                                                    alert('Badge HTML copied to clipboard!');
+                                                                    setTimeout(() => setCopiedId(null), 2000);
+                                                                }}
+                                                                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center min-w-[120px]"
+                                                            >
+                                                                {copiedId === range.id ? 'Copied!' : 'Copy Code'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                         {/* Listings Section */}
                         <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
                             <div className="p-6 border-b border-stone-200 flex items-center justify-between">
@@ -375,55 +424,6 @@ export default function DashboardPage() {
                                 </div>
                             )}
                         </div>
-
-                        {/* Promote Your Range Section */}
-                        {ranges.length > 0 && (
-                            <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
-                                <div className="p-6 border-b border-stone-200">
-                                    <h2 className="text-lg font-semibold text-stone-800">Promote Your Range</h2>
-                                </div>
-                                <div className="p-6">
-                                    <p className="text-stone-600 mb-6 font-medium">Add this Verified Badge to your website to show you are listed on Archery Ranges Canada.</p>
-                                    <div className="space-y-6">
-                                        {ranges.map(range => {
-                                            const rangeUrl = `https://archeryrangescanada.ca/${range.province?.slug}/${range.city?.slug}/${range.slug}`
-                                            const badgeHtml = `<a href="${rangeUrl}" target="_blank" rel="noopener">\n  <img src="https://archeryrangescanada.ca/find-us-on-badge.png" alt="Verified Archery Range Canada" width="200" height="200" style="border:none;" />\n</a>`
-
-                                            return (
-                                                <div key={range.id} className="bg-stone-50 rounded-lg p-5 border border-stone-200">
-                                                    {ranges.length > 1 && <h3 className="font-medium text-stone-800 mb-3">{range.name}</h3>}
-                                                    <div className="flex flex-col md:flex-row gap-6 items-start">
-                                                        <div className="flex-shrink-0 bg-white p-4 rounded-lg border border-stone-200 flex items-center justify-center">
-                                                            <img src="/find-us-on-badge.png" alt="Verified Archery Range Canada Badge" className="w-32 h-32 object-contain" />
-                                                        </div>
-                                                        <div className="flex-1 w-full flex flex-col items-start space-y-3">
-                                                            <textarea
-                                                                readOnly
-                                                                value={badgeHtml}
-                                                                className="w-full h-32 p-3 text-sm font-mono text-stone-600 bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                                                                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
-                                                            />
-                                                            <button
-                                                                onClick={() => {
-                                                                    navigator.clipboard.writeText(badgeHtml);
-                                                                    setCopiedId(range.id);
-                                                                    alert('Badge HTML copied to clipboard!');
-                                                                    setTimeout(() => setCopiedId(null), 2000);
-                                                                }}
-                                                                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center min-w-[120px]"
-                                                            >
-                                                                {copiedId === range.id ? 'Copied!' : 'Copy Code'}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
 
                     {/* Right Column (Recent Reviews) */}
                     <div className="w-full lg:w-80 flex-shrink-0 space-y-6">
