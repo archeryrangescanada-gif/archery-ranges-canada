@@ -310,7 +310,6 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                         )}
-                    </div>
 
                         {/* Listings Section */}
                         <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
@@ -424,6 +423,7 @@ export default function DashboardPage() {
                                 </div>
                             )}
                         </div>
+                    </div>
 
                     {/* Right Column (Recent Reviews) */}
                     <div className="w-full lg:w-80 flex-shrink-0 space-y-6">
