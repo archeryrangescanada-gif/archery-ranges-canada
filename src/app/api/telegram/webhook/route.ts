@@ -1,3 +1,6 @@
+// Force dynamic rendering — this route must never be statically cached
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 

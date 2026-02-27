@@ -69,3 +69,14 @@
 *(Antigravity leaves requests here for Josh's Cowork assistant)*
 
 ---
+
+## 🔵 Queued — Ready to Build
+
+### [x] Wire Telegram webhook — Cron Flush + force-dynamic
+*Completed by Antigravity*
+
+- [x] Added `export const dynamic = 'force-dynamic'` to `src/app/api/telegram/webhook/route.ts`
+- [x] Created `vercel.json` with Vercel Cron Job hitting `/api/telegram/webhook?flush=true` every minute
+- ⚠️ **Note on INBOX.md:** Vercel serverless functions run on a read-only filesystem — writing `INBOX.md` from the webhook is not possible. Messages are stored in Supabase `telegram_messages` table instead (same data, queryable by Cowork). The cron job flushes any `outbound` rows to Telegram every minute automatically.
+
+---
