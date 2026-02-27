@@ -7,6 +7,7 @@ interface ContactFormProps {
   rangeId: string;
   rangeName: string;
   whatsappNumber?: string | null;
+  contactEmail?: string | null;
 }
 
 interface FormData {
@@ -19,7 +20,7 @@ interface FormData {
 
 type FormStatus = 'idle' | 'submitting' | 'success' | 'error';
 
-export function ContactForm({ rangeId, rangeName, whatsappNumber }: ContactFormProps) {
+export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }: ContactFormProps) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -82,9 +83,9 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber }: ContactFormP
         <p className="text-stone-300 text-sm">Have a question? Reach out directly.</p>
       </div>
 
-      {whatsappNumber ? (
-        <div className="p-6 space-y-4">
-          <div className="bg-emerald-50 rounded-xl p-5 mb-2 border border-emerald-100 text-center">
+      {whatsappNumber && (
+        <div className="p-6 pb-0 space-y-4">
+          <div className="bg-emerald-50 rounded-xl p-5 border border-emerald-100 text-center">
             <h4 className="font-semibold text-emerald-800 mb-2">Chat directly with {rangeName}</h4>
             <p className="text-sm text-emerald-600 mb-4">Get answers instantly. Tap the button below to message them directly on WhatsApp.</p>
             <a
@@ -98,9 +99,17 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber }: ContactFormP
             </a>
           </div>
         </div>
-      ) : (
+      )}
 
+      {contactEmail ? (
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {whatsappNumber && (
+            <div className="flex items-center gap-4 mb-2">
+              <div className="h-px bg-stone-200 flex-1"></div>
+              <span className="text-stone-400 text-sm font-medium">OR SEND AN EMAIL</span>
+              <div className="h-px bg-stone-200 flex-1"></div>
+            </div>
+          )}
           {status === 'error' && (
             <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200">
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
@@ -216,6 +225,12 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber }: ContactFormP
 
           <p className="text-xs text-stone-500 text-center">Your information will only be shared with {rangeName}.</p>
         </form>
+      ) : (
+        !whatsappNumber && (
+          <div className="p-6 text-center text-stone-500">
+            This range has not added an email or WhatsApp contact method yet.
+          </div>
+        )
       )}
     </div>
   );
