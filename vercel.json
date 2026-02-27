@@ -2,7 +2,7 @@
     "crons": [
         {
             "path": "/api/telegram/webhook?flush=true",
-            "schedule": "* * * * *"
+            "schedule": "0 8 * * *"
         }
     ]
 }
