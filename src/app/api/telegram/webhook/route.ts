@@ -2,11 +2,19 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const ALLOWED_CHAT_ID = parseInt(process.env.TELEGRAM_CHAT_ID || '0', 10);
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+// Use service role key — bypasses RLS so the webhook can read/write telegram_messages
+function getSupabase() {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+}
 
 async function sendTelegramMessage(chatId: number, text: string) {
     // Split long messages into chunks (Telegram limit: 4096 chars)
@@ -48,7 +56,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ ok: true });
         }
 
-        const supabase = await createClient();
+        const supabase = getSupabase();
 
         // 1. Store inbound message in Supabase
         const { error: insertError } = await supabase.from('telegram_messages').insert({
@@ -106,7 +114,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const supabase = await createClient();
+        const supabase = getSupabase();
         const { data: outboundMessages, error } = await supabase
             .from('telegram_messages')
             .select('id, message')
