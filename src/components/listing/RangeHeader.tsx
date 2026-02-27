@@ -10,6 +10,7 @@ interface RangeHeaderProps {
   facilityType?: FacilityType | string;
   rating: number | null;
   reviewCount: number;
+  isClaimed?: boolean;
   action?: React.ReactNode;
 }
 
@@ -34,6 +35,7 @@ export function RangeHeader({
   facilityType,
   rating,
   reviewCount,
+  isClaimed,
   action,
 }: RangeHeaderProps) {
   const fullAddress = [address, city, province, postalCode].filter(Boolean).join(', ');
@@ -53,9 +55,14 @@ export function RangeHeader({
         </div>
       )}
 
-      <h1 className="text-3xl md:text-4xl font-bold text-stone-900 mb-4 tracking-tight leading-tight">
-        {name}
-      </h1>
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <h1 className="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight leading-tight">
+          {name}
+        </h1>
+        {isClaimed && (
+          <img src="/claimed-badge.png" alt="Claimed Listing" className="w-8 h-8 object-contain" title="Verified Owner" />
+        )}
+      </div>
 
       <div className="flex items-start gap-2 text-stone-600 mb-4">
         <MapPin className="w-5 h-5 mt-0.5 text-emerald-500 flex-shrink-0" />

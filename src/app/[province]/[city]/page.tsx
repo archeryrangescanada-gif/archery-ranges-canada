@@ -200,8 +200,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const countText = rangeCount > 0 ? `${rangeCount} Best` : 'Top';
 
   return {
-    title: `${countText} Archery Ranges in ${city.name}, ${city.province.name} (2025 Guide & Prices)`,
-    description: `Find the best archery ranges in ${city.name}. Compare indoor & outdoor clubs, lesson prices, and public ranges. Plus: Is backyard archery legal in ${city.name}? Read our 2025 guide.`,
+    title: `${countText} Archery Ranges in ${city.name}, ${city.province.name} (${new Date().getFullYear()} Guide & Prices)`,
+    description: `Find the best archery ranges in ${city.name}. Compare indoor & outdoor clubs, lesson prices, and public ranges. Plus: Is backyard archery legal in ${city.name}? Read our ${new Date().getFullYear()} guide.`,
     openGraph: {
       title: `${countText} Archery Ranges in ${city.name}, ${city.province.name}`,
       description: `Discover archery ranges, lessons, and clubs in ${city.name}. Indoor & outdoor options with pricing.`,

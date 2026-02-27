@@ -278,10 +278,17 @@ export default function Home() {
           : Infinity
       }))
 
-      const nearby = rangesWithDistance
+      let nearby = rangesWithDistance
         .filter(r => (r.distance || Infinity) <= 100) // 100km radius restriction
         .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity))
-        .slice(0, 6)
+
+      if (nearby.length < 3) {
+        // Fallback to nationwide top-tier if local is sparse
+        const additional = featuredCandidateList.filter(r => !nearby.some(n => n.id === r.id));
+        nearby = [...nearby, ...additional].slice(0, 6);
+      } else {
+        nearby = nearby.slice(0, 6);
+      }
 
       setFeaturedRanges(nearby)
     } else {
@@ -577,7 +584,7 @@ export default function Home() {
 
                   <div className="p-6">
                     <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors">
-                      {range.name} – {range.city?.name || 'Local'}, Ontario
+                      {range.name} – {range.city?.name || 'Local'}, {range.city?.province?.name || 'Canada'}
                     </h3>
                     <p className="text-gray-600 flex items-center mb-4">
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -741,24 +748,35 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                {provinces.map((province) => (
-                  <Link
-                    key={province.id}
-                    href={'/' + province.slug}
-                    onClick={() => trackProvinceSelected(province.name)}
-                    className="group bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-green-500 hover:shadow-xl transition-all duration-300"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors">
-                        {province.name}
-                      </h3>
-                      <span className="text-2xl">🍁</span>
-                    </div>
-                    <p className="text-green-600 font-medium group-hover:underline">
-                      View ranges →
-                    </p>
-                  </Link>
-                ))}
+                {provinces.map((province) => {
+                  const provinceRangeCount = ranges.filter(r => r.city?.province?.slug === province.slug).length;
+
+                  return (
+                    <Link
+                      key={province.id}
+                      href={'/' + province.slug}
+                      onClick={() => trackProvinceSelected(province.name)}
+                      className="group bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-green-500 hover:shadow-xl transition-all duration-300"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors">
+                          {province.name}
+                        </h3>
+                        <span className="text-2xl">🍁</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <p className="text-green-600 font-medium group-hover:underline">
+                          View ranges →
+                        </p>
+                        {provinceRangeCount === 0 && (
+                          <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2 py-0.5 rounded-full border border-amber-200">
+                            Coming Soon
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </section>

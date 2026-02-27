@@ -158,7 +158,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = `${range.name} - ${featureText}${range.facility_type ? range.facility_type.charAt(0).toUpperCase() + range.facility_type.slice(1) : 'Archery'} range in ${range.cities?.name || range.city}, ${range.cities?.provinces?.name || range.province}. Hours, prices, reviews & directions.`;
 
   return {
-    title: `${range.name} | ${range.facility_type === 'indoor' ? 'Indoor' : range.facility_type === 'outdoor' ? 'Outdoor' : ''} Archery Range in ${range.city} (2025)`,
+    title: `${range.name} | ${range.facility_type === 'indoor' ? 'Indoor' : range.facility_type === 'outdoor' ? 'Outdoor' : ''} Archery Range in ${range.city} (${new Date().getFullYear()})`,
     description: description.substring(0, 160),
     openGraph: {
       title: `${range.name} - Archery Range in ${range.city}`,
@@ -266,6 +266,7 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   facilityType={range.facility_type}
                   rating={reviews.length > 0 ? reviews.reduce((sum: any, r: any) => sum + r.rating, 0) / reviews.length : null}
                   reviewCount={reviews.length}
+                  isClaimed={!!range.owner_id}
                   action={<FavoriteButton listingId={range.id} initialIsFavorited={isFavorited} />}
                 />
 

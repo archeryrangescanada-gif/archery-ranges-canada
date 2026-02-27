@@ -135,7 +135,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { totalRanges } = await getCitiesWithRangeCounts(province.id)
 
   return {
-    title: `Archery Ranges in ${province.name}, Canada (2025) | ${totalRanges}+ Ranges & Clubs`,
+    title: `Archery Ranges in ${province.name}, Canada (${new Date().getFullYear()}) | ${totalRanges}+ Ranges & Clubs`,
     description: `Find ${totalRanges}+ archery ranges in ${province.name}. Browse by city to find indoor/outdoor ranges, lessons, and pro shops near you. Compare prices and amenities.`,
     openGraph: {
       title: `Archery Ranges in ${province.name}`,
