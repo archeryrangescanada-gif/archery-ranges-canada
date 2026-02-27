@@ -288,15 +288,7 @@ export default async function RangeDetailPage({ params }: PageProps) {
                       About {range.name}
                     </h2>
                     <div className="text-stone-600 leading-relaxed whitespace-pre-line">
-                      {range.post_content && tierLimits.descriptionWordLimit !== -1 && range.post_content.split(' ').length > tierLimits.descriptionWordLimit
-                        ? <>
-                          {range.post_content.split(' ').slice(0, tierLimits.descriptionWordLimit).join(' ')}...
-                          <br /><br />
-                          <Link href="/dashboard" className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:underline inline-flex items-center gap-1 transition-colors">
-                            Claim and upgrade listing to read more →
-                          </Link>
-                        </>
-                        : range.post_content}
+                      {range.post_content}
                     </div>
 
                     {range.post_tags && (
