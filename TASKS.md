@@ -48,9 +48,16 @@
 
 ---
 
+---
+
 ## ✅ Completed
 
-*(Antigravity marks tasks done here with a brief note)*
+- **[x] Update Contact Form Logic** — all code items done (2–5). Non-code item 6 left to Josh.
+- **[x] Fix Telegram Webhook 307 Redirect** — excluded `/api/telegram/webhook` from middleware matcher (`672780b`)
+- **[x] Build Telegram Webhook Endpoint** — webhook route live, SQL migration, VERCEL_ENV_SETUP.md, env vars, webhook registered
+- **[x] Wire Telegram Webhook — Cron Flush + force-dynamic** — `vercel.json` cron job created, `force-dynamic` added to route
+- **[x] Fix Telegram Webhook RLS Error (42501)** — switched to service role Supabase client in webhook route (`c2f5d80`)
+- **[x] Update Cron Schedule** — changed flush cron from every minute to daily at 8am UTC (`c97fa1d`)
 
 ---
 
@@ -60,6 +67,7 @@
 - Core app code is in `src/`. Config files (`next.config.js`, `package.json`, etc.) are in root.
 - Do not generate one-off fix scripts in the root. If a fix is needed, make it directly in `src/` or use the `scripts/` folder.
 - Keep commits clean and descriptive. Vercel auto-deploys on push to `main`.
+- **Always update TASKS.md** when completing any work, even small fixes. Commit TASKS.md alongside the code change.
 - If you need Cowork to do something (e.g. generate a doc, restructure files, analyze data), leave a note in the **"Requests for Cowork"** section below.
 
 ---
@@ -67,16 +75,5 @@
 ## 💬 Requests for Cowork
 
 *(Antigravity leaves requests here for Josh's Cowork assistant)*
-
----
-
-## 🔵 Queued — Ready to Build
-
-### [x] Wire Telegram webhook — Cron Flush + force-dynamic
-*Completed by Antigravity*
-
-- [x] Added `export const dynamic = 'force-dynamic'` to `src/app/api/telegram/webhook/route.ts`
-- [x] Created `vercel.json` with Vercel Cron Job hitting `/api/telegram/webhook?flush=true` every minute
-- ⚠️ **Note on INBOX.md:** Vercel serverless functions run on a read-only filesystem — writing `INBOX.md` from the webhook is not possible. Messages are stored in Supabase `telegram_messages` table instead (same data, queryable by Cowork). The cron job flushes any `outbound` rows to Telegram every minute automatically.
 
 ---
