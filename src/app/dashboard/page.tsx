@@ -387,7 +387,7 @@ export default function DashboardPage() {
                                     <div className="space-y-6">
                                         {ranges.map(range => {
                                             const rangeUrl = `https://archeryrangescanada.ca/${range.province?.slug}/${range.city?.slug}/${range.slug}`
-                                            const badgeHtml = `<a href="${rangeUrl}" target="_blank" rel="noopener">\n  <img src="https://archeryrangescanada.ca/images/arc-metal-badge.png" alt="Verified Archery Range Canada" width="200" height="200" style="border:none;" />\n</a>`
+                                            const badgeHtml = `<a href="${rangeUrl}" target="_blank" rel="noopener">\n  <img src="https://archeryrangescanada.ca/find-us-on-badge.png" alt="Verified Archery Range Canada" width="200" height="200" style="border:none;" />\n</a>`
 
                                             return (
                                                 <div key={range.id} className="bg-stone-50 rounded-lg p-5 border border-stone-200">
