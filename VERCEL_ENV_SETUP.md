@@ -1,129 +1,97 @@
-# Vercel Environment Variables Setup Guide
+# Vercel Environment Variables Setup
 
-## 🚨 CRITICAL - Add These First
+This document lists all environment variables that must be configured in the
+[Vercel Dashboard](https://vercel.com/dashboard) → Project → Settings → Environment Variables.
+
+---
+
+## Required Variables
+
+### Supabase
+
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-only) |
+
+### Telegram Bot
+
+| Variable | Value | Description |
+|---|---|---|
+| `TELEGRAM_BOT_TOKEN` | `8794749335:AAESSi4NRNoSU_cn8Xp9Jh-a89AcaqU5dkg` | Token from @BotFather |
+| `TELEGRAM_CHAT_ID` | `7683167236` | Josh's Telegram chat ID |
+
+> **⚠️ Security note:** Regenerate the bot token via @BotFather after this commit,
+> since the token appeared in TASKS.md (which is in git history).
+> Update the new token in both `.env.local` and Vercel dashboard.
+
+### Stripe
+
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
+| `STRIPE_SECRET_KEY` | Stripe secret key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `STRIPE_SILVER_PRICE_ID` | Stripe price ID for Silver plan |
+| `STRIPE_GOLD_PRICE_ID` | Stripe price ID for Gold plan |
+| `STRIPE_PLATNIUM_PRICE_ID` | Stripe price ID for Platinum plan |
+
+### Email (Resend)
+
+| Variable | Description |
+|---|---|
+| `RESEND_API_KEY` | Resend API key |
+| `RESEND_FROM_EMAIL` | Sender email address |
+| `RESEND_REPLY_TO_EMAIL` | Reply-to email address |
+
+### AI
+
+| Variable | Description |
+|---|---|
+| `ANTHROPIC_API_KEY` | Claude API key |
+| `GEMINI_API_KEY` | Google Gemini API key |
+
+### Site
+
+| Variable | Value | Description |
+|---|---|---|
+| `NEXT_PUBLIC_BASE_URL` | `https://archeryrangescanada.ca` | Must be production URL in Vercel (not localhost) |
+| `NEXT_PUBLIC_SITE_URL` | `https://archeryrangescanada.ca` | Same as above |
+
+---
+
+## Registering the Telegram Webhook
+
+After deploying to Vercel, run this command once to tell Telegram where to send messages:
 
 ```bash
-# Email Service (REQUIRED for verification emails)
-RESEND_API_KEY=re_xxxxxxxxxxxxx
+curl -X POST "https://api.telegram.org/bot8794749335:AAESSi4NRNoSU_cn8Xp9Jh-a89AcaqU5dkg/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://archeryrangescanada.ca/api/telegram/webhook"}'
+```
 
-# Site URL (REQUIRED for email links)
-NEXT_PUBLIC_APP_URL=https://archeryrangescanada.ca
+To verify the webhook is set:
+
+```bash
+curl "https://api.telegram.org/bot8794749335:AAESSi4NRNoSU_cn8Xp9Jh-a89AcaqU5dkg/getWebhookInfo"
 ```
 
 ---
 
-## 📧 Email Configuration (Recommended)
+## Sending Outbound Messages (Cowork → Josh)
 
-```bash
-RESEND_FROM_EMAIL=noreply@archeryrangescanada.ca
-RESEND_REPLY_TO_EMAIL=support@archeryrangescanada.ca
+To send a message from Cowork/Antigravity to Josh's Telegram, insert a row into the `telegram_messages` table:
+
+```sql
+INSERT INTO telegram_messages (chat_id, from_name, message, direction, sent)
+VALUES (7683167236, 'Antigravity', 'Your message here', 'outbound', FALSE);
 ```
 
----
+The next time Josh sends a message via Telegram, the webhook will automatically pick up and send any unsent outbound rows.
 
-## 🔄 Update These for Production
+You can also trigger a manual flush (send all pending outbound messages immediately) by visiting:
 
-```bash
-# Change from localhost to production URL
-NEXT_PUBLIC_BASE_URL=https://archeryrangescanada.ca
-NEXT_PUBLIC_SITE_URL=https://archeryrangescanada.ca
 ```
-
----
-
-## 💳 Stripe (Update to Production Keys)
-
-```bash
-# Use LIVE keys for production (change from test keys)
-STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxx
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_xxxxxxxxxxxxx
-STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxx
-
-# Price IDs (use production IDs)
-STRIPE_SILVER_PRICE_ID=price_xxxxxxxxxxxxx
-STRIPE_GOLD_PRICE_ID=price_xxxxxxxxxxxxx
-STRIPE_PLATINUM_PRICE_ID=price_xxxxxxxxxxxxx
+https://archeryrangescanada.ca/api/telegram/webhook?flush=true
 ```
-
----
-
-## 🗄️ Supabase (Copy from .env.local)
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=https://eiarfecnutloupdyapkx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
----
-
-## 🤖 AI Services (Copy from .env.local)
-
-```bash
-ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxxx
-GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxx
-```
-
----
-
-## 📊 Optional (Analytics)
-
-```bash
-IP_SALT=random_secure_string_for_hashing
-```
-
----
-
-## ⚙️ How to Add in Vercel Dashboard
-
-1. Go to: https://vercel.com/dashboard
-2. Select your project: `archery-ranges-canada`
-3. Click: **Settings** → **Environment Variables**
-4. For each variable:
-   - **Key:** Variable name (e.g., `RESEND_API_KEY`)
-   - **Value:** Your secret value
-   - **Environment:** Select **Production**, **Preview**, and **Development**
-   - Click **Save**
-
----
-
-## ✅ Verification Checklist
-
-After adding all variables:
-
-- [ ] RESEND_API_KEY added
-- [ ] NEXT_PUBLIC_APP_URL added (production URL)
-- [ ] NEXT_PUBLIC_BASE_URL updated to production
-- [ ] NEXT_PUBLIC_SITE_URL updated to production
-- [ ] Stripe keys updated to production (sk_live_, pk_live_)
-- [ ] Stripe webhook secret updated
-- [ ] All price IDs use production values
-- [ ] Supabase credentials copied
-- [ ] AI service keys copied
-- [ ] All variables set for Production, Preview, Development
-
----
-
-## 🔐 Security Notes
-
-- ✅ Never commit `.env.local` to git
-- ✅ Use different keys for development vs production
-- ✅ Rotate API keys periodically
-- ✅ Keep Stripe webhook secret secure
-- ✅ Use production Stripe keys only in production environment
-
----
-
-## 🧪 Test After Adding
-
-```bash
-# Deploy and test these endpoints:
-curl https://archeryrangescanada.ca/api/health
-
-# Should return:
-# {"status":"healthy","timestamp":"...","services":{...}}
-```
-
----
-
-**Last Updated:** 2026-01-11
