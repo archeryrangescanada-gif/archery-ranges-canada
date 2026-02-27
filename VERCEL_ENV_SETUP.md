@@ -19,7 +19,7 @@ This document lists all environment variables that must be configured in the
 
 | Variable | Value | Description |
 |---|---|---|
-| `TELEGRAM_BOT_TOKEN` | `8794749335:AAESSi4NRNoSU_cn8Xp9Jh-a89AcaqU5dkg` | Token from @BotFather |
+| `TELEGRAM_BOT_TOKEN` | `8794749335:AAEif4MqLLH14nePDT-YsHgTC_v-IUuWQm4` | Token from @BotFather |
 | `TELEGRAM_CHAT_ID` | `7683167236` | Josh's Telegram chat ID |
 
 > **⚠️ Security note:** Regenerate the bot token via @BotFather after this commit,
@@ -66,7 +66,7 @@ This document lists all environment variables that must be configured in the
 After deploying to Vercel, run this command once to tell Telegram where to send messages:
 
 ```bash
-curl -X POST "https://api.telegram.org/bot8794749335:AAESSi4NRNoSU_cn8Xp9Jh-a89AcaqU5dkg/setWebhook" \
+curl -X POST "https://api.telegram.org/bot8794749335:AAEif4MqLLH14nePDT-YsHgTC_v-IUuWQm4/setWebhook" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://archeryrangescanada.ca/api/telegram/webhook"}'
 ```
@@ -74,7 +74,7 @@ curl -X POST "https://api.telegram.org/bot8794749335:AAESSi4NRNoSU_cn8Xp9Jh-a89A
 To verify the webhook is set:
 
 ```bash
-curl "https://api.telegram.org/bot8794749335:AAESSi4NRNoSU_cn8Xp9Jh-a89AcaqU5dkg/getWebhookInfo"
+curl "https://api.telegram.org/bot8794749335:AAEif4MqLLH14nePDT-YsHgTC_v-IUuWQm4/getWebhookInfo"
 ```
 
 ---

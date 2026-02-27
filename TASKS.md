@@ -38,10 +38,10 @@
 - [x] Create `scripts/create_telegram_messages_table.sql` (Supabase migration)
 - [x] Update `.env.local` with Telegram vars
 - [x] Create `VERCEL_ENV_SETUP.md`
-- [ ] **Josh to do:** Run SQL migration in Supabase SQL Editor
-- [ ] **Josh to do:** Add `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` to Vercel dashboard
-- [ ] **Josh to do:** Register webhook URL (see `VERCEL_ENV_SETUP.md` for curl command)
-- [ ] **Josh to do:** Regenerate bot token via @BotFather (token was in git history via TASKS.md)
+- [x] **Josh to do:** Run SQL migration in Supabase SQL Editor
+- [x] **Josh to do:** Add `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` to Vercel dashboard
+- [x] **Josh to do:** Register webhook URL (see `VERCEL_ENV_SETUP.md` for curl command)
+- [x] **Josh to do:** Regenerate bot token via @BotFather (token was in git history via TASKS.md)
 
 ---
 
