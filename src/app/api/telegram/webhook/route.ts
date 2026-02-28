@@ -38,7 +38,7 @@ Rules:
 function getSystemPrompt() {
     let memory = '';
     try {
-        memory = fs.readFileSync(path.join(process.cwd(), 'ralph', 'MEMORY.md'), 'utf-8');
+        memory = fs.readFileSync(path.join(process.cwd(), 'ralph', 'memory', 'MEMORY.md'), 'utf-8');
     } catch (err) {
         console.warn('[Memory] Could not read MEMORY.md');
     }
