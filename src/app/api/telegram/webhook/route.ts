@@ -4,12 +4,33 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const BOT_TOKEN      = process.env.TELEGRAM_BOT_TOKEN!;
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const ALLOWED_CHAT_ID = parseInt(process.env.TELEGRAM_CHAT_ID || '0', 10);
-const TELEGRAM_API   = `https://api.telegram.org/bot${BOT_TOKEN}`;
-const ANTHROPIC_KEY  = process.env.ANTHROPIC_API_KEY!;
+const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY!;
+const GEMINI_KEY = process.env.GEMINI_API_KEY!;
 
-// Use service role key — bypasses RLS so the webhook can read/write telegram_messages
+// ─── System prompt shared by both models ────────────────────────────────
+const SYSTEM_PROMPT = `You are Josh's assistant for archeryrangescanada.ca — a Next.js directory website listing archery ranges across Canada, built on Vercel with a Supabase backend. Antigravity (an AI IDE) handles all coding tasks. You handle everything else: answering questions, managing tasks, giving project status updates, and helping Josh make decisions.
+
+You are responding via Telegram on Josh's phone, so keep replies SHORT and conversational — like a helpful text message. No heavy markdown, no long bullet lists unless truly needed. Be friendly and direct.`;
+
+// ─── Model routing ──────────────────────────────────────────────────────
+// Complex / deep-analysis keywords → route to Haiku first
+const COMPLEX_PATTERNS = [
+    /\banalyze\b/i, /\baudit\b/i, /\barchitect/i, /\brefactor/i,
+    /\bdebug\b/i, /\bdiagnos/i, /\bexplain.*code\b/i, /\breview\b/i,
+    /\bstrateg/i, /\bcompare\b/i, /\bplan\b/i, /\bimplement/i,
+    /\bdesign\b/i, /\boptimiz/i, /\bmigrat/i,
+];
+
+type ModelUsed = 'haiku' | 'gemini';
+
+function isComplexQuery(text: string): boolean {
+    return COMPLEX_PATTERNS.some(p => p.test(text));
+}
+
+// ─── Supabase (service role — bypasses RLS) ─────────────────────────────
 function getSupabase() {
     return createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,8 +38,9 @@ function getSupabase() {
     );
 }
 
+// ─── Telegram helpers ───────────────────────────────────────────────────
 async function sendTelegramMessage(chatId: number, text: string) {
-    const chunks = [];
+    const chunks: string[] = [];
     for (let i = 0; i < text.length; i += 4000) {
         chunks.push(text.slice(i, i + 4000));
     }
@@ -31,38 +53,94 @@ async function sendTelegramMessage(chatId: number, text: string) {
     }
 }
 
-async function askClaude(userMessage: string): Promise<string> {
+// ─── Anthropic (Claude Haiku 4.5) ───────────────────────────────────────
+async function askHaiku(userMessage: string): Promise<string> {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': ANTHROPIC_KEY,
+            'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 1024,
+            system: SYSTEM_PROMPT,
+            messages: [{ role: 'user', content: userMessage }],
+        }),
+    });
+
+    if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`Haiku API ${response.status}: ${errBody}`);
+    }
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text;
+    if (!text) throw new Error('Haiku returned empty content');
+    return text;
+}
+
+// ─── Google Gemini Flash ────────────────────────────────────────────────
+async function askGemini(userMessage: string): Promise<string> {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents: [{ parts: [{ text: userMessage }] }],
+            generationConfig: { maxOutputTokens: 1024 },
+        }),
+    });
+
+    if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`Gemini API ${response.status}: ${errBody}`);
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error('Gemini returned empty content');
+    return text;
+}
+
+// ─── Fallback chain ────────────────────────────────────────────────────
+// Returns { reply, model } — tries primary first, falls back to secondary
+async function getAIReply(
+    userMessage: string,
+    useComplexModel: boolean
+): Promise<{ reply: string; model: ModelUsed }> {
+    const primary = useComplexModel ? 'haiku' : 'gemini';
+    const secondary = useComplexModel ? 'gemini' : 'haiku';
+
+    const askFn = (m: ModelUsed) => m === 'haiku' ? askHaiku(userMessage) : askGemini(userMessage);
+
+    // Try primary
     try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': ANTHROPIC_KEY,
-                'anthropic-version': '2023-06-01',
-            },
-            body: JSON.stringify({
-                model: 'claude-haiku-4-5-20251001',
-                max_tokens: 1024,
-                system: `You are Josh's assistant for archeryrangescanada.ca — a Next.js directory website listing archery ranges across Canada, built on Vercel with a Supabase backend. Antigravity (an AI IDE) handles all coding tasks. You handle everything else: answering questions, managing tasks, giving project status updates, and helping Josh make decisions.
+        const reply = await askFn(primary);
+        return { reply, model: primary };
+    } catch (err) {
+        console.warn(`[AI] ${primary} failed, falling back to ${secondary}:`, err);
+    }
 
-You are responding via Telegram on Josh's phone, so keep replies SHORT and conversational — like a helpful text message. No heavy markdown, no long bullet lists unless truly needed. Be friendly and direct.`,
-                messages: [{ role: 'user', content: userMessage }],
-            }),
-        });
-
-        if (!response.ok) {
-            console.error('[Claude] API error:', await response.text());
-            return "Sorry, I couldn't process that right now. Try again in a moment.";
-        }
-
-        const data = await response.json();
-        return data.content?.[0]?.text || "I didn't get a response. Please try again.";
-    } catch (error) {
-        console.error('[Claude] Error:', error);
-        return "Something went wrong on my end. Try again shortly.";
+    // Fallback
+    try {
+        const reply = await askFn(secondary);
+        return { reply, model: secondary };
+    } catch (err) {
+        console.error(`[AI] Both models failed:`, err);
+        return {
+            reply: "Both AI models are unavailable right now. Try again in a moment.",
+            model: primary,
+        };
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// POST — incoming Telegram message
+// ═══════════════════════════════════════════════════════════════════════
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
@@ -94,13 +172,14 @@ export async function POST(request: NextRequest) {
             from_name: fromName,
             message: text,
             direction: 'inbound',
-            processed: true, // Claude handles it instantly
+            processed: true,
         });
 
-        console.log(`[Telegram Webhook] Message from ${fromName}: ${text.slice(0, 80)}`);
+        // 2. Route to the right model
+        const complex = isComplexQuery(text);
+        console.log(`[Telegram Webhook] Message from ${fromName} (${complex ? 'complex→haiku' : 'regular→gemini'}): ${text.slice(0, 80)}`);
 
-        // 2. Get Claude's reply instantly
-        const reply = await askClaude(text);
+        const { reply, model } = await getAIReply(text, complex);
 
         // 3. Send reply back to Telegram immediately
         await sendTelegramMessage(ALLOWED_CHAT_ID, reply);
@@ -108,13 +187,13 @@ export async function POST(request: NextRequest) {
         // 4. Store the outbound reply for record keeping
         await supabase.from('telegram_messages').insert({
             chat_id: chatId,
-            from_name: 'Cowork',
+            from_name: `Cowork (${model})`,
             message: reply,
             direction: 'outbound',
             sent: true,
         });
 
-        console.log(`[Telegram Webhook] Replied: ${reply.slice(0, 80)}`);
+        console.log(`[Telegram Webhook] Replied via ${model}: ${reply.slice(0, 80)}`);
 
         return NextResponse.json({ ok: true });
     } catch (error) {
@@ -123,13 +202,24 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// GET endpoint to manually flush any queued outbound messages
+// ═══════════════════════════════════════════════════════════════════════
+// GET — health check + manual flush
+// ═══════════════════════════════════════════════════════════════════════
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const flush = searchParams.get('flush');
 
+    // Health check / heartbeat — uses Gemini (cheap/fast)
     if (flush !== 'true') {
-        return NextResponse.json({ status: 'Telegram webhook active', chat_id: ALLOWED_CHAT_ID });
+        return NextResponse.json({
+            status: 'Telegram webhook active',
+            chat_id: ALLOWED_CHAT_ID,
+            models: {
+                primary_complex: 'claude-haiku-4-5',
+                primary_regular: 'gemini-2.0-flash',
+                fallback: 'cross-model',
+            },
+        });
     }
 
     try {
