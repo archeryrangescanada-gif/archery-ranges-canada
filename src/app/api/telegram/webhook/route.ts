@@ -3,6 +3,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const ALLOWED_CHAT_ID = parseInt(process.env.TELEGRAM_CHAT_ID || '0', 10);
@@ -32,6 +34,22 @@ Rules:
 - If Josh asks about something that needs a live check (data, code state, metrics) — say clearly you'll need to look it up, don't make up numbers
 - If Josh says "go ahead" or "do it" on anything involving code or site changes — confirm the change clearly before it happens
 - Never say you don't have a soul or that you're "just an AI" — you are Mission Control, act like it`;
+
+function getSystemPrompt() {
+    let memory = '';
+    try {
+        memory = fs.readFileSync(path.join(process.cwd(), 'ralph', 'MEMORY.md'), 'utf-8');
+    } catch (err) {
+        console.warn('[Memory] Could not read MEMORY.md');
+    }
+
+    return `${SYSTEM_PROMPT}
+
+─── ACTIVE MEMORY (Tier 1) ───
+${memory}`;
+}
+
+export type ChatMessage = { role: 'user' | 'assistant', content: string };
 
 
 // ─── Model routing ──────────────────────────────────────────────────────
@@ -73,7 +91,7 @@ async function sendTelegramMessage(chatId: number, text: string) {
 }
 
 // ─── Anthropic (Claude Haiku 4.5) ───────────────────────────────────────
-async function askHaiku(userMessage: string): Promise<string> {
+async function askHaiku(messages: ChatMessage[]): Promise<string> {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -84,8 +102,8 @@ async function askHaiku(userMessage: string): Promise<string> {
         body: JSON.stringify({
             model: 'claude-haiku-4-5-20251001',
             max_tokens: 1024,
-            system: SYSTEM_PROMPT,
-            messages: [{ role: 'user', content: userMessage }],
+            system: getSystemPrompt(),
+            messages: messages,
         }),
     });
 
@@ -101,15 +119,20 @@ async function askHaiku(userMessage: string): Promise<string> {
 }
 
 // ─── Google Gemini Flash ────────────────────────────────────────────────
-async function askGemini(userMessage: string): Promise<string> {
+async function askGemini(messages: ChatMessage[]): Promise<string> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+
+    const contents = messages.map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+    }));
 
     const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            contents: [{ parts: [{ text: userMessage }] }],
+            systemInstruction: { parts: [{ text: getSystemPrompt() }] },
+            contents,
             generationConfig: { maxOutputTokens: 1024 },
         }),
     });
@@ -128,13 +151,13 @@ async function askGemini(userMessage: string): Promise<string> {
 // ─── Fallback chain ────────────────────────────────────────────────────
 // Returns { reply, model } — tries primary first, falls back to secondary
 async function getAIReply(
-    userMessage: string,
+    messages: ChatMessage[],
     useComplexModel: boolean
 ): Promise<{ reply: string; model: ModelUsed }> {
     const primary = useComplexModel ? 'haiku' : 'gemini';
     const secondary = useComplexModel ? 'gemini' : 'haiku';
 
-    const askFn = (m: ModelUsed) => m === 'haiku' ? askHaiku(userMessage) : askGemini(userMessage);
+    const askFn = (m: ModelUsed) => m === 'haiku' ? askHaiku(messages) : askGemini(messages);
 
     // Try primary
     try {
@@ -185,7 +208,28 @@ export async function POST(request: NextRequest) {
 
         const supabase = getSupabase();
 
-        // 1. Store inbound message
+        // 1. Fetch recent history (Tier 1 memory injection)
+        const { data: historyData } = await supabase
+            .from('telegram_messages')
+            .select('message, direction')
+            .eq('chat_id', chatId)
+            .order('created_at', { ascending: false })
+            .limit(15);
+
+        const chatHistory: ChatMessage[] = [];
+        if (historyData) {
+            // Reverse to get chronological order
+            const past = historyData.reverse();
+            for (const msg of past) {
+                chatHistory.push({
+                    role: msg.direction === 'inbound' ? 'user' : 'assistant',
+                    content: msg.message
+                });
+            }
+        }
+        chatHistory.push({ role: 'user', content: text });
+
+        // 2. Store current inbound message
         await supabase.from('telegram_messages').insert({
             chat_id: chatId,
             from_name: fromName,
@@ -194,11 +238,11 @@ export async function POST(request: NextRequest) {
             processed: true,
         });
 
-        // 2. Route to the right model
+        // 3. Route to the right model with full context
         const complex = isComplexQuery(text);
-        console.log(`[Telegram Webhook] Message from ${fromName} (${complex ? 'complex→haiku' : 'regular→gemini'}): ${text.slice(0, 80)}`);
+        console.log(`[Telegram Webhook] Message from ${fromName} (${complex ? 'complex→haiku' : 'regular→gemini'}) | History size: ${chatHistory.length}`);
 
-        const { reply, model } = await getAIReply(text, complex);
+        const { reply, model } = await getAIReply(chatHistory, complex);
 
         // 3. Send reply back to Telegram immediately
         await sendTelegramMessage(ALLOWED_CHAT_ID, reply);
