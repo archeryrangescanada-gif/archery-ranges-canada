@@ -1,6 +1,14 @@
 {
     "crons": [
         {
+            "path": "/api/heartbeat",
+            "schedule": "*/15 * * * *"
+        },
+        {
+            "path": "/api/memory/compact?trigger=manual-run",
+            "schedule": "59 23 * * *"
+        },
+        {
             "path": "/api/telegram/webhook?flush=true",
             "schedule": "0 8 * * *"
         }
