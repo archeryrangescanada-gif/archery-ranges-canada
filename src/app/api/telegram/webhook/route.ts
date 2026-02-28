@@ -4,9 +4,10 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
+const BOT_TOKEN      = process.env.TELEGRAM_BOT_TOKEN!;
 const ALLOWED_CHAT_ID = parseInt(process.env.TELEGRAM_CHAT_ID || '0', 10);
-const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+const TELEGRAM_API   = `https://api.telegram.org/bot${BOT_TOKEN}`;
+const ANTHROPIC_KEY  = process.env.ANTHROPIC_API_KEY!;
 
 // Use service role key — bypasses RLS so the webhook can read/write telegram_messages
 function getSupabase() {
@@ -17,7 +18,6 @@ function getSupabase() {
 }
 
 async function sendTelegramMessage(chatId: number, text: string) {
-    // Split long messages into chunks (Telegram limit: 4096 chars)
     const chunks = [];
     for (let i = 0; i < text.length; i += 4000) {
         chunks.push(text.slice(i, i + 4000));
@@ -31,14 +31,44 @@ async function sendTelegramMessage(chatId: number, text: string) {
     }
 }
 
+async function askClaude(userMessage: string): Promise<string> {
+    try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': ANTHROPIC_KEY,
+                'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify({
+                model: 'claude-haiku-4-5-20251001',
+                max_tokens: 1024,
+                system: `You are Josh's assistant for archeryrangescanada.ca — a Next.js directory website listing archery ranges across Canada, built on Vercel with a Supabase backend. Antigravity (an AI IDE) handles all coding tasks. You handle everything else: answering questions, managing tasks, giving project status updates, and helping Josh make decisions.
+
+You are responding via Telegram on Josh's phone, so keep replies SHORT and conversational — like a helpful text message. No heavy markdown, no long bullet lists unless truly needed. Be friendly and direct.`,
+                messages: [{ role: 'user', content: userMessage }],
+            }),
+        });
+
+        if (!response.ok) {
+            console.error('[Claude] API error:', await response.text());
+            return "Sorry, I couldn't process that right now. Try again in a moment.";
+        }
+
+        const data = await response.json();
+        return data.content?.[0]?.text || "I didn't get a response. Please try again.";
+    } catch (error) {
+        console.error('[Claude] Error:', error);
+        return "Something went wrong on my end. Try again shortly.";
+    }
+}
+
 export async function POST(request: NextRequest) {
     try {
-        // Parse the incoming Telegram update
         const body = await request.json();
 
         const message = body?.message;
         if (!message) {
-            // Not a message update (could be edited_message, etc.) — acknowledge and ignore
             return NextResponse.json({ ok: true });
         }
 
@@ -58,53 +88,42 @@ export async function POST(request: NextRequest) {
 
         const supabase = getSupabase();
 
-        // 1. Store inbound message in Supabase
-        const { error: insertError } = await supabase.from('telegram_messages').insert({
+        // 1. Store inbound message
+        await supabase.from('telegram_messages').insert({
             chat_id: chatId,
             from_name: fromName,
             message: text,
             direction: 'inbound',
+            processed: true, // Claude handles it instantly
         });
 
-        if (insertError) {
-            console.error('[Telegram Webhook] Failed to store inbound message:', insertError);
-            // Still return 200 to Telegram so it doesn't retry
-            return NextResponse.json({ ok: true });
-        }
+        console.log(`[Telegram Webhook] Message from ${fromName}: ${text.slice(0, 80)}`);
 
-        console.log(`[Telegram Webhook] Stored inbound message from ${fromName}: ${text.slice(0, 80)}`);
+        // 2. Get Claude's reply instantly
+        const reply = await askClaude(text);
 
-        // 2. Check for unsent outbound messages and send them back to Telegram
-        const { data: outboundMessages, error: fetchError } = await supabase
-            .from('telegram_messages')
-            .select('id, message')
-            .eq('direction', 'outbound')
-            .eq('sent', false)
-            .order('created_at', { ascending: true });
+        // 3. Send reply back to Telegram immediately
+        await sendTelegramMessage(ALLOWED_CHAT_ID, reply);
 
-        if (!fetchError && outboundMessages && outboundMessages.length > 0) {
-            for (const msg of outboundMessages) {
-                await sendTelegramMessage(ALLOWED_CHAT_ID, msg.message);
+        // 4. Store the outbound reply for record keeping
+        await supabase.from('telegram_messages').insert({
+            chat_id: chatId,
+            from_name: 'Cowork',
+            message: reply,
+            direction: 'outbound',
+            sent: true,
+        });
 
-                // Mark as sent
-                await supabase
-                    .from('telegram_messages')
-                    .update({ sent: true })
-                    .eq('id', msg.id);
-            }
-            console.log(`[Telegram Webhook] Sent ${outboundMessages.length} outbound message(s) to Telegram`);
-        }
+        console.log(`[Telegram Webhook] Replied: ${reply.slice(0, 80)}`);
 
         return NextResponse.json({ ok: true });
     } catch (error) {
         console.error('[Telegram Webhook] Unhandled error:', error);
-        // Always return 200 to Telegram to prevent retry loops
         return NextResponse.json({ ok: true });
     }
 }
 
-// GET endpoint to manually trigger outbound message flush
-// Useful for testing: GET /api/telegram/webhook?flush=true
+// GET endpoint to manually flush any queued outbound messages
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const flush = searchParams.get('flush');
