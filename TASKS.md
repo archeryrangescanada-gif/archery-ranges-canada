@@ -58,6 +58,7 @@
 - **[x] Wire Telegram Webhook — Cron Flush + force-dynamic** — `vercel.json` cron job created, `force-dynamic` added to route
 - **[x] Fix Telegram Webhook RLS Error (42501)** — switched to service role Supabase client in webhook route (`c2f5d80`)
 - **[x] Update Cron Schedule** — changed flush cron from every minute to daily at 8am UTC (`c97fa1d`)
+- **[x] Scrape Saskatchewan Archery Ranges** — 29 ranges found via crawl4ai + SAA directory, exported to `saskatchewan_ranges.csv`
 
 ---
 
@@ -75,5 +76,67 @@
 ## 💬 Requests for Cowork
 
 *(Antigravity leaves requests here for Josh's Cowork assistant)*
+
+---
+
+## 🔵 Queued — Ready to Build
+
+### [x] Scrape Saskatchewan Archery Ranges (crawl4ai)
+*Completed by Antigravity — 29 ranges found and exported to `saskatchewan_ranges.csv`. Crawled 12 club websites via crawl4ai; remaining clubs populated from SAA 2025 directory.*
+
+Use **crawl4ai** to scan for all archery ranges in Saskatchewan, Canada, and export results as a CSV file named `saskatchewan_ranges.csv` in the project root.
+
+**Sources to crawl:**
+- Archery Canada range finder / directory
+- Saskatchewan Archery Association website
+- Google Maps / local business listings
+- Club websites, Facebook pages, and any other discoverable sources
+
+**Fields to extract** (use these exact column headers in the CSV):
+
+| Field | Description |
+|---|---|
+| `post_title` | Name of the range / club |
+| `post_author` | Contact person or club administrator name (if available) |
+| `post_category` | Category (e.g. Archery Range, Archery Club) |
+| `F174` | Leave blank |
+| `post_address` | Street address |
+| `post_city` | City or town |
+| `post_region` | Province — Saskatchewan / SK |
+| `post_country` | Canada |
+| `post_zip` | Postal code |
+| `post_latitude` | GPS latitude |
+| `post_longitude` | GPS longitude |
+| `phone` | Primary phone number |
+| `email` | Contact email address |
+| `website` | Official website URL |
+| `post_content` | Description of the range / club (2–5 sentences if available) |
+| `post_tags` | Relevant tags (e.g. outdoor, indoor, 3D, field, competitive) |
+| `business_hours` | Operating hours (all days if available) |
+| `post_images` | URL(s) to any available images of the range |
+| `range_length_yards` | Maximum shooting distance in yards |
+| `number_of_lanes` | Total number of shooting lanes |
+| `facility_type` | Indoor / Outdoor / Both |
+| `has_pro_shop` | Yes / No |
+| `has_3d_course` | Yes / No |
+| `has_field_course` | Yes / No |
+| `membership_required` | Yes / No |
+| `membership_price_adult` | Annual adult membership price (e.g. $75/year) |
+| `drop_in_price` | Drop-in / day use fee if applicable |
+| `equipment_rental_available` | Yes / No |
+| `lessons_available` | Yes / No |
+| `lesson_price_range` | Price range for lessons (e.g. $20–$50) |
+| `bow_types_allowed` | e.g. Recurve, Compound, Longbow, Crossbow |
+| `accessibility` | Notes on accessibility (wheelchair access, etc.) |
+| `parking_available` | Yes / No |
+
+**Rules:**
+- Saskatchewan only — do not include ranges from other provinces
+- Do not fabricate or estimate any data — only include what is confirmed from the source
+- If a club has multiple locations, create a separate row for each location
+- Leave fields blank if the information cannot be confirmed
+- Output: `saskatchewan_ranges.csv` (UTF-8 encoded, one row per range)
+
+Once complete, mark this task **[x]** and note how many ranges were found. Cowork will audit the CSV before any listings are created.
 
 ---
