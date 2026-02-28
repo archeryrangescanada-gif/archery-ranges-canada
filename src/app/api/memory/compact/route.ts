@@ -45,6 +45,23 @@ ${textPayload}`;
     return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
 }
 
+async function generateEmbedding(text: string): Promise<number[]> {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_KEY}`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: "models/text-embedding-004",
+            content: { parts: [{ text }] }
+        })
+    });
+    if (!response.ok) {
+        throw new Error(`Gemini Embedding Error: ${await response.text()}`);
+    }
+    const data = await response.json();
+    return data.embedding.values;
+}
+
 async function commitToGitHub(filename: string, content: string) {
     if (!GITHUB_PAT) throw new Error("GITHUB_PAT is not configured");
 
@@ -144,9 +161,26 @@ export async function GET(request: NextRequest) {
         // 4. Commit to GitHub
         await commitToGitHub(filename, fullContent);
 
+        // 5. Generate Embedding and Store in Supabase pgvector
+        try {
+            const embedding = await generateEmbedding(summary);
+            const { error: insertError } = await supabase.from('memories').insert({
+                content: fullContent,
+                metadata: { source: 'daily-log', date: dateStr, filename: filename },
+                embedding: embedding
+            });
+            if (insertError) {
+                console.error('[Memory Compaction] Supabase insert error:', insertError);
+            } else {
+                console.log(`[Memory Compaction] Stored embedding in Supabase for ${dateStr}`);
+            }
+        } catch (embedError) {
+            console.error('[Memory Compaction] Failed to store embedding:', embedError);
+        }
+
         return NextResponse.json({
             ok: true,
-            status: `Compacted ${messages.length} messages into ${filename} and pushed to GitHub.`
+            status: `Compacted ${messages.length} messages into ${filename} and pushed to GitHub + Supabase.`
         });
 
     } catch (e: any) {

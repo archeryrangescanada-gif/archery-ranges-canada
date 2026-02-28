@@ -35,7 +35,7 @@ Rules:
 - If Josh says "go ahead" or "do it" on anything involving code or site changes — confirm the change clearly before it happens
 - Never say you don't have a soul or that you're "just an AI" — you are Mission Control, act like it`;
 
-function getSystemPrompt() {
+function getSystemPrompt(semanticMemory: string = '') {
     let memory = '';
     try {
         memory = fs.readFileSync(path.join(process.cwd(), 'ralph', 'memory', 'MEMORY.md'), 'utf-8');
@@ -43,13 +43,38 @@ function getSystemPrompt() {
         console.warn('[Memory] Could not read MEMORY.md');
     }
 
-    return `${SYSTEM_PROMPT}
+    let prompt = `${SYSTEM_PROMPT}
 
 ─── ACTIVE MEMORY (Tier 1) ───
 ${memory}`;
+
+    if (semanticMemory) {
+        prompt += `\n\n─── RECALLED PAST MEMORY (Tier 3) ───\n${semanticMemory}`;
+    }
+
+    return prompt;
 }
 
 export type ChatMessage = { role: 'user' | 'assistant', content: string };
+
+// ─── Embeddings ──────────────────────────────────────────────────────────
+async function generateEmbedding(text: string): Promise<number[]> {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_KEY}`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: "models/text-embedding-004",
+            content: { parts: [{ text }] }
+        })
+    });
+    if (!response.ok) {
+        console.error(`[AI] Embedding error: ${await response.text()}`);
+        return [];
+    }
+    const data = await response.json();
+    return data.embedding?.values || [];
+}
 
 
 // ─── Model routing ──────────────────────────────────────────────────────
@@ -91,7 +116,7 @@ async function sendTelegramMessage(chatId: number, text: string) {
 }
 
 // ─── Anthropic (Claude Haiku 4.5) ───────────────────────────────────────
-async function askHaiku(messages: ChatMessage[]): Promise<string> {
+async function askHaiku(messages: ChatMessage[], systemPrompt: string): Promise<string> {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -102,7 +127,7 @@ async function askHaiku(messages: ChatMessage[]): Promise<string> {
         body: JSON.stringify({
             model: 'claude-haiku-4-5-20251001',
             max_tokens: 1024,
-            system: getSystemPrompt(),
+            system: systemPrompt,
             messages: messages,
         }),
     });
@@ -119,7 +144,7 @@ async function askHaiku(messages: ChatMessage[]): Promise<string> {
 }
 
 // ─── Google Gemini Flash ────────────────────────────────────────────────
-async function askGemini(messages: ChatMessage[]): Promise<string> {
+async function askGemini(messages: ChatMessage[], systemPrompt: string): Promise<string> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
 
     const contents = messages.map(m => ({
@@ -131,7 +156,7 @@ async function askGemini(messages: ChatMessage[]): Promise<string> {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            systemInstruction: { parts: [{ text: getSystemPrompt() }] },
+            systemInstruction: { parts: [{ text: systemPrompt }] },
             contents,
             generationConfig: { maxOutputTokens: 1024 },
         }),
@@ -152,12 +177,13 @@ async function askGemini(messages: ChatMessage[]): Promise<string> {
 // Returns { reply, model } — tries primary first, falls back to secondary
 async function getAIReply(
     messages: ChatMessage[],
-    useComplexModel: boolean
+    useComplexModel: boolean,
+    systemPrompt: string
 ): Promise<{ reply: string; model: ModelUsed }> {
     const primary = useComplexModel ? 'haiku' : 'gemini';
     const secondary = useComplexModel ? 'gemini' : 'haiku';
 
-    const askFn = (m: ModelUsed) => m === 'haiku' ? askHaiku(messages) : askGemini(messages);
+    const askFn = (m: ModelUsed) => m === 'haiku' ? askHaiku(messages, systemPrompt) : askGemini(messages, systemPrompt);
 
     // Try primary
     try {
@@ -238,11 +264,33 @@ export async function POST(request: NextRequest) {
             processed: true,
         });
 
+        // 2.5 Semantic Search (Tier 3 memory injection)
+        let semanticMemoryText = '';
+        try {
+            const queryEmbedding = await generateEmbedding(text);
+            if (queryEmbedding.length > 0) {
+                const { data: matchedMemories, error: matchError } = await supabase.rpc('match_memories', {
+                    query_embedding: queryEmbedding,
+                    match_threshold: 0.65, // Adjust threshold as needed
+                    match_count: 2
+                });
+
+                if (!matchError && matchedMemories?.length) {
+                    semanticMemoryText = matchedMemories.map((m: any) => `Date: ${m.metadata?.date || 'Unknown'}\nLog:\n${m.content}`).join('\n\n---\n\n');
+                    console.log(`[Semantic Search] Found ${matchedMemories.length} relevant past memories.`);
+                }
+            }
+        } catch (e) {
+            console.error('[Semantic Search] Error:', e);
+        }
+
+        const finalSystemPrompt = getSystemPrompt(semanticMemoryText);
+
         // 3. Route to the right model with full context
         const complex = isComplexQuery(text);
         console.log(`[Telegram Webhook] Message from ${fromName} (${complex ? 'complex→haiku' : 'regular→gemini'}) | History size: ${chatHistory.length}`);
 
-        const { reply, model } = await getAIReply(chatHistory, complex);
+        const { reply, model } = await getAIReply(chatHistory, complex, finalSystemPrompt);
 
         // 3. Send reply back to Telegram immediately
         await sendTelegramMessage(ALLOWED_CHAT_ID, reply);
