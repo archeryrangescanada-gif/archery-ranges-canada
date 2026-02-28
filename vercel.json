@@ -1,10 +1,6 @@
 {
     "crons": [
         {
-            "path": "/api/heartbeat",
-            "schedule": "*/15 * * * *"
-        },
-        {
             "path": "/api/telegram/webhook?flush=true",
             "schedule": "0 8 * * *"
         }
