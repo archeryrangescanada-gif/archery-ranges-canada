@@ -49,7 +49,7 @@ Once you've run the SQL, mark this **[x]** and commit.
 
 The file `saskatchewan_ranges.csv` in the project root contains **29 Saskatchewan archery ranges** and is verified and ready to import as live listings on archeryrangescanada.ca.
 
-**Corrections applied by Cowork audit:**
+**Corrections applied by Cowork audit (Pass 1 — Antigravity):**
 - Thunderhead Archers: address corrected (302-1st St W, Delisle SK S0L 0P0, phone 306-493-7738)
 - No.1 Archery & Sports: city corrected to Regina (was "Sherwood No. 159"), added postal S4N 2G6
 - Antler River Archery Club: removed wrong website, added correct phone (306-449-2227) and email (kmartel@sasktel.net)
@@ -57,6 +57,24 @@ The file `saskatchewan_ranges.csv` in the project root contains **29 Saskatchewa
 - Viscount Archery Club: added Community Center address, postal S0K 4M0, phone (306-944-2079)
 - Lloydminster & Area Archers: updated contact to David Charbonneau (306-307-3349, decharbonn@icloud.com)
 - Broken Arrow Archery Club: corrected location to 19km west of Yorkton on Yellowhead Hwy, added official website
+
+**Corrections applied by Cowork audit (Pass 2 — Josh's Cowork, March 1 2026):**
+- Frontier Bowmen: added "(Basement)" to address, added lane count (8 lanes, 18m), added founding year (1961), added parking_available=Yes
+- Wascana Archers: added verified postal code S4N 5W5 (was blank), added phone 306-537-1099 (verified via allbiz.ca)
+- Saskatoon Straight Shooters: corrected address to full SWF address (37306 Range Road 3050), added SWF phone 306-242-1666, added email info@saskatoonarchery.com, added parking_available=Yes
+- Battle River Archers: added street address (27 Street) and postal code S0M 0E0 (verified via canada-advisor.com), corrected business hours to Mon/Thu 7-9PM, Tue 6-9PM
+- Thunder Creek Archery Club: corrected address from 1235 Main St N to 122 Main St N (verified via multiple directories)
+- Timberland Bow Benders: updated address to include "Prince Albert Wildlife Federation" for clarity; updated description with 2025 provincial shoot milestone (nearly 800 archers — largest in Canada)
+- Estevan Archery Club: added phone 306-634-7056 and email monai@sasktel.net (from SAA directory); added meeting time (1st Wednesday 7:30PM)
+- Swift Current Archery Club: corrected address from "Colonel Clifton Centre" to full address 350 6th Avenue NE; noted it is Lt. Colonel Clifton Centre (former armory)
+- No.1 Archery & Sports: corrected postal code from S4N 2G6 to S4N 0A1 (verified via mysask411 and canpages)
+- Lloydminster & Area Archers: expanded address to "Hwy 303 East, 2km N on Range Road 3265" for GPS accuracy; expanded description with tuning equipment details; added closure note (mid-Jun to mid-Aug)
+- Antler River Archery Club: added number_of_lanes=5 (confirmed in description); added parking_available=Yes
+- Apple Shot Archers Inc: updated description with verified details — established 2023, shoots at Macoun indoor gun club, led by Nicole Grass; corrected facility_type to Indoor
+- Langenburg Archery Club: added Facebook URL (LangenburgArcheryClub); updated description noting club founded 2018, both indoor and outdoor ranges
+- Broken Arrow Archery Club: expanded description with bag targets detail and Wednesday 6PM meeting time
+- Tru Flite Archery: added phone 306-782-7910 (contact Pam Schmuck, from SAA 2010 directory — verify currency); updated description
+- Viscount Archery Club: corrected "Community Center" to "Community Centre (converted curling rink)"
 
 **What to do:**
 - [ ] Import all 29 rows from `saskatchewan_ranges.csv` as listings in the database (same process used for Alberta/BC)
