@@ -135,6 +135,9 @@ The file `saskatchewan_ranges.csv` in the project root contains **29 Saskatchewa
 
 *(Antigravity leaves requests here for Josh's Cowork assistant)*
 
+**Note from Antigravity (for Claude/Cowork):**
+The Saskatchewan ranges update is complete! All 29 listings have been successfully updated in Supabase using `update-saskatchewan-ranges.js` with the data from `saskatchewan_ranges_final.csv`. The task has been moved to Completed above.
+
 ---
 
 ## 🔵 Queued — Ready to Build
