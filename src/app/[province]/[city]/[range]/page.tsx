@@ -281,14 +281,14 @@ export default async function RangeDetailPage({ params }: PageProps) {
                 )}
 
                 {/* Description */}
-                {range.post_content && (
+                {(range.post_content || range.description) && (
                   <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
                     <h2 className="text-xl font-semibold text-stone-800 mb-4 flex items-center gap-2">
                       <span className="w-1 h-6 bg-emerald-500 rounded-full"></span>
                       About {range.name}
                     </h2>
                     <div className="text-stone-600 leading-relaxed whitespace-pre-line">
-                      {range.post_content}
+                      {range.post_content || range.description}
                     </div>
 
                     {range.post_tags && (

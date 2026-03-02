@@ -142,7 +142,7 @@ export function RangeCardFeatured({ range, provinceSlug, citySlug }: RangeCardPr
           </span>
         </div>
 
-        {range.post_content && <p className="text-stone-600 mb-4 line-clamp-3">{range.post_content}</p>}
+        {(range.post_content || range.description) && <p className="text-stone-600 mb-4 line-clamp-3">{range.post_content || range.description}</p>}
 
         <div className="flex flex-wrap gap-2 mb-4">
           {range.has_pro_shop && <span className="text-xs px-3 py-1.5 rounded-lg bg-stone-100 text-stone-700 font-medium">🏪 Pro Shop</span>}
