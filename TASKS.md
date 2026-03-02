@@ -44,6 +44,8 @@ Once you've run the SQL, mark this **[x]** and commit.
 
 ## 🔵 Queued — Ready to Build
 
+---
+
 ### [x] Import Saskatchewan Archery Range Listings
 *Completed by Antigravity — all 29 Saskatchewan ranges imported to Supabase. Script: `scripts/deploy-saskatchewan-ranges.js`*
 
@@ -104,6 +106,7 @@ The file `saskatchewan_ranges.csv` in the project root contains **29 Saskatchewa
 
 ## ✅ Completed
 
+- **[x] Update Saskatchewan Listings with Final Audited CSV** — updated 29 listings in Supabase using `update-saskatchewan-ranges.js` to upsert from `saskatchewan_ranges_final.csv`.
 - **[x] Update Contact Form Logic** — all code items done (2–5). Non-code item 6 left to Josh.
 - **[x] Fix Telegram Webhook 307 Redirect** — excluded `/api/telegram/webhook` from middleware matcher (`672780b`)
 - **[x] Build Telegram Webhook Endpoint** — webhook route live, SQL migration, VERCEL_ENV_SETUP.md, env vars, webhook registered
