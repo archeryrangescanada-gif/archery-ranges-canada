@@ -11,42 +11,22 @@ type BillingPeriod = 'monthly' | 'yearly'
 
 const tiers = [
   {
-    id: 'free',
-    name: 'Free',
-    tagline: 'The Claimed Listing',
-    description: 'Claim your bare-bones listing',
-    badge: null,
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    searchRank: 'Standard',
-    features: [
-      { text: '1 photo', included: true },
-      { text: '100 words', included: true },
-      { text: 'Address & Map location', included: true },
-      { text: 'No badge/ranking boost', included: true },
-      { text: 'No Contact Form', included: false },
-    ],
-    cta: 'Claim Listing',
-    ctaLink: '/auth/signup',
-    highlighted: false,
-  },
-  {
     id: 'bronze',
     name: 'Bronze',
-    tagline: 'The Member',
-    description: 'Start managing your presence and get boosted',
+    tagline: 'The Claimed Listing',
+    description: 'Claim your basic listing to manage your presence',
     badge: '/bronze-badge.png',
-    monthlyPrice: 19.99,
-    yearlyPrice: 199,
-    searchRank: 'Boosted',
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    searchRank: 'Standard (Boosted)',
     features: [
       { text: '1 photo', included: true },
-      { text: '100 words', included: true },
-      { text: 'Bronze badge', included: true },
-      { text: 'Search Ranking Boost', included: true },
-      { text: 'Standard email support', included: true },
+      { text: 'Address & Map/directions', included: true },
+      { text: 'Non-clickable link, email, phone', included: true },
+      { text: 'Amenities & Range specs', included: true },
+      { text: '100 word description', included: true },
     ],
-    cta: 'Start Bronze',
+    cta: 'Get Started Free',
     ctaLink: '/auth/signup',
     highlighted: false,
   },
@@ -60,13 +40,13 @@ const tiers = [
     yearlyPrice: 499,
     searchRank: 'Priority (Top of Results)',
     features: [
-      { text: 'Everything in bronze', included: true },
+      { text: 'Everything in Bronze', included: true },
       { text: '5 photos', included: true },
-      { text: '200 words + Pricing displays', included: true },
-      { text: 'Clickable links & WhatsApp', included: true },
-      { text: 'Contact form & Reviews', included: true },
-      { text: 'Priority Ranking', included: true },
-      { text: 'Analytics dashboard', included: true },
+      { text: '200 word summary', included: true },
+      { text: 'Social media links', included: true },
+      { text: 'Response to reviews', included: true },
+      { text: 'Pricing displays', included: true },
+      { text: 'Clickable phone, email, website', included: true },
     ],
     cta: 'Start Silver',
     ctaLink: process.env.NEXT_PUBLIC_STRIPE_SILVER_URL || '/auth/signup?plan=silver',
@@ -83,13 +63,13 @@ const tiers = [
     yearlyPrice: 1299,
     searchRank: 'Maximum (Pinned Above All)',
     features: [
-      { text: 'Everything in silver', included: true },
-      { text: 'Unlimited photos & 1 Video', included: true },
-      { text: '300 words', included: true },
-      { text: 'Events calendar', included: true },
-      { text: 'Pinned Ranking & Home Page Feature', included: true },
-      { text: 'Gold Partner Badge', included: true },
-      { text: 'Access to SaaS waiver system', included: true },
+      { text: 'Everything in Silver', included: true },
+      { text: 'Unlimited photos & YouTube Video', included: true },
+      { text: '300 word description', included: true },
+      { text: 'Calendar/agenda', included: true },
+      { text: 'Featured listing on the home page', included: true },
+      { text: 'FAQ Section', included: true },
+      { text: 'Direct message to the club/range', included: true },
     ],
     cta: 'Start Gold',
     ctaLink: process.env.NEXT_PUBLIC_STRIPE_GOLD_URL || '/auth/signup?plan=gold',
@@ -101,54 +81,47 @@ const comparisonFeatures = [
   {
     category: 'Visibility & Search',
     features: [
-      { name: 'Badge Type', free: false, bronze: 'bronze-badge', silver: 'silver-badge', gold: 'gold-badge' },
-      { name: 'Search Ranking', free: 'Standard', bronze: 'Boosted', silver: 'Priority', gold: 'Pinned Top' },
-      { name: 'Home Page Feature (50km)', free: false, bronze: false, silver: false, gold: true },
+      { name: 'Badge Type', bronze: 'bronze-badge', silver: 'silver-badge', gold: 'gold-badge' },
+      { name: 'Search Ranking', bronze: 'Boosted', silver: 'Priority', gold: 'Pinned Top' },
+      { name: 'Home Page Feature (50km)', bronze: false, silver: false, gold: true },
     ],
   },
   {
     category: 'Contact Information',
     features: [
-      { name: 'Map Pin & Address', free: true, bronze: true, silver: true, gold: true },
-      { name: 'Unclickable Contact Info', free: true, bronze: true, silver: true, gold: true },
-      { name: 'Clickable Website Link', free: false, bronze: false, silver: true, gold: true },
-      { name: 'Phone Number (Clickable)', free: false, bronze: false, silver: true, gold: true },
-      { name: 'Email Address & Direct Message Form', free: false, bronze: false, silver: true, gold: true },
-      { name: 'Social Media Links', free: false, bronze: false, silver: true, gold: true },
-      { name: 'WhatsApp Link', free: false, bronze: false, silver: true, gold: true },
+      { name: 'Map Pin & Address', bronze: true, silver: true, gold: true },
+      { name: 'Unclickable Contact Info', bronze: true, silver: true, gold: true },
+      { name: 'Clickable Website Link', bronze: false, silver: true, gold: true },
+      { name: 'Phone Number (Clickable)', bronze: false, silver: true, gold: true },
+      { name: 'Email Address (Clickable)', bronze: false, silver: true, gold: true },
+      { name: 'Social Media Links', bronze: false, silver: true, gold: true },
+      { name: 'WhatsApp Link', bronze: false, silver: true, gold: true },
+      { name: 'Direct Message to Club (Lead Form)', bronze: false, silver: false, gold: true },
     ],
   },
   {
     category: 'Content & Media',
     features: [
-      { name: 'Photos', free: '1', bronze: '1', silver: '5', gold: 'Unlimited' },
-      { name: 'Description Length', free: '100 words', bronze: '100 words', silver: '200 words', gold: '300 words' },
-      { name: 'Display Amenities & Bow Types', free: true, bronze: true, silver: true, gold: true },
-      { name: 'Show Drop-In / Membership Pricing', free: false, bronze: false, silver: true, gold: true },
-      { name: 'YouTube Integration', free: false, bronze: false, silver: false, gold: '1 Video' },
-      { name: 'Events Calendar', free: false, bronze: false, silver: false, gold: true },
+      { name: 'Photos', bronze: '1', silver: '5', gold: 'Unlimited' },
+      { name: 'Description Length', bronze: '100 words', silver: '200 words', gold: '300 words' },
+      { name: 'Display Amenities & Bow Types', bronze: true, silver: true, gold: true },
+      { name: 'Show Drop-In / Membership Pricing', bronze: false, silver: true, gold: true },
+      { name: 'YouTube Integration', bronze: false, silver: false, gold: '1 Video' },
+      { name: 'Events Calendar & Agenda', bronze: false, silver: false, gold: true },
+      { name: 'FAQ Section', bronze: false, silver: false, gold: true },
     ],
   },
   {
     category: 'Reviews & Engagement',
     features: [
-      { name: 'Receive/Display Reviews', free: false, bronze: false, silver: true, gold: true },
+      { name: 'Receive/Display Reviews', bronze: false, silver: true, gold: true },
+      { name: 'Response to Reviews', bronze: false, silver: true, gold: true },
     ],
   },
   {
     category: 'Analytics',
     features: [
-      { name: 'Access to Range Analytics Dashboard', free: false, bronze: false, silver: true, gold: true },
-    ],
-  },
-  {
-    category: 'SaaS Tools (Waiver System)',
-    features: [
-      { name: 'Digital Waiver System', free: false, bronze: false, silver: false, gold: true },
-      { name: 'iPad Kiosk Mode', free: false, bronze: false, silver: false, gold: true },
-      { name: 'Waiver Dashboard', free: false, bronze: false, silver: false, gold: true },
-      { name: 'Expiry Tracking & Emails', free: false, bronze: false, silver: false, gold: true },
-      { name: 'PDF Export', free: false, bronze: false, silver: false, gold: true },
+      { name: 'Access to Range Analytics Dashboard', bronze: false, silver: true, gold: true },
     ],
   },
 ]
@@ -332,14 +305,9 @@ export default function PricingPage() {
 
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-stone-200">
             {/* Table Header */}
-            <div className="grid grid-cols-5 bg-stone-800 text-white">
+            <div className="grid grid-cols-4 bg-stone-800 text-white">
               <div className="p-4 text-center font-semibold text-stone-700">Feature</div>
               <div className="p-4 text-center font-semibold text-stone-300">
-                <div className="flex items-center justify-center gap-2">
-                  <span>Free</span>
-                </div>
-              </div>
-              <div className="p-4 text-center font-semibold">
                 <div className="flex items-center justify-center gap-2">
                   <Image src="/bronze-badge.png" alt="Bronze" width={24} height={24} className="h-6 w-6 object-contain" />
                   <span>Bronze</span>
@@ -360,10 +328,9 @@ export default function PricingPage() {
             </div>
 
             {/* Price Row */}
-            <div className="grid grid-cols-5 border-b border-stone-200 bg-stone-50">
+            <div className="grid grid-cols-4 border-b border-stone-200 bg-stone-50">
               <div className="p-4 font-semibold text-stone-700">Price</div>
               <div className="p-4 text-center font-bold text-stone-800">Free</div>
-              <div className="p-4 text-center font-bold text-amber-700 bg-amber-50">$19.99/mo</div>
               <div className="p-4 text-center font-bold text-green-600 bg-green-50">$49.99/mo</div>
               <div className="p-4 text-center font-bold text-stone-800">$129.99/mo</div>
             </div>
@@ -372,8 +339,8 @@ export default function PricingPage() {
             {comparisonFeatures.map((category, catIdx) => (
               <div key={catIdx}>
                 {/* Category Header */}
-                <div className="grid grid-cols-5 bg-stone-100 border-b border-stone-200">
-                  <div className="col-span-5 p-3 font-semibold text-stone-700">
+                <div className="grid grid-cols-4 bg-stone-100 border-b border-stone-200">
+                  <div className="col-span-4 p-3 font-semibold text-stone-700">
                     {category.category}
                   </div>
                 </div>
@@ -382,10 +349,10 @@ export default function PricingPage() {
                 {category.features.map((feature, featIdx) => (
                   <div
                     key={featIdx}
-                    className="grid grid-cols-5 border-b border-stone-100 hover:bg-stone-50"
+                    className="grid grid-cols-4 border-b border-stone-100 hover:bg-stone-50"
                   >
                     <div className="p-4 text-stone-600">{feature.name}</div>
-                    {['free', 'bronze', 'silver', 'gold'].map((tier) => {
+                    {['bronze', 'silver', 'gold'].map((tier) => {
                       const value = feature[tier as keyof typeof feature]
                       return (
                         <div

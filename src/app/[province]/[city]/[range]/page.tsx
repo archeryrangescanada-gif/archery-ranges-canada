@@ -364,8 +364,8 @@ export default async function RangeDetailPage({ params }: PageProps) {
                   />
                 )}
 
-                {/* FAQ Section (Silver/Basic and above only) */}
-                {tierLimits.hasClickableContact && (
+                {/* FAQ Section (Gold only) */}
+                {tierLimits.goldBadge && (
                   <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
                     <h2 className="text-xl font-semibold text-stone-800 mb-6">
                       Frequently Asked Questions about {range.name}
