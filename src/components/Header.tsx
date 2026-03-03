@@ -64,6 +64,9 @@ export default function Header() {
                     <Link href="/blog" className="hover:text-green-100 transition-colors font-medium">
                         Blog
                     </Link>
+                    <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
+                        Pricing
+                    </Link>
                     <div className="border-l border-green-600 pl-6 flex items-center space-x-3">
                         {loading ? (
                             <div className="w-9 h-9 rounded-full bg-white/20 animate-pulse"></div>
@@ -122,6 +125,9 @@ export default function Header() {
                     </Link>
                     <Link href="/blog" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
                         Blog
+                    </Link>
+                    <Link href="/pricing" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
+                        Pricing
                     </Link>
                     {!user && (
                         <>

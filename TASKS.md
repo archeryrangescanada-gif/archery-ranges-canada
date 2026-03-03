@@ -109,6 +109,7 @@ The file `saskatchewan_ranges.csv` in the project root contains **29 Saskatchewa
 - **[x] Gather Images for Saskatchewan Ranges** — scraped images from websites/Facebook using `crawl4ai` or fell back to `filler-image.jpg`, adding 29 appropriately named photos to `public/saskatchewan listing images`.
 - **[x] Generate SEO Descriptions for Saskatchewan Ranges** — generated and imported 100-word SEO descriptions for all 29 Saskatchewan listings directly to Supabase via `update-sask-seo.js`.
 - **[x] Update Saskatchewan Listings with Final Audited CSV** — updated 29 listings in Supabase using `update-saskatchewan-ranges.js` to upsert from `saskatchewan_ranges_final.csv`.
+- **[x] Restore Pricing Page** — updated `src/app/pricing/page.tsx` with the new accurate feature maps for Free, Bronze, Silver, and Gold, and added navigation links to `Header.tsx`.
 - **[x] Update Contact Form Logic** — all code items done (2–5). Non-code item 6 left to Josh.
 - **[x] Fix Telegram Webhook 307 Redirect** — excluded `/api/telegram/webhook` from middleware matcher (`672780b`)
 - **[x] Build Telegram Webhook Endpoint** — webhook route live, SQL migration, VERCEL_ENV_SETUP.md, env vars, webhook registered
