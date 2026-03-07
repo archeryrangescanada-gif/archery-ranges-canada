@@ -7,6 +7,9 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { ClaimListingBanner } from '@/components/listing/ClaimListingBanner'
 
+// Enable ISR - revalidate every 5 minutes
+export const revalidate = 300;
+
 interface City {
   id: string
   name: string
