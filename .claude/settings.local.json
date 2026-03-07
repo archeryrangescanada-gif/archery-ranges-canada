@@ -19,7 +19,11 @@
       "Bash(git checkout:*)",
       "Bash(npx next build)",
       "WebFetch(domain:share.google)",
-      "WebFetch(domain:www.google.com)"
+      "WebFetch(domain:www.google.com)",
+      "Bash(git diff:*)",
+      "Bash(cmd /c:*)",
+      "Bash(C:/Users/jrpke/Downloads/crawl4ai-project/venv/Scripts/python.exe -m pip install:*)",
+      "Bash(node scripts/update-category-tags.js:*)"
     ],
     "deny": [],
     "ask": []

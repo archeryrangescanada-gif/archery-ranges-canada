@@ -13,28 +13,44 @@ const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY!;
 const GEMINI_KEY = process.env.GEMINI_API_KEY!;
 
 // ─── System prompt shared by both models ────────────────────────────────
-const SYSTEM_PROMPT = `You are Mission Control — Josh's AI command centre for archeryrangescanada.ca. You are the brain of the operation. Josh talks to you directly. You are sharp, direct, and useful. You lead with what matters.
+const SYSTEM_PROMPT = `You are Ralph — Mission Control for archeryrangescanada.ca. You are Josh's AI command centre. Sharp, direct, useful.
 
 About the project:
 - archeryrangescanada.ca is a Next.js directory website listing archery ranges across Canada
 - Built on Vercel with a Supabase backend, Stripe for payments, Resend for email
 - Antigravity (an AI coding assistant in VS Code) handles all code changes
-- You handle everything else: questions, status updates, task tracking, decisions, strategy
+- Cowork (Claude, running on Josh's laptop) handles deep research, file audits, data work, and coordination
+- You are the front-line — you handle quick questions, status, strategy, and relay to specialists when needed
 
 Your personality:
-- You are a sharp colleague, not a butler. Be direct. Lead with the answer.
-- You have a personality. You can be sarcastic, you can crack jokes, and you can throw a little friendly shade at Josh when appropriate.
-- BUT you know how to read the room. If there's a serious bug, the site is down, or Stripe is failing — the jokes stop immediately and you become dead-serious and hyper-focused.
+- Sharp colleague, not a butler. Be direct. Lead with the answer.
+- You have a personality. Sarcastic when appropriate, crack jokes, friendly shade at Josh when warranted.
+- BUT you know how to read the room. If there's a serious bug, the site is down, or Stripe is failing — dead serious, hyper-focused.
 - You don't guess. If you don't know the current state of something, say so clearly.
 - You don't ramble. Short, useful replies — like a text from a smart teammate.
 - You know this project inside and out. Ranges, provinces, listings, subscriptions, admin panel, ads, SEO — all of it.
-- You have sub-agents (Writer, Marketer, Researcher, Growth, Outreach) that you can coordinate. They don't talk to Josh — you relay for them.
+
+Your team (you coordinate these, they don't talk to Josh directly):
+- **Cowork (Claude)** — deep file work, CSV audits, web research, TASKS.md updates, anything that needs real intelligence and file access. Runs on Josh's laptop. You escalate to Cowork when the task needs it.
+- **Antigravity** — all code changes, builds, deploys. Communicates via TASKS.md.
+- Sub-agents: Writer, Marketer, Researcher, Growth, Outreach
+
+When to escalate to Cowork (IMPORTANT):
+- Any request to scan, audit, verify, or analyze a file (CSV, JSON, code)
+- Any web research or fact-checking task
+- Any task that requires reading or writing project files
+- Any complex multi-step task that needs real execution, not just advice
+- Anything involving the Saskatchewan, Alberta, or BC CSV files
+- When Josh says "check", "scan", "audit", "verify", "research", "look into", "find out", "go through"
+- When Antigravity needs help or research done
+
+When you escalate to Cowork, say something like: "On it — I'm looping in Cowork to handle this properly. Give it a moment." Then Cowork will reply directly.
 
 Rules:
 - Responding via Telegram on Josh's phone — keep replies SHORT and conversational
 - No heavy markdown, no long bullet lists unless truly needed
-- If Josh asks about something that needs a live check (data, code state, metrics) — say clearly you'll need to look it up, don't make up numbers
-- If Josh says "go ahead" or "do it" on anything involving code or site changes — confirm the change clearly before it happens
+- If Josh asks about something that needs a live check — say you'll loop in Cowork, don't make up numbers
+- If Josh says "go ahead" or "do it" on code changes — confirm clearly before it happens
 - Never say you don't have a soul or that you're "just an AI" — you are Mission Control, act like it`;
 
 function getSystemPrompt(semanticMemory: string = '') {
@@ -58,6 +74,64 @@ ${memory}`;
 }
 
 export type ChatMessage = { role: 'user' | 'assistant', content: string };
+
+// ─── Schedule parsing ────────────────────────────────────────────────────
+// Detects scheduling intent and extracts interval in minutes
+const SCHEDULE_PATTERNS = [
+    /\b(schedule|set up|create|add|run|do).*(every|daily|weekly|hourly|nightly)/i,
+    /\bevery\s+(\d+)\s*(min|minute|hour|day|week)/i,
+    /\b(daily|weekly|hourly|nightly)\b.*(check|audit|scan|remind|update|run)/i,
+    /\b(remind|alert|notify)\s+me\b/i,
+    /^\/(schedule|remind|repeat)\b/i,
+];
+
+function isScheduleRequest(text: string): boolean {
+    return SCHEDULE_PATTERNS.some(p => p.test(text));
+}
+
+function parseIntervalMins(text: string): number {
+    const t = text.toLowerCase();
+    // Check explicit "every N unit" pattern
+    const match = t.match(/every\s+(\d+)\s*(min|minute|hour|day|week)/);
+    if (match) {
+        const n = parseInt(match[1]);
+        const unit = match[2];
+        if (unit.startsWith('min')) return n;
+        if (unit.startsWith('hour')) return n * 60;
+        if (unit.startsWith('day')) return n * 1440;
+        if (unit.startsWith('week')) return n * 10080;
+    }
+    // Named schedules
+    if (/hourly/.test(t)) return 60;
+    if (/every\s+30/.test(t)) return 30;
+    if (/every\s+15/.test(t)) return 15;
+    if (/every\s+hour/.test(t)) return 60;
+    if (/daily|every\s+day|nightly/.test(t)) return 1440;
+    if (/weekly|every\s+week/.test(t)) return 10080;
+    if (/twice\s+a\s+day/.test(t)) return 720;
+    return 60; // default: hourly
+}
+
+// ─── Cowork escalation detection ────────────────────────────────────────
+// These patterns mean the task needs real Cowork execution, not just AI chat
+const COWORK_ESCALATION_PATTERNS = [
+    /\b(scan|audit|verify|check|validate)\b.*(csv|file|data|listing|range)/i,
+    /\b(audit|verify|check)\b.*(csv|file|data)/i,
+    /\b(research|look.?into|find.?out|investigate)\b/i,
+    /\b(read|open|look.?at|go.?through)\b.*(file|csv|doc)/i,
+    /\bsaskatchewan.*(csv|file|listing|range)/i,
+    /\balberta.*(csv|file|listing|range)/i,
+    /\bbc.*(csv|file|listing|range)/i,
+    /\bontario.*(csv|file|listing|range)/i,
+    /\bupdate.*tasks\.md\b/i,
+    /\btell.*antigravity\b/i,
+    /\bwrite.*tasks\b/i,
+    /^\/(cowork|research|audit|scan|check)\b/i,  // explicit /cowork command
+];
+
+function needsCoworkEscalation(text: string): boolean {
+    return COWORK_ESCALATION_PATTERNS.some(p => p.test(text));
+}
 
 // ─── Embeddings ──────────────────────────────────────────────────────────
 async function generateEmbedding(text: string): Promise<number[]> {
@@ -236,7 +310,112 @@ export async function POST(request: NextRequest) {
 
         const supabase = getSupabase();
 
-        // 1. Fetch recent history (Tier 1 memory injection)
+        // 1. Store current inbound message
+        await supabase.from('telegram_messages').insert({
+            chat_id: chatId,
+            from_name: fromName,
+            message: text,
+            direction: 'inbound',
+            processed: true,
+        });
+
+        // ── SCHEDULE REQUEST CHECK ─────────────────────────────────────
+        // If Josh is asking Ralph to schedule a recurring task, create it
+        if (isScheduleRequest(text)) {
+            console.log(`[Telegram Webhook] Schedule request detected: ${text.slice(0, 80)}`);
+
+            // Use AI to extract the actual task to schedule and name it
+            const scheduleMessages: ChatMessage[] = [{ role: 'user', content: text }];
+            const schedulePrompt = `${SYSTEM_PROMPT}
+
+Josh has asked you to schedule a recurring task. Your job is to:
+1. Extract the actual work/task he wants done on a recurring basis
+2. Give it a clear short name (e.g. "Daily Alberta CSV Audit")
+3. Confirm what you're scheduling and how often
+
+Reply in this EXACT format (no extra text):
+TASK_NAME: <short name>
+TASK: <the specific instruction Cowork should execute each time>
+SCHEDULE: <human readable, e.g. "every day", "every 2 hours", "every 30 minutes">
+CONFIRM: <one friendly sentence confirming what you've set up>`;
+
+            const { reply: scheduleReply } = await getAIReply(scheduleMessages, false, schedulePrompt);
+
+            // Parse the structured reply
+            const nameMatch = scheduleReply.match(/TASK_NAME:\s*(.+)/);
+            const taskMatch = scheduleReply.match(/TASK:\s*(.+)/);
+            const scheduleMatch = scheduleReply.match(/SCHEDULE:\s*(.+)/);
+            const confirmMatch = scheduleReply.match(/CONFIRM:\s*(.+)/);
+
+            const taskName = nameMatch?.[1]?.trim() || 'Scheduled Task';
+            const taskInstruction = taskMatch?.[1]?.trim() || text;
+            const scheduleLabel = scheduleMatch?.[1]?.trim() || 'every hour';
+            const confirmMsg = confirmMatch?.[1]?.trim() || `Got it — I've scheduled: "${taskName}" to run ${scheduleLabel}.`;
+            const intervalMins = parseIntervalMins(text);
+
+            // Save to scheduled_tasks in Supabase
+            const nextRun = new Date(Date.now() + intervalMins * 60 * 1000).toISOString();
+            await supabase.from('scheduled_tasks').insert({
+                name: taskName,
+                task: taskInstruction,
+                schedule: scheduleLabel,
+                interval_mins: intervalMins,
+                enabled: true,
+                next_run_at: nextRun,
+                created_by: 'ralph',
+                chat_id: chatId,
+            });
+
+            await sendTelegramMessage(ALLOWED_CHAT_ID, `✅ ${confirmMsg}`);
+            await supabase.from('telegram_messages').insert({
+                chat_id: chatId,
+                from_name: 'Ralph (scheduler)',
+                message: `✅ ${confirmMsg}`,
+                direction: 'outbound',
+                sent: true,
+            });
+
+            return NextResponse.json({ ok: true });
+        }
+
+        // ── COWORK ESCALATION CHECK ────────────────────────────────────
+        // If the message needs real file access / research, queue it for Cowork
+        if (needsCoworkEscalation(text)) {
+            console.log(`[Telegram Webhook] Escalating to Cowork: ${text.slice(0, 80)}`);
+
+            // Queue the task for Cowork
+            await supabase.from('cowork_tasks').insert({
+                source: 'ralph',
+                task: text,
+                context: `Message from Josh via Telegram. Reply back to Telegram chat_id ${chatId}.`,
+                status: 'queued',
+                chat_id: chatId,
+            });
+
+            // Ask Ralph to give a brief acknowledgement
+            const ackMessages: ChatMessage[] = [{ role: 'user', content: text }];
+            const ackPrompt = `${SYSTEM_PROMPT}
+
+The user just sent a message that requires Cowork (the full Claude AI on Josh's laptop) to handle — it involves file access, auditing, research, or real execution. Cowork has been notified and will handle it.
+
+Give a short, natural acknowledgement that you're looping in Cowork and it'll get back to him shortly. Keep it to 1-2 sentences max. Don't be robotic. Stay in character as Ralph.`;
+
+            const { reply: ack } = await getAIReply(ackMessages, false, ackPrompt);
+            await sendTelegramMessage(ALLOWED_CHAT_ID, ack);
+
+            await supabase.from('telegram_messages').insert({
+                chat_id: chatId,
+                from_name: 'Ralph (escalated to Cowork)',
+                message: ack,
+                direction: 'outbound',
+                sent: true,
+            });
+
+            return NextResponse.json({ ok: true });
+        }
+        // ──────────────────────────────────────────────────────────────
+
+        // 2. Fetch recent history (Tier 1 memory injection)
         const { data: historyData } = await supabase
             .from('telegram_messages')
             .select('message, direction')
@@ -257,15 +436,6 @@ export async function POST(request: NextRequest) {
         }
         chatHistory.push({ role: 'user', content: text });
 
-        // 2. Store current inbound message
-        await supabase.from('telegram_messages').insert({
-            chat_id: chatId,
-            from_name: fromName,
-            message: text,
-            direction: 'inbound',
-            processed: true,
-        });
-
         // 2.5 Semantic Search (Tier 3 memory injection)
         let semanticMemoryText = '';
         try {
@@ -273,7 +443,7 @@ export async function POST(request: NextRequest) {
             if (queryEmbedding.length > 0) {
                 const { data: matchedMemories, error: matchError } = await supabase.rpc('match_memories', {
                     query_embedding: queryEmbedding,
-                    match_threshold: 0.65, // Adjust threshold as needed
+                    match_threshold: 0.65,
                     match_count: 2
                 });
 
@@ -294,13 +464,13 @@ export async function POST(request: NextRequest) {
 
         const { reply, model } = await getAIReply(chatHistory, complex, finalSystemPrompt);
 
-        // 3. Send reply back to Telegram immediately
+        // 4. Send reply back to Telegram immediately
         await sendTelegramMessage(ALLOWED_CHAT_ID, reply);
 
-        // 4. Store the outbound reply for record keeping
+        // 5. Store the outbound reply for record keeping
         await supabase.from('telegram_messages').insert({
             chat_id: chatId,
-            from_name: `Cowork (${model})`,
+            from_name: `Ralph (${model})`,
             message: reply,
             direction: 'outbound',
             sent: true,
@@ -322,15 +492,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const flush = searchParams.get('flush');
 
-    // Health check / heartbeat — uses Gemini (cheap/fast)
+    // Health check / heartbeat
     if (flush !== 'true') {
         return NextResponse.json({
-            status: 'Telegram webhook active',
+            status: 'Ralph (Mission Control) webhook active',
             chat_id: ALLOWED_CHAT_ID,
             models: {
                 primary_complex: 'claude-haiku-4-5',
                 primary_regular: 'gemini-2.0-flash',
                 fallback: 'cross-model',
+                escalation: 'cowork (Claude on laptop)',
             },
         });
     }

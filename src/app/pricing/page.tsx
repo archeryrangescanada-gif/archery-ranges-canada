@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Check, X, Star, Shield, TrendingUp, Crown, MapPin, Phone, Mail, Globe, Camera, Calendar, MessageSquare, BarChart3, FileText, Users } from 'lucide-react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { STRIPE_CONFIG } from '@/config/stripe'
 
 type BillingPeriod = 'monthly' | 'yearly'
 
@@ -49,7 +50,7 @@ const tiers = [
       { text: 'Clickable phone, email, website', included: true },
     ],
     cta: 'Start Silver',
-    ctaLink: process.env.NEXT_PUBLIC_STRIPE_SILVER_URL || '/auth/signup?plan=silver',
+    ctaLink: STRIPE_CONFIG.silver.baseUrl,
     highlighted: true,
     popularLabel: 'Most Popular',
   },
@@ -72,7 +73,7 @@ const tiers = [
       { text: 'Direct message to the club/range', included: true },
     ],
     cta: 'Start Gold',
-    ctaLink: process.env.NEXT_PUBLIC_STRIPE_GOLD_URL || '/auth/signup?plan=gold',
+    ctaLink: STRIPE_CONFIG.gold.baseUrl,
     highlighted: false,
   },
 ]
