@@ -170,15 +170,13 @@ export default async function ProvincePage({ params }: PageProps) {
   // Removed citiesWithoutRanges to prevent indexing empty pages
   // Removed citiesWithoutRanges to prevent indexing empty pages
 
-  // Group cities by first letter for Ontario (or if there are many cities)
+  // Group cities by first letter for all provinces to maintain consistent UI
   const cityGroups: Record<string, City[]> = {}
-  if (provinceSlug === 'ontario' || citiesWithRanges.length > 20) {
-    citiesWithRanges.forEach(city => {
-      const firstLetter = city.name.charAt(0).toUpperCase()
-      if (!cityGroups[firstLetter]) cityGroups[firstLetter] = []
-      cityGroups[firstLetter].push(city)
-    })
-  }
+  citiesWithRanges.forEach(city => {
+    const firstLetter = city.name.charAt(0).toUpperCase()
+    if (!cityGroups[firstLetter]) cityGroups[firstLetter] = []
+    cityGroups[firstLetter].push(city)
+  })
 
   const sortedLetters = Object.keys(cityGroups).sort()
 
