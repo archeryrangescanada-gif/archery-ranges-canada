@@ -106,6 +106,8 @@ The file `saskatchewan_ranges.csv` in the project root contains **29 Saskatchewa
 
 ## ✅ Completed
 
+- **[x] Ontario Audit Update (March 2026)** — Deleted 4 closed/unverifiable ranges (Royal Garrison, Chesley, Parkline, Lanark County), corrected 5 listings (Archery Canada CoE, Cambridge Archery, Delhi Archery, Maple Leaf Marksmen, E.T. Seton Park), added Canada Archery Online, and set filler images on 131 ranges. Script: `scripts/update-ontario-ranges.js`.
+- **[x] Import PEI Archery Range Listings** — 4 Prince Edward Island ranges imported to Supabase via `scripts/deploy-pei-ranges.js` (P.E.I. Archery Association, Cass' Creek Archery Club, Elemental Acres Horse Archery, Precision Core Archery Equipment).
 - **[x] Gather Images for Saskatchewan Ranges** — scraped images from websites/Facebook using `crawl4ai` or fell back to `filler-image.jpg`, adding 29 appropriately named photos to `public/saskatchewan listing images`.
 - **[x] Generate SEO Descriptions for Saskatchewan Ranges** — generated and imported 100-word SEO descriptions for all 29 Saskatchewan listings directly to Supabase via `update-sask-seo.js`.
 - **[x] Update Saskatchewan Listings with Final Audited CSV** — updated 29 listings in Supabase using `update-saskatchewan-ranges.js` to upsert from `saskatchewan_ranges_final.csv`.
