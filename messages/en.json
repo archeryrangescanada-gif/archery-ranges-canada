@@ -1,0 +1,11 @@
+{
+    "Header": {
+        "home": "Home",
+        "about": "About",
+        "blog": "Blog",
+        "pricing": "Pricing",
+        "signIn": "Sign In",
+        "signUp": "Sign Up",
+        "language": "Language"
+    }
+}

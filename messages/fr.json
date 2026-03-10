@@ -1,0 +1,11 @@
+{
+    "Header": {
+        "home": "Accueil",
+        "about": "À propos",
+        "blog": "Blog",
+        "pricing": "Tarification",
+        "signIn": "Se connecter",
+        "signUp": "S'inscrire",
+        "language": "Langue"
+    }
+}
