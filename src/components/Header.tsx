@@ -44,11 +44,6 @@ export default function Header() {
 
     return (
         <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg relative z-50">
-            {/* Language Switcher in top right corner */}
-            <div className="absolute top-2 right-4 z-50 hidden md:block">
-                <LanguageSwitcher />
-            </div>
-
             <div className="container mx-auto px-4 flex items-center justify-between relative pt-2">
                 <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
                     <Image
@@ -75,21 +70,24 @@ export default function Header() {
                     <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
                         {t('pricing')}
                     </Link>
-                    <div className="border-l border-green-600 pl-6 flex items-center space-x-3">
-                        {loading ? (
-                            <div className="w-9 h-9 rounded-full bg-white/20 animate-pulse"></div>
-                        ) : user ? (
-                            <UserProfileMenu user={user} />
-                        ) : (
-                            <>
-                                <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium">
-                                    {t('signIn')}
-                                </Link>
-                                <Link href="/auth/signup" className="bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors">
-                                    {t('signUp')}
-                                </Link>
-                            </>
-                        )}
+                    <div className="border-l border-green-600 pl-6 flex flex-col items-end justify-center space-y-2">
+                        <LanguageSwitcher />
+                        <div className="flex items-center space-x-3">
+                            {loading ? (
+                                <div className="w-9 h-9 rounded-full bg-white/20 animate-pulse"></div>
+                            ) : user ? (
+                                <UserProfileMenu user={user} />
+                            ) : (
+                                <>
+                                    <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium text-sm">
+                                        {t('signIn')}
+                                    </Link>
+                                    <Link href="/auth/signup" className="bg-white text-green-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-green-50 transition-colors text-sm">
+                                        {t('signUp')}
+                                    </Link>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </nav>
 
