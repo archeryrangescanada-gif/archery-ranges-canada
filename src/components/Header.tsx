@@ -1,17 +1,14 @@
 
 'use client'
 
-import { Link } from '@/i18n/routing'
+import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useCallback, useEffect } from 'react'
 import { User, AuthChangeEvent, Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
-import { useTranslations } from 'next-intl'
-import LanguageSwitcher from './LanguageSwitcher'
 import UserProfileMenu from './UserProfileMenu'
 
 export default function Header() {
-    const t = useTranslations('Header')
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
@@ -44,7 +41,7 @@ export default function Header() {
 
     return (
         <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg relative z-50">
-            <div className="container mx-auto px-4 flex items-center justify-between relative pt-2">
+            <div className="container mx-auto px-4 flex items-center justify-between relative">
                 <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
                     <Image
                         src="/logo.png?v=2"
@@ -59,35 +56,32 @@ export default function Header() {
                 {/* Desktop Navigation */}
                 <nav className="hidden md:flex items-center space-x-6">
                     <Link href="/" className="hover:text-green-100 transition-colors font-medium">
-                        {t('home')}
+                        Home
                     </Link>
                     <Link href="/about" className="hover:text-green-100 transition-colors font-medium">
-                        {t('about')}
+                        About
                     </Link>
                     <Link href="/blog" className="hover:text-green-100 transition-colors font-medium">
-                        {t('blog')}
+                        Blog
                     </Link>
                     <Link href="/pricing" className="hover:text-green-100 transition-colors font-medium">
-                        {t('pricing')}
+                        Pricing
                     </Link>
-                    <div className="border-l border-green-600 pl-6 flex flex-col items-end justify-center space-y-2">
-                        <LanguageSwitcher />
-                        <div className="flex items-center space-x-3">
-                            {loading ? (
-                                <div className="w-9 h-9 rounded-full bg-white/20 animate-pulse"></div>
-                            ) : user ? (
-                                <UserProfileMenu user={user} />
-                            ) : (
-                                <>
-                                    <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium text-sm">
-                                        {t('signIn')}
-                                    </Link>
-                                    <Link href="/auth/signup" className="bg-white text-green-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-green-50 transition-colors text-sm">
-                                        {t('signUp')}
-                                    </Link>
-                                </>
-                            )}
-                        </div>
+                    <div className="border-l border-green-600 pl-6 flex items-center space-x-3">
+                        {loading ? (
+                            <div className="w-9 h-9 rounded-full bg-white/20 animate-pulse"></div>
+                        ) : user ? (
+                            <UserProfileMenu user={user} />
+                        ) : (
+                            <>
+                                <Link href="/auth/login" className="hover:text-green-100 transition-colors font-medium">
+                                    Sign In
+                                </Link>
+                                <Link href="/auth/signup" className="bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors">
+                                    Sign Up
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </nav>
 
@@ -123,29 +117,26 @@ export default function Header() {
             {/* Mobile Navigation */}
             {isMenuOpen && (
                 <nav className="md:hidden bg-emerald-800 px-4 py-4 space-y-3 relative z-40" role="navigation">
-                    <div className="pb-3 mb-3 border-b border-green-600">
-                        <LanguageSwitcher />
-                    </div>
                     <Link href="/" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
-                        {t('home')}
+                        Home
                     </Link>
                     <Link href="/about" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
-                        {t('about')}
+                        About
                     </Link>
                     <Link href="/blog" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
-                        {t('blog')}
+                        Blog
                     </Link>
                     <Link href="/pricing" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
-                        {t('pricing')}
+                        Pricing
                     </Link>
                     {!user && (
                         <>
                             <hr className="border-green-600" />
                             <Link href="/auth/login" onClick={closeMenu} className="block hover:text-green-100 transition-colors font-medium py-2">
-                                {t('signIn')}
+                                Sign In
                             </Link>
                             <Link href="/auth/signup" onClick={closeMenu} className="block bg-white text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors text-center">
-                                {t('signUp')}
+                                Sign Up
                             </Link>
                         </>
                     )}

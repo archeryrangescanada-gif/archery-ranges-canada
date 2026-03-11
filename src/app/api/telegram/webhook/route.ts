@@ -183,38 +183,12 @@ async function sendTelegramMessage(chatId: number, text: string) {
         chunks.push(text.slice(i, i + 4000));
     }
     for (const chunk of chunks) {
-        // Try Markdown first, fall back to plain text if Telegram rejects the formatting
-        const mdResponse = await fetch(`${TELEGRAM_API}/sendMessage`, {
+        await fetch(`${TELEGRAM_API}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chat_id: chatId, text: chunk, parse_mode: 'Markdown' }),
         });
-        if (!mdResponse.ok) {
-            console.warn(`[Telegram] Markdown send failed (${mdResponse.status}), retrying as plain text`);
-            await fetch(`${TELEGRAM_API}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: chatId, text: chunk }),
-            });
-        }
     }
-}
-
-// ─── Message history helpers ────────────────────────────────────────────
-// Both Anthropic and Gemini APIs require strictly alternating user/assistant roles.
-// Merge consecutive same-role messages to prevent 400 errors.
-function mergeConsecutiveRoles(messages: ChatMessage[]): ChatMessage[] {
-    if (messages.length === 0) return [];
-    const merged: ChatMessage[] = [{ ...messages[0] }];
-    for (let i = 1; i < messages.length; i++) {
-        const last = merged[merged.length - 1];
-        if (messages[i].role === last.role) {
-            last.content += '\n' + messages[i].content;
-        } else {
-            merged.push({ ...messages[i] });
-        }
-    }
-    return merged;
 }
 
 // ─── Anthropic (Claude Haiku 4.5) ───────────────────────────────────────
@@ -442,7 +416,6 @@ Give a short, natural acknowledgement that you're looping in Cowork and it'll ge
         // ──────────────────────────────────────────────────────────────
 
         // 2. Fetch recent history (Tier 1 memory injection)
-        // Note: the current inbound message was already stored above, so it's included here
         const { data: historyData } = await supabase
             .from('telegram_messages')
             .select('message, direction')
@@ -450,23 +423,18 @@ Give a short, natural acknowledgement that you're looping in Cowork and it'll ge
             .order('created_at', { ascending: false })
             .limit(15);
 
-        const rawHistory: ChatMessage[] = [];
+        const chatHistory: ChatMessage[] = [];
         if (historyData) {
             // Reverse to get chronological order
             const past = historyData.reverse();
             for (const msg of past) {
-                rawHistory.push({
+                chatHistory.push({
                     role: msg.direction === 'inbound' ? 'user' : 'assistant',
                     content: msg.message
                 });
             }
         }
-        // Merge consecutive same-role messages (both APIs require alternating roles)
-        // Also ensure the conversation starts with a 'user' message (required by both APIs)
-        const merged = mergeConsecutiveRoles(rawHistory);
-        const chatHistory = merged.length > 0 && merged[0].role === 'assistant'
-            ? merged.slice(1)
-            : merged;
+        chatHistory.push({ role: 'user', content: text });
 
         // 2.5 Semantic Search (Tier 3 memory injection)
         let semanticMemoryText = '';

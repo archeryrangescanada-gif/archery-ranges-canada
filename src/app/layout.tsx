@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
-import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
-import '../globals.css'
+import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -36,39 +34,19 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
-  params
 }: {
   children: React.ReactNode
-  params: Promise<{ locale: string }>
 }) {
-  const { locale } = await params;
-
-  let messages = {};
-  try {
-    messages = await getMessages({ locale });
-  } catch (e) {
-    console.error('[i18n] Failed to load messages for locale:', locale, e);
-  }
-
   return (
-    <html lang={locale || 'en'}>
+    <html lang="en">
       <head>
         <link rel="icon" href="/favicon.ico" />
         <meta name="theme-color" content="#059669" />
-        {/* Google AdSense */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8632153430801064"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
       </head>
       <body className={inter.className}>
-        <NextIntlClientProvider locale={locale || 'en'} messages={messages}>
-          {children}
-        </NextIntlClientProvider>
+        {children}
 
         {/* Google Analytics 4 - Load after page content */}
         <Script
