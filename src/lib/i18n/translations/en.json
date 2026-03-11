@@ -1,0 +1,32 @@
+{
+    "nav": {
+        "home": "Home",
+        "about": "About",
+        "blog": "Blog",
+        "pricing": "Pricing",
+        "signIn": "Sign In",
+        "signUp": "Sign Up"
+    },
+    "province": {
+        "citiesWithRanges": "Cities with Archery Ranges",
+        "totalRanges": "Total Ranges",
+        "cities": "Cities",
+        "comingSoon": "Coming Soon",
+        "comingSoonDesc": "We're adding archery ranges in {name}. Check back soon!",
+        "browseAll": "Browse All Provinces",
+        "aboutArchery": "About Archery in {name}",
+        "viewRanges": "View ranges",
+        "range": "range",
+        "ranges": "ranges",
+        "findRanges": "Find archery ranges, lessons & pro shops",
+        "popularActivities": "Popular archery activities in {name} include {activities}.",
+        "topCities": "Top cities for archery in {name} include {cities}.",
+        "facilitySummary": "{name} offers {count} archery {facilityWord} across {cityCount} {cityWord}. Whether you're looking for indoor target practice, outdoor 3D courses, or professional coaching, you'll find options to match your skill level and interests."
+    },
+    "breadcrumb": {
+        "home": "Home"
+    },
+    "footer": {
+        "allRightsReserved": "All rights reserved."
+    }
+}

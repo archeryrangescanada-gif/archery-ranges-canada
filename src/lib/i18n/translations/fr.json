@@ -1,0 +1,32 @@
+{
+    "nav": {
+        "home": "Accueil",
+        "about": "À propos",
+        "blog": "Blogue",
+        "pricing": "Tarifs",
+        "signIn": "Connexion",
+        "signUp": "S'inscrire"
+    },
+    "province": {
+        "citiesWithRanges": "Villes avec des clubs de tir à l'arc",
+        "totalRanges": "Total des clubs",
+        "cities": "Villes",
+        "comingSoon": "Bientôt disponible",
+        "comingSoonDesc": "Nous ajoutons des clubs de tir à l'arc pour {name}. Revenez bientôt !",
+        "browseAll": "Parcourir toutes les provinces",
+        "aboutArchery": "À propos du tir à l'arc pour {name}",
+        "viewRanges": "Voir les clubs",
+        "range": "club",
+        "ranges": "clubs",
+        "findRanges": "Trouvez des clubs de tir à l'arc, des cours et des boutiques",
+        "popularActivities": "Les activités populaires de tir à l'arc pour {name} comprennent {activities}.",
+        "topCities": "Les principales villes pour le tir à l'arc pour {name} comprennent {cities}.",
+        "facilitySummary": "{name} offre {count} {facilityWord} de tir à l'arc dans {cityCount} {cityWord}. Que vous cherchiez du tir sur cible intérieur, des parcours 3D extérieurs ou de l'entraînement professionnel, vous trouverez des options adaptées à votre niveau et à vos intérêts."
+    },
+    "breadcrumb": {
+        "home": "Accueil"
+    },
+    "footer": {
+        "allRightsReserved": "Tous droits réservés."
+    }
+}
