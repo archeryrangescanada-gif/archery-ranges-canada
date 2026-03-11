@@ -1,0 +1,55 @@
+# Pattern: Server Component UI Extraction
+
+When you have a deeply SEO-reliant Next.js page that is statically generated (ISR / SSG) but you need to translate the text across the page instantly via the `LanguageContext`, use this pattern to prevent breaking the Server Component.
+
+### 1. The Original Server Component (`src/app/example/page.tsx`)
+Keep data fetching here. Pass standard React props down to the new Client Component.
+
+```tsx
+import ExampleClient from './ExampleClient'
+import { getExampleData } from '@/lib/serverSideFunctions'
+
+export default async function ExamplePage() {
+  // 1. Fetch secure/fast data on the server
+  const data = await getExampleData()
+
+  // 2. Render the extracted UI block, passing the data as props
+  return (
+    <ExampleClient data={data} title="Server Injected Title" />
+  )
+}
+```
+
+### 2. The Extracted Client Component (`src/app/example/ExampleClient.tsx`)
+Move all the layout, styling, and text rendering here. Import `useLanguage` to translate text dynamically.
+
+```tsx
+'use client'
+
+import { useLanguage } from '@/lib/i18n/LanguageContext'
+
+interface ExampleClientProps {
+  data: any[]
+  title: string
+}
+
+export default function ExampleClient({ data, title }: ExampleClientProps) {
+  // 1. Hook into translation context
+  const { t, locale } = useLanguage()
+
+  return (
+    <main>
+      {/* 2. Dynamically translated, but still fast since it renders instantly using client cookie */}
+      <h1>{t('example.title')}</h1>
+      
+      <p>{title}</p>
+      
+      <ul>
+        {data.map(item => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+    </main>
+  )
+}
+```
