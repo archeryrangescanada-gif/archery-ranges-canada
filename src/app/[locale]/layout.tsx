@@ -44,10 +44,16 @@ export default async function RootLayout({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params;
-  const messages = await getMessages();
+
+  let messages = {};
+  try {
+    messages = await getMessages({ locale });
+  } catch (e) {
+    console.error('[i18n] Failed to load messages for locale:', locale, e);
+  }
 
   return (
-    <html lang={locale}>
+    <html lang={locale || 'en'}>
       <head>
         <link rel="icon" href="/favicon.ico" />
         <meta name="theme-color" content="#059669" />
@@ -60,7 +66,7 @@ export default async function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale || 'en'} messages={messages}>
           {children}
         </NextIntlClientProvider>
 
