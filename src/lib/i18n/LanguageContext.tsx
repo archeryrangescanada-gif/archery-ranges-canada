@@ -29,6 +29,7 @@ const translations: Record<Locale, Record<string, any>> = {
             popularActivities: 'Popular archery activities in {name} include {activities}.',
             topCities: 'Top cities for archery in {name} include {cities}.',
             facilitySummary: "{name} offers {count} archery {facilityWord} across {cityCount} {cityWord}. Whether you're looking for indoor target practice, outdoor 3D courses, or professional coaching, you'll find options to match your skill level and interests.",
+            seoDescriptions: {}
         },
         breadcrumb: { home: 'Home' },
         footer: { allRightsReserved: 'All rights reserved.' },
@@ -57,6 +58,10 @@ const translations: Record<Locale, Record<string, any>> = {
             popularActivities: "Les activités populaires de tir à l'arc pour {name} comprennent {activities}.",
             topCities: "Les principales villes pour le tir à l'arc pour {name} comprennent {cities}.",
             facilitySummary: "{name} offre {count} {facilityWord} de tir à l'arc dans {cityCount} {cityWord}. Que vous cherchiez du tir sur cible intérieur, des parcours 3D extérieurs ou de l'entraînement professionnel, vous trouverez des options adaptées à votre niveau et à vos intérêts.",
+            seoDescriptions: {
+                'prince-edward-island': "L'Île-du-Prince-Édouard est peut-être la plus petite province du Canada, mais sa communauté de tir à l'arc est passionnée et accueillante. Les clubs de l'Î.-P.-É. offrent une atmosphère chaleureuse pour les archers de tous niveaux, avec des possibilités de tir intérieur et extérieur sur l'île.",
+                'newfoundland-and-labrador': "Le tir à l'arc à Terre-Neuve-et-Labrador est profondément ancré dans les traditions de chasse aux grands gibiers et de loisirs en plein air de la province. Que vous vous prépariez pour la saison de chasse à l'orignal, que vous participiez à des tournois provinciaux 3D ou que vous appreniez les bases avec le Programme de sécurité des chasseurs de la province, The Rock vous offre une toile de fond époustouflante pour cette discipline."
+            }
         },
         breadcrumb: { home: 'Accueil' },
         footer: { allRightsReserved: 'Tous droits réservés.' },

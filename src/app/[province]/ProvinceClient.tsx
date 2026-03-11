@@ -49,9 +49,15 @@ export default function ProvinceClient({
 }: ProvinceClientProps) {
     const { t, locale } = useLanguage()
 
-    // Basic sentence translation for the hardcoded SEO content if French
-    const description = locale === 'fr' && provinceSlug === 'prince-edward-island'
-        ? "L'Île-du-Prince-Édouard est peut-être la plus petite province du Canada, mais sa communauté de tir à l'arc est passionnée et accueillante. Les clubs de l'Î.-P.-É. offrent une atmosphère chaleureuse pour les archers de tous niveaux, avec des possibilités de tir intérieur et extérieur sur l'île."
+    // Dynamic sentence translation for the hardcoded SEO content if French
+    const translatedDescription = locale === 'fr'
+        ? t(`province.seoDescriptions.${provinceSlug}`)
+        : t(`province.seoDescriptions.${provinceSlug}`);
+
+    // t() returns the path string if it can't find the translation.
+    // So if the translated description equals the path, we fallback to the db info.description
+    const description = translatedDescription !== `province.seoDescriptions.${provinceSlug}`
+        ? translatedDescription
         : info.description;
 
     const facilityWord = totalRanges === 1
