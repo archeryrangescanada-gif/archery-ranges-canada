@@ -24,12 +24,13 @@ This skill provides a robust, safe pattern for adding bilingual (or multilingual
 
 ### 1. Create the `LanguageContext.tsx`
 Create `src/lib/i18n/LanguageContext.tsx`. This file must contain:
-- The full translation dictionaries (inlined to avoid build issues).
+- A predefined `SUPPORTED_LOCALES` array defining all languages (e.g., `['en', 'fr', 'es']`).
+- The full translation dictionaries for all supported languages (inlined to avoid build issues).
 - A `LanguageProvider` component that reads from and writes to a `locale` cookie.
 - A `useLanguage` hook that provides `t()` (for translations) and `locale`.
 
 ### 2. Create the `LanguageSwitcher.tsx` Component
-Create a small, accessible button component that toggles the language state using the `setLocale` function from `useLanguage()`.
+Create a `<select>` dropdown component that iterates through `SUPPORTED_LOCALES`. When the user selects a different language, use the `setLocale` function from `useLanguage()` to update the state and cookie.
 
 ### 3. Wrap the App
 In `src/app/layout.tsx`, wrap the `{children}` with the `<LanguageProvider>`. This makes the translation hook available globally to all Client Components.

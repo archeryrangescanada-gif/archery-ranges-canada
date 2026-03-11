@@ -2,21 +2,25 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
 
-type Locale = 'en' | 'fr'
+type Locale = string
+
+// Define your supported locales here
+export const SUPPORTED_LOCALES: Locale[] = ['en', 'fr', 'es']
+export const DEFAULT_LOCALE: Locale = 'en'
 
 const translations: Record<Locale, Record<string, any>> = {
   en: {
-    nav: {
-      home: 'Home',
-    },
+    nav: { home: 'Home' },
     // ADD MORE TRANSLATIONS HERE
   },
   fr: {
-    nav: {
-      home: 'Accueil',
-    },
+    nav: { home: 'Accueil' },
     // ADD MORE TRANSLATIONS HERE
   },
+  es: {
+    nav: { home: 'Inicio' },
+    // ADD MORE TRANSLATIONS HERE
+  }
 }
 
 interface LanguageContextType {
@@ -53,11 +57,11 @@ function setCookie(name: string, value: string, days: number = 365) {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en')
+  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE)
 
   useEffect(() => {
     const saved = getCookie('locale') as Locale | null
-    if (saved && (saved === 'en' || saved === 'fr')) {
+    if (saved && SUPPORTED_LOCALES.includes(saved)) {
       setLocaleState(saved)
     }
   }, [])

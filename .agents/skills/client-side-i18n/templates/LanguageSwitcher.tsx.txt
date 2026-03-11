@@ -1,18 +1,29 @@
 'use client'
 
 import { useLanguage } from '@/lib/i18n/LanguageContext'
+import { SUPPORTED_LOCALES } from '@/lib/i18n/LanguageContext'
+
+const LOCALE_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  es: 'Español'
+}
 
 export default function LanguageSwitcher() {
   const { locale, setLocale } = useLanguage()
 
   return (
-    <button
-      onClick={() => setLocale(locale === 'en' ? 'fr' : 'en')}
-      className="text-xs font-semibold px-2 py-1 rounded bg-white/15 hover:bg-white/25 text-white transition-colors tracking-wide"
-      aria-label={locale === 'en' ? 'Passer au français' : 'Switch to English'}
-      title={locale === 'en' ? 'Français' : 'English'}
+    <select
+      value={locale}
+      onChange={(e) => setLocale(e.target.value)}
+      className="text-sm font-semibold px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer outline-none border-none appearance-none"
+      aria-label="Select Language"
     >
-      {locale === 'en' ? 'FR' : 'EN'}
-    </button>
+      {SUPPORTED_LOCALES.map((loc) => (
+        <option key={loc} value={loc} className="text-stone-800">
+          {LOCALE_NAMES[loc] || loc.toUpperCase()}
+        </option>
+      ))}
+    </select>
   )
 }
