@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { trackGetDirectionsClick, trackAppleMapsClick, RangeContext } from '@/lib/analytics';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 // Dynamically import react-leaflet components to avoid SSR issues
 const MapContainer = dynamic(
@@ -46,6 +47,7 @@ interface MapSectionProps {
 }
 
 export function MapSection({ latitude, longitude, name, address, rangeId, rangeName }: MapSectionProps) {
+  const { t } = useLanguage();
   const [isClient, setIsClient] = useState(false);
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
   const appleMapsUrl = `https://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=d`;
@@ -72,7 +74,7 @@ export function MapSection({ latitude, longitude, name, address, rangeId, rangeN
       <div className="p-6 border-b border-stone-200">
         <h2 className="text-xl font-semibold text-stone-800 flex items-center gap-2">
           <span className="w-1 h-6 bg-red-500 rounded-full"></span>
-          Location
+          {t('rangePage.location')}
         </h2>
       </div>
 
@@ -103,7 +105,7 @@ export function MapSection({ latitude, longitude, name, address, rangeId, rangeN
             <p className="text-stone-600 font-medium">{name}</p>
             <p className="text-sm text-stone-500">{address}</p>
             <p className="text-xs text-stone-400 mt-2">
-              Loading map...
+              {t('rangePage.loadingMap')}
             </p>
           </div>
         )}
@@ -118,7 +120,7 @@ export function MapSection({ latitude, longitude, name, address, rangeId, rangeN
           className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl transition-colors min-w-[200px]"
         >
           <Navigation className="w-5 h-5" />
-          Get Directions
+          {t('rangePage.getDirections')}
         </a>
 
         <a
@@ -129,7 +131,7 @@ export function MapSection({ latitude, longitude, name, address, rangeId, rangeN
           className="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-stone-100 text-stone-700 font-medium rounded-xl border border-stone-300 transition-colors"
         >
           <ExternalLink className="w-5 h-5" />
-          Apple Maps
+          {t('rangePage.appleMaps')}
         </a>
       </div>
 

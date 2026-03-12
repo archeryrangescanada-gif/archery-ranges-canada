@@ -3,143 +3,172 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Check, X, Star, Shield, TrendingUp, Crown, MapPin, Phone, Mail, Globe, Camera, Calendar, MessageSquare, BarChart3, FileText, Users } from 'lucide-react'
+import { Check, X, Star, Crown, FileText } from 'lucide-react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { STRIPE_CONFIG } from '@/config/stripe'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 type BillingPeriod = 'monthly' | 'yearly'
 
-const tiers = [
-  {
-    id: 'bronze',
-    name: 'Bronze',
-    tagline: 'The Claimed Listing',
-    description: 'Claim your basic listing to manage your presence',
-    badge: '/bronze-badge.png',
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    searchRank: 'Standard (Boosted)',
-    features: [
-      { text: '1 photo', included: true },
-      { text: 'Address & Map/directions', included: true },
-      { text: 'Non-clickable link, email, phone', included: true },
-      { text: 'Amenities & Range specs', included: true },
-      { text: '100 word description', included: true },
-    ],
-    cta: 'Get Started Free',
-    ctaLink: '/auth/signup',
-    highlighted: false,
-  },
-  {
-    id: 'silver',
-    name: 'Silver',
-    tagline: 'The Marketer',
-    description: 'Growth package for commercial ranges driving traffic',
-    badge: '/silver-badge.png',
-    monthlyPrice: 49.99,
-    yearlyPrice: 499,
-    searchRank: 'Priority (Top of Results)',
-    features: [
-      { text: 'Everything in Bronze', included: true },
-      { text: '5 photos', included: true },
-      { text: '200 word summary', included: true },
-      { text: 'Social media links', included: true },
-      { text: 'Response to reviews', included: true },
-      { text: 'Pricing displays', included: true },
-      { text: 'Clickable phone, email, website', included: true },
-    ],
-    cta: 'Start Silver',
-    ctaLink: STRIPE_CONFIG.silver.baseUrl,
-    highlighted: true,
-    popularLabel: 'Most Popular',
-  },
-  {
-    id: 'gold',
-    name: 'Gold',
-    tagline: 'The Partner',
-    description: 'Dominance package with exclusive visibility + SaaS tools',
-    badge: '/gold-badge.png',
-    monthlyPrice: 129.99,
-    yearlyPrice: 1299,
-    searchRank: 'Maximum (Pinned Above All)',
-    features: [
-      { text: 'Everything in Silver', included: true },
-      { text: 'Unlimited photos & YouTube Video', included: true },
-      { text: '300 word description', included: true },
-      { text: 'Calendar/agenda', included: true },
-      { text: 'Featured listing on the home page', included: true },
-      { text: 'FAQ Section', included: true },
-      { text: 'Direct message to the club/range', included: true },
-    ],
-    cta: 'Start Gold',
-    ctaLink: STRIPE_CONFIG.gold.baseUrl,
-    highlighted: false,
-  },
-]
-
-const comparisonFeatures = [
-  {
-    category: 'Visibility & Search',
-    features: [
-      { name: 'Badge Type', bronze: 'bronze-badge', silver: 'silver-badge', gold: 'gold-badge' },
-      { name: 'Search Ranking', bronze: 'Boosted', silver: 'Priority', gold: 'Pinned Top' },
-      { name: 'Home Page Feature (50km)', bronze: false, silver: false, gold: true },
-    ],
-  },
-  {
-    category: 'Contact Information',
-    features: [
-      { name: 'Map Pin & Address', bronze: true, silver: true, gold: true },
-      { name: 'Unclickable Contact Info', bronze: true, silver: true, gold: true },
-      { name: 'Clickable Website Link', bronze: false, silver: true, gold: true },
-      { name: 'Phone Number (Clickable)', bronze: false, silver: true, gold: true },
-      { name: 'Email Address (Clickable)', bronze: false, silver: true, gold: true },
-      { name: 'Social Media Links', bronze: false, silver: true, gold: true },
-      { name: 'WhatsApp Link', bronze: false, silver: true, gold: true },
-      { name: 'Direct Message to Club (Lead Form)', bronze: false, silver: false, gold: true },
-    ],
-  },
-  {
-    category: 'Content & Media',
-    features: [
-      { name: 'Photos', bronze: '1', silver: '5', gold: 'Unlimited' },
-      { name: 'Description Length', bronze: '100 words', silver: '200 words', gold: '300 words' },
-      { name: 'Display Amenities & Bow Types', bronze: true, silver: true, gold: true },
-      { name: 'Show Drop-In / Membership Pricing', bronze: false, silver: true, gold: true },
-      { name: 'YouTube Integration', bronze: false, silver: false, gold: '1 Video' },
-      { name: 'Events Calendar & Agenda', bronze: false, silver: false, gold: true },
-      { name: 'FAQ Section', bronze: false, silver: false, gold: true },
-    ],
-  },
-  {
-    category: 'Reviews & Engagement',
-    features: [
-      { name: 'Receive/Display Reviews', bronze: false, silver: true, gold: true },
-      { name: 'Response to Reviews', bronze: false, silver: true, gold: true },
-    ],
-  },
-  {
-    category: 'Analytics',
-    features: [
-      { name: 'Access to Range Analytics Dashboard', bronze: false, silver: true, gold: true },
-    ],
-  },
-]
-
 export default function PricingPage() {
+  const { t } = useLanguage()
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly')
 
+  const tiers = [
+    {
+      id: 'bronze',
+      name: t('pricingPage.tiers.bronze.name'),
+      tagline: t('pricingPage.tiers.bronze.tagline'),
+      description: t('pricingPage.tiers.bronze.description'),
+      badge: '/bronze-badge.png',
+      monthlyPrice: 0,
+      yearlyPrice: 0,
+      searchRank: t('pricingPage.tiers.bronze.searchRank'),
+      features: [
+        { text: t('pricingPage.tiers.bronze.features.0'), included: true },
+        { text: t('pricingPage.tiers.bronze.features.1'), included: true },
+        { text: t('pricingPage.tiers.bronze.features.2'), included: true },
+        { text: t('pricingPage.tiers.bronze.features.3'), included: true },
+        { text: t('pricingPage.tiers.bronze.features.4'), included: true },
+      ],
+      cta: t('pricingPage.tiers.bronze.cta'),
+      ctaLink: '/auth/signup',
+      highlighted: false,
+    },
+    {
+      id: 'silver',
+      name: t('pricingPage.tiers.silver.name'),
+      tagline: t('pricingPage.tiers.silver.tagline'),
+      description: t('pricingPage.tiers.silver.description'),
+      badge: '/silver-badge.png',
+      monthlyPrice: 49.99,
+      yearlyPrice: 499,
+      searchRank: t('pricingPage.tiers.silver.searchRank'),
+      features: [
+        { text: t('pricingPage.tiers.silver.features.0'), included: true },
+        { text: t('pricingPage.tiers.silver.features.1'), included: true },
+        { text: t('pricingPage.tiers.silver.features.2'), included: true },
+        { text: t('pricingPage.tiers.silver.features.3'), included: true },
+        { text: t('pricingPage.tiers.silver.features.4'), included: true },
+        { text: t('pricingPage.tiers.silver.features.5'), included: true },
+        { text: t('pricingPage.tiers.silver.features.6'), included: true },
+      ],
+      cta: t('pricingPage.tiers.silver.cta'),
+      ctaLink: STRIPE_CONFIG.silver.baseUrl,
+      highlighted: true,
+      popularLabel: t('pricingPage.tiers.silver.popular'),
+    },
+    {
+      id: 'gold',
+      name: t('pricingPage.tiers.gold.name'),
+      tagline: t('pricingPage.tiers.gold.tagline'),
+      description: t('pricingPage.tiers.gold.description'),
+      badge: '/gold-badge.png',
+      monthlyPrice: 129.99,
+      yearlyPrice: 1299,
+      searchRank: t('pricingPage.tiers.gold.searchRank'),
+      features: [
+        { text: t('pricingPage.tiers.gold.features.0'), included: true },
+        { text: t('pricingPage.tiers.gold.features.1'), included: true },
+        { text: t('pricingPage.tiers.gold.features.2'), included: true },
+        { text: t('pricingPage.tiers.gold.features.3'), included: true },
+        { text: t('pricingPage.tiers.gold.features.4'), included: true },
+        { text: t('pricingPage.tiers.gold.features.5'), included: true },
+        { text: t('pricingPage.tiers.gold.features.6'), included: true },
+      ],
+      cta: t('pricingPage.tiers.gold.cta'),
+      ctaLink: STRIPE_CONFIG.gold.baseUrl,
+      highlighted: false,
+    },
+  ]
+
+  const comparisonFeatures = [
+    {
+      category: t('pricingPage.comparison.catVisibility'),
+      features: [
+        { name: t('pricingPage.comparison.features.badgeType'), bronze: 'bronze-badge', silver: 'silver-badge', gold: 'gold-badge' },
+        { name: t('pricingPage.comparison.features.searchRanking'), bronze: t('pricingPage.comparison.values.boosted'), silver: t('pricingPage.comparison.values.priority'), gold: t('pricingPage.comparison.values.pinnedTop') },
+        { name: t('pricingPage.comparison.features.homeFeature'), bronze: false, silver: false, gold: true },
+      ],
+    },
+    {
+      category: t('pricingPage.comparison.catContact'),
+      features: [
+        { name: t('pricingPage.comparison.features.mapPin'), bronze: true, silver: true, gold: true },
+        { name: t('pricingPage.comparison.features.unclickableInfo'), bronze: true, silver: true, gold: true },
+        { name: t('pricingPage.comparison.features.clickableWeb'), bronze: false, silver: true, gold: true },
+        { name: t('pricingPage.comparison.features.clickablePhone'), bronze: false, silver: true, gold: true },
+        { name: t('pricingPage.comparison.features.clickableEmail'), bronze: false, silver: true, gold: true },
+        { name: t('pricingPage.comparison.features.socialLinks'), bronze: false, silver: true, gold: true },
+        { name: t('pricingPage.comparison.features.whatsappLink'), bronze: false, silver: true, gold: true },
+        { name: t('pricingPage.comparison.features.directMessage'), bronze: false, silver: false, gold: true },
+      ],
+    },
+    {
+      category: t('pricingPage.comparison.catContent'),
+      features: [
+        { name: t('pricingPage.comparison.features.photos'), bronze: '1', silver: '5', gold: t('pricingPage.comparison.values.unlimited') },
+        { name: t('pricingPage.comparison.features.descLength'), bronze: t('pricingPage.comparison.values.words100'), silver: t('pricingPage.comparison.values.words200'), gold: t('pricingPage.comparison.values.words300') },
+        { name: t('pricingPage.comparison.features.displayAmenities'), bronze: true, silver: true, gold: true },
+        { name: t('pricingPage.comparison.features.showPricing'), bronze: false, silver: true, gold: true },
+        { name: t('pricingPage.comparison.features.youtubeIntegration'), bronze: false, silver: false, gold: t('pricingPage.comparison.values.video1') },
+        { name: t('pricingPage.comparison.features.eventsCalendar'), bronze: false, silver: false, gold: true },
+        { name: t('pricingPage.comparison.features.faqSection'), bronze: false, silver: false, gold: true },
+      ],
+    },
+    {
+      category: t('pricingPage.comparison.catReviews'),
+      features: [
+        { name: t('pricingPage.comparison.features.receiveReviews'), bronze: false, silver: true, gold: true },
+        { name: t('pricingPage.comparison.features.responseReviews'), bronze: false, silver: true, gold: true },
+      ],
+    },
+    {
+      category: t('pricingPage.comparison.catAnalytics'),
+      features: [
+        { name: t('pricingPage.comparison.features.analyticsDash'), bronze: false, silver: true, gold: true },
+      ],
+    },
+  ]
+
+  const faqs = [
+    {
+      q: t('pricingPage.faq.items.0.q'),
+      a: t('pricingPage.faq.items.0.a'),
+    },
+    {
+      q: t('pricingPage.faq.items.1.q'),
+      a: t('pricingPage.faq.items.1.a'),
+    },
+    {
+      q: t('pricingPage.faq.items.2.q'),
+      a: t('pricingPage.faq.items.2.a'),
+    },
+    {
+      q: t('pricingPage.faq.items.3.q'),
+      a: t('pricingPage.faq.items.3.a'),
+    },
+    {
+      q: t('pricingPage.faq.items.4.q'),
+      a: t('pricingPage.faq.items.4.a'),
+    },
+    {
+      q: t('pricingPage.faq.items.5.q'),
+      a: t('pricingPage.faq.items.5.a'),
+    },
+  ]
+
   const getPrice = (tier: typeof tiers[0]) => {
-    if (tier.monthlyPrice === 0) return 'Free'
+    if (tier.monthlyPrice === 0) return t('pricingPage.freeLabel')
     return billingPeriod === 'monthly'
       ? `$${tier.monthlyPrice}`
       : `$${tier.yearlyPrice}`
   }
 
   const getPeriodLabel = (tier: typeof tiers[0]) => {
-    if (tier.monthlyPrice === 0) return 'forever'
-    return billingPeriod === 'monthly' ? '/month' : '/year'
+    if (tier.monthlyPrice === 0) return t('pricingPage.foreverLabel')
+    return billingPeriod === 'monthly' ? t('pricingPage.monthLabel') : t('pricingPage.yearLabel')
   }
 
   const getSavings = (tier: typeof tiers[0]) => {
@@ -159,10 +188,10 @@ export default function PricingPage() {
       <section className="py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-stone-800 mb-4">
-            Simple, Transparent Pricing
+            {t('pricingPage.heroTitle')}
           </h1>
           <p className="text-xl text-stone-600 mb-8">
-            Choose the plan that fits your range. Upgrade or downgrade anytime.
+            {t('pricingPage.heroSubtitle')}
           </p>
 
           {/* Billing Toggle */}
@@ -174,7 +203,7 @@ export default function PricingPage() {
                 : 'text-stone-600 hover:text-stone-800'
                 }`}
             >
-              Monthly
+              {t('pricingPage.monthly')}
             </button>
             <button
               onClick={() => setBillingPeriod('yearly')}
@@ -183,9 +212,9 @@ export default function PricingPage() {
                 : 'text-stone-600 hover:text-stone-800'
                 }`}
             >
-              Yearly
+              {t('pricingPage.yearly')}
               <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                Save up to 17%
+                {t('pricingPage.save')}
               </span>
             </button>
           </div>
@@ -243,7 +272,7 @@ export default function PricingPage() {
                     </div>
                     {billingPeriod === 'yearly' && getSavings(tier) && (
                       <p className="text-sm text-green-600 mt-1">
-                        Save ${getSavings(tier)}/year
+                        {t('pricingPage.savePrefix')}{getSavings(tier)}{t('pricingPage.saveSuffix')}
                       </p>
                     )}
                   </div>
@@ -255,7 +284,7 @@ export default function PricingPage() {
 
                   {/* Search Rank */}
                   <div className="bg-stone-50 rounded-lg p-3 mb-6">
-                    <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">Search Ranking</p>
+                    <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">{t('pricingPage.searchRankLabel')}</p>
                     <p className="text-sm font-semibold text-stone-700">{tier.searchRank}</p>
                   </div>
 
@@ -298,40 +327,40 @@ export default function PricingPage() {
       <section className="py-20 px-4 bg-stone-50">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-stone-800 text-center mb-4">
-            Full Feature Comparison
+            {t('pricingPage.comparison.title')}
           </h2>
           <p className="text-stone-600 text-center mb-12">
-            See exactly what's included in each plan
+            {t('pricingPage.comparison.subtitle')}
           </p>
 
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-stone-200">
             {/* Table Header */}
             <div className="grid grid-cols-4 bg-stone-800 text-white">
-              <div className="p-4 text-center font-semibold text-stone-700">Feature</div>
+              <div className="p-4 text-center font-semibold text-stone-700">{t('pricingPage.comparison.colFeature')}</div>
               <div className="p-4 text-center font-semibold text-stone-300">
                 <div className="flex items-center justify-center gap-2">
                   <Image src="/bronze-badge.png" alt="Bronze" width={24} height={24} className="h-6 w-6 object-contain" />
-                  <span>Bronze</span>
+                  <span>{t('pricingPage.tiers.bronze.name')}</span>
                 </div>
               </div>
               <div className="p-4 text-center font-semibold bg-green-700">
                 <div className="flex items-center justify-center gap-2">
                   <Image src="/silver-badge.png" alt="Silver" width={24} height={24} className="h-6 w-6 object-contain" />
-                  <span>Silver</span>
+                  <span>{t('pricingPage.tiers.silver.name')}</span>
                 </div>
               </div>
               <div className="p-4 text-center font-semibold text-stone-700">
                 <div className="flex items-center justify-center gap-2">
                   <Image src="/gold-badge.png" alt="Gold" width={24} height={24} className="h-6 w-6 object-contain" />
-                  <span>Gold</span>
+                  <span>{t('pricingPage.tiers.gold.name')}</span>
                 </div>
               </div>
             </div>
 
             {/* Price Row */}
             <div className="grid grid-cols-4 border-b border-stone-200 bg-stone-50">
-              <div className="p-4 font-semibold text-stone-700">Price</div>
-              <div className="p-4 text-center font-bold text-stone-800">Free</div>
+              <div className="p-4 font-semibold text-stone-700">{t('pricingPage.comparison.colPrice')}</div>
+              <div className="p-4 text-center font-bold text-stone-800">{t('pricingPage.freeLabel')}</div>
               <div className="p-4 text-center font-bold text-green-600 bg-green-50">$49.99/mo</div>
               <div className="p-4 text-center font-bold text-stone-800">$129.99/mo</div>
             </div>
@@ -369,17 +398,17 @@ export default function PricingPage() {
                           ) : value === 'bronze-badge' ? (
                             <div className="flex items-center justify-center gap-2">
                               <Image src="/bronze-badge.png" alt="Bronze" width={24} height={24} className="h-6 w-6 object-contain" />
-                              <span className="text-stone-700 font-medium hidden sm:inline">Bronze</span>
+                              <span className="text-stone-700 font-medium hidden sm:inline">{t('pricingPage.tiers.bronze.name')}</span>
                             </div>
                           ) : value === 'silver-badge' ? (
                             <div className="flex items-center justify-center gap-2">
                               <Image src="/silver-badge.png" alt="Silver" width={24} height={24} className="h-6 w-6 object-contain" />
-                              <span className="text-stone-700 font-medium hidden sm:inline">Silver</span>
+                              <span className="text-stone-700 font-medium hidden sm:inline">{t('pricingPage.tiers.silver.name')}</span>
                             </div>
                           ) : value === 'gold-badge' ? (
                             <div className="flex items-center justify-center gap-2">
                               <Image src="/gold-badge.png" alt="Gold" width={24} height={24} className="h-6 w-6 object-contain" />
-                              <span className="text-stone-700 font-medium hidden sm:inline">Gold</span>
+                              <span className="text-stone-700 font-medium hidden sm:inline">{t('pricingPage.tiers.gold.name')}</span>
                             </div>
                           ) : (
                             <span className="text-stone-700 font-medium">{value}</span>
@@ -406,29 +435,28 @@ export default function PricingPage() {
               <div className="flex items-center gap-3 mb-4">
                 <Image src="/platinum-badge.png" alt="Gold" width={80} height={80} className="w-20 h-20 object-contain" />
                 <div>
-                  <h2 className="text-3xl font-bold">Gold Partner Program</h2>
-                  <p className="text-amber-400 font-medium">The Ultimate Range Management Solution</p>
+                  <h2 className="text-3xl font-bold">{t('pricingPage.goldPartner.title')}</h2>
+                  <p className="text-amber-400 font-medium">{t('pricingPage.goldPartner.subtitle')}</p>
                 </div>
               </div>
 
               <p className="text-lg text-stone-300 mb-8 max-w-2xl">
-                Get maximum visibility with pinned search results and Home Page hero placement,
-                plus our complete Digital Waiver System to streamline your front desk operations.
+                {t('pricingPage.goldPartner.desc')}
               </p>
 
               <div className="grid md:grid-cols-2 gap-6 mb-8">
                 <div className="bg-white/10 rounded-xl p-5">
                   <Crown className="w-8 h-8 text-amber-400 mb-3" />
-                  <h3 className="font-semibold text-lg mb-2">Exclusive Visibility</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t('pricingPage.goldPartner.feat1Title')}</h3>
                   <p className="text-stone-400 text-sm">
-                    Pinned to the top of all searches. Featured on the Home Page for users within 50km. No competitor ads on your profile.
+                    {t('pricingPage.goldPartner.feat1Desc')}
                   </p>
                 </div>
                 <div className="bg-white/10 rounded-xl p-5">
                   <FileText className="w-8 h-8 text-amber-400 mb-3" />
-                  <h3 className="font-semibold text-lg mb-2">Digital Waiver System</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t('pricingPage.goldPartner.feat2Title')}</h3>
                   <p className="text-stone-400 text-sm">
-                    iPad kiosk mode, searchable waiver database, expiry tracking with auto-emails, and one-click PDF exports.
+                    {t('pricingPage.goldPartner.feat2Desc')}
                   </p>
                 </div>
               </div>
@@ -438,13 +466,13 @@ export default function PricingPage() {
                   href={process.env.NEXT_PUBLIC_STRIPE_GOLD_URL || "/auth/signup?plan=gold"}
                   className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg"
                 >
-                  Start Gold - $129.99/mo
+                  {t('pricingPage.goldPartner.cta1')}
                 </Link>
                 <Link
                   href="/contact?subject=gold"
                   className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-xl font-semibold transition-all"
                 >
-                  Schedule a Demo
+                  {t('pricingPage.goldPartner.cta2')}
                 </Link>
               </div>
             </div>
@@ -456,36 +484,11 @@ export default function PricingPage() {
       <section className="py-20 px-4 bg-stone-50">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-stone-800 text-center mb-12">
-            Frequently Asked Questions
+            {t('pricingPage.faq.title')}
           </h2>
 
           <div className="space-y-6">
-            {[
-              {
-                q: 'Can I upgrade or downgrade at any time?',
-                a: 'Yes! You can change your plan at any time. When upgrading, you\'ll be charged the prorated difference. When downgrading, your new rate takes effect at the next billing cycle.',
-              },
-              {
-                q: 'What happens to my listing if I cancel?',
-                a: 'Your listing reverts to the Bronze (free) tier. You\'ll keep your basic listing but lose premium features like clickable contact info, additional photos, and analytics.',
-              },
-              {
-                q: 'Is there a contract or commitment?',
-                a: 'No contracts! Monthly plans can be canceled anytime. Yearly plans are paid upfront but can be refunded on a prorated basis within the first 30 days.',
-              },
-              {
-                q: 'How does the Digital Waiver System work?',
-                a: 'Our Gold waiver system includes an iPad-friendly kiosk mode, a searchable database of all signed waivers, automatic expiry notifications, and PDF export capability. It\'s designed to replace paper waivers completely.',
-              },
-              {
-                q: 'What is the "Home Page Hero" feature?',
-                a: 'Gold members are featured on the app/website home page for any user within 50km of their range. This gives you immediate visibility when archers in your area open the site.',
-              },
-              {
-                q: 'Do you offer discounts for multiple locations?',
-                a: 'Yes! Contact us for custom pricing if you operate multiple ranges. We offer volume discounts for 3+ locations.',
-              },
-            ].map((faq, idx) => (
+            {faqs.map((faq, idx) => (
               <div key={idx} className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
                 <h3 className="font-semibold text-stone-800 mb-2">{faq.q}</h3>
                 <p className="text-stone-600">{faq.a}</p>
@@ -499,23 +502,23 @@ export default function PricingPage() {
       <section className="py-20 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-stone-800 mb-4">
-            Ready to grow your archery range?
+            {t('pricingPage.ctaBottom.title')}
           </h2>
           <p className="text-xl text-stone-600 mb-8">
-            Join hundreds of ranges across Canada. Start free, upgrade when you're ready.
+            {t('pricingPage.ctaBottom.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/auth/signup"
               className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-semibold transition-colors shadow-lg"
             >
-              Get Started Free
+              {t('pricingPage.ctaBottom.btn1')}
             </Link>
             <Link
               href="/contact"
               className="inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 text-stone-700 px-8 py-4 rounded-xl font-semibold transition-colors border border-stone-300"
             >
-              Contact Sales
+              {t('pricingPage.ctaBottom.btn2')}
             </Link>
           </div>
         </div>

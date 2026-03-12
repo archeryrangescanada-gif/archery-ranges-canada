@@ -1,218 +1,223 @@
+'use client';
+
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Link from 'next/link'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export default function AboutPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
 
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8">
-          About Canada's Most Comprehensive Archery Range Directory
+          {t('aboutPage.title')}
         </h1>
 
         <div className="prose prose-lg max-w-none space-y-8">
           <section>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Your Complete Guide to Finding Archery Ranges, Clubs, and Lessons Across Canada</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('aboutPage.guideTitle')}</h2>
             <p className="text-gray-700">
-              Archery Ranges Canada is the most comprehensive online directory of archery facilities in the country. Whether you're searching for archery ranges near you, looking for beginner archery lessons, or trying to find specialized facilities for Olympic recurve, traditional archery, or compound bow shooting, we help Canadians discover and connect with quality archery facilities from coast to coast.
+              {t('aboutPage.guideDesc')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why We Built This Directory</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('aboutPage.whyBuiltTitle')}</h2>
             <p className="text-gray-700">
-              Finding a quality archery range in Canada shouldn't be difficult. Yet for years, archers across the country have struggled to locate facilities near them. Information was scattered across outdated websites, buried in Facebook groups, or simply didn't exist online at all.
+              {t('aboutPage.whyBuiltP1')}
             </p>
             <p className="text-gray-700 mt-4">
-              We created Archery Ranges Canada to solve this problem. Our comprehensive archery directory brings together verified information about indoor archery ranges, outdoor archery clubs, mobile archery services, and archery pro shops from British Columbia to Newfoundland—all in one easy-to-use platform.
+              {t('aboutPage.whyBuiltP2')}
             </p>
             <p className="text-gray-700 mt-4">
-              Whether you're in Toronto, Vancouver, Montreal, Calgary, or a small town anywhere in Canada, we're making it easier to find archery facilities in your area.
+              {t('aboutPage.whyBuiltP3')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">What Makes Archery Ranges Canada Different</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('aboutPage.whatMakesDiffTitle')}</h2>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">Verified & Up-to-Date Listings</h3>
-            <p className="text-gray-700 mb-3">We don't just scrape data from the internet. Every archery range, club, and facility in our directory is individually researched and verified. We ensure you get accurate information about:</p>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">{t('aboutPage.verifiedTitle')}</h3>
+            <p className="text-gray-700 mb-3">{t('aboutPage.verifiedDesc')}</p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li>Facility hours and contact details</li>
-              <li>Available archery disciplines (Olympic recurve, compound, traditional, crossbow)</li>
-              <li>Lesson availability and pricing</li>
-              <li>Equipment rental options</li>
-              <li>Range specifications (indoor vs outdoor, distance, number of lanes)</li>
-              <li>Membership requirements</li>
-              <li>Drop-in availability</li>
+              <li>{t('aboutPage.verifiedL1')}</li>
+              <li>{t('aboutPage.verifiedL2')}</li>
+              <li>{t('aboutPage.verifiedL3')}</li>
+              <li>{t('aboutPage.verifiedL4')}</li>
+              <li>{t('aboutPage.verifiedL5')}</li>
+              <li>{t('aboutPage.verifiedL6')}</li>
+              <li>{t('aboutPage.verifiedL7')}</li>
             </ul>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">Complete Provincial Coverage</h3>
-            <p className="text-gray-700 mb-3">We're systematically mapping every archery facility across Canada, with coverage in all provinces and territories.</p>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">{t('aboutPage.coverageTitle')}</h3>
+            <p className="text-gray-700 mb-3">{t('aboutPage.coverageDesc')}</p>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">Helping You Find the Right Type of Facility</h3>
-            <p className="text-gray-700 mb-3">Different archers have different needs. Our directory helps you find:</p>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">{t('aboutPage.findRightTitle')}</h3>
+            <p className="text-gray-700 mb-3">{t('aboutPage.findRightDesc')}</p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li><strong>Indoor archery ranges</strong> - Perfect for year-round shooting regardless of weather</li>
-              <li><strong>Outdoor archery ranges</strong> - For longer distances and field archery experiences</li>
-              <li><strong>Archery clubs</strong> - Community-focused facilities with membership options</li>
-              <li><strong>Commercial archery ranges</strong> - Professional facilities with equipment rental and lessons</li>
-              <li><strong>3D archery courses</strong> - For bowhunters and those who enjoy realistic target practice</li>
-              <li><strong>Traditional archery schools</strong> - Specialized instruction in historical archery techniques</li>
-              <li><strong>Youth archery programs</strong> - Facilities offering kids' archery lessons and camps</li>
+              <li><strong>{t('aboutPage.findRightL1')}</strong>{t('aboutPage.findRightL1Desc')}</li>
+              <li><strong>{t('aboutPage.findRightL2')}</strong>{t('aboutPage.findRightL2Desc')}</li>
+              <li><strong>{t('aboutPage.findRightL3')}</strong>{t('aboutPage.findRightL3Desc')}</li>
+              <li><strong>{t('aboutPage.findRightL4')}</strong>{t('aboutPage.findRightL4Desc')}</li>
+              <li><strong>{t('aboutPage.findRightL5')}</strong>{t('aboutPage.findRightL5Desc')}</li>
+              <li><strong>{t('aboutPage.findRightL6')}</strong>{t('aboutPage.findRightL6Desc')}</li>
+              <li><strong>{t('aboutPage.findRightL7')}</strong>{t('aboutPage.findRightL7Desc')}</li>
             </ul>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">Supporting Every Archery Discipline</h3>
-            <p className="text-gray-700 mb-3">Whether you practice Olympic recurve, compound bow, traditional archery, barebow, or crossbow, our directory identifies which facilities support your specific discipline. We also highlight ranges that offer:</p>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">{t('aboutPage.supportTitle')}</h3>
+            <p className="text-gray-700 mb-3">{t('aboutPage.supportDesc')}</p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li>Beginner archery lessons</li>
-              <li>Advanced coaching and competitive training</li>
-              <li>Bowhunting preparation courses</li>
-              <li>Adaptive archery programs</li>
-              <li>Family-friendly drop-in sessions</li>
+              <li>{t('aboutPage.supportL1')}</li>
+              <li>{t('aboutPage.supportL2')}</li>
+              <li>{t('aboutPage.supportL3')}</li>
+              <li>{t('aboutPage.supportL4')}</li>
+              <li>{t('aboutPage.supportL5')}</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Commitment to the Archery Community</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('aboutPage.commitmentTitle')}</h2>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">To Archers and Beginners</h3>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">{t('aboutPage.archersTitle')}</h3>
             <p className="text-gray-700">
-              We're committed to maintaining the most accurate, comprehensive directory of archery facilities in Canada. If you're wondering "where can I try archery near me?" or "which archery range offers equipment rental?", our directory is designed to answer those questions immediately.
+              {t('aboutPage.archersDesc1')}
             </p>
             <p className="text-gray-700 mt-4">
-              Can't find what you're looking for? <Link href="/contact" className="text-green-600 hover:underline">Let us know</Link> and we'll research facilities in your area.
+              {t('aboutPage.archersDesc2Lead')}<Link href="/contact" className="text-green-600 hover:underline">{t('aboutPage.archersDesc2Link')}</Link>{t('aboutPage.archersDesc2Trail')}
             </p>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">To Archery Range Owners and Clubs</h3>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">{t('aboutPage.ownersTitle')}</h3>
             <p className="text-gray-700">
-              We're here to help you connect with more archers in your community. Our platform showcases what makes your facility special and helps you reach people actively searching for archery opportunities.
+              {t('aboutPage.ownersDesc1')}
             </p>
             <p className="text-gray-700 mt-4">
-              We offer a range of features designed to increase your visibility and help you attract new members or customers.
+              {t('aboutPage.ownersDesc2')}
             </p>
 
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">To the Sport of Archery in Canada</h3>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3 mt-6">{t('aboutPage.sportTitle')}</h3>
             <p className="text-gray-700">
-              We believe archery is one of the most accessible and rewarding sports anyone can try. By making it easier for Canadians to find archery ranges and get started with lessons, we're investing in the future growth of archery across the country.
+              {t('aboutPage.sportDesc1')}
             </p>
             <p className="text-gray-700 mt-4">
-              Our directory supports provincial archery associations, helps new archers discover the sport, and connects experienced archers with new facilities when they travel or relocate.
+              {t('aboutPage.sportDesc2')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">How We Verify Our Listings</h2>
-            <p className="text-gray-700 mb-3">Quality matters. Every archery facility in our directory goes through our verification process:</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('aboutPage.verifyTitle')}</h2>
+            <p className="text-gray-700 mb-3">{t('aboutPage.verifyDesc')}</p>
             <ol className="list-decimal pl-6 text-gray-700 space-y-2">
-              <li><strong>Research</strong> - We identify archery ranges through provincial associations, archer recommendations, and systematic provincial searches</li>
-              <li><strong>Verification</strong> - We confirm facility details through direct contact, website review, and community feedback</li>
-              <li><strong>Updates</strong> - We regularly review and update listings to ensure information remains current</li>
-              <li><strong>Community Input</strong> - We encourage archers to report changes or suggest facilities we're missing</li>
+              <li><strong>{t('aboutPage.verifyL1Lead')}</strong>{t('aboutPage.verifyL1Trail')}</li>
+              <li><strong>{t('aboutPage.verifyL2Lead')}</strong>{t('aboutPage.verifyL2Trail')}</li>
+              <li><strong>{t('aboutPage.verifyL3Lead')}</strong>{t('aboutPage.verifyL3Trail')}</li>
+              <li><strong>{t('aboutPage.verifyL4Lead')}</strong>{t('aboutPage.verifyL4Trail')}</li>
             </ol>
             <p className="text-gray-700 mt-4">
-              This ensures when you search for "archery ranges near me" on our platform, you get reliable, current information.
+              {t('aboutPage.verifyBottom')}
             </p>
           </section>
 
           <section>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Coverage Areas</h2>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Major Cities with Complete Archery Range Listings:</h3>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('aboutPage.coverageAreasTitle')}</h2>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3">{t('aboutPage.coverageMajor')}</h3>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li><strong>Toronto area archery ranges</strong> - GTA, Mississauga, Brampton, Markham, Vaughan</li>
-              <li><strong>Vancouver area archery ranges</strong> - Lower Mainland, Surrey, Burnaby, Richmond</li>
-              <li><strong>Montreal area archery ranges</strong> - Greater Montreal, Laval, Longueuil</li>
-              <li><strong>Calgary archery ranges</strong> - Calgary and surrounding areas</li>
-              <li><strong>Ottawa archery ranges</strong> - Ottawa-Gatineau region</li>
-              <li><strong>Edmonton archery ranges</strong> - Edmonton and area</li>
-              <li>Plus comprehensive coverage in smaller cities and rural areas across Canada</li>
+              <li><strong>{t('aboutPage.covL1Lead')}</strong>{t('aboutPage.covL1Trail')}</li>
+              <li><strong>{t('aboutPage.covL2Lead')}</strong>{t('aboutPage.covL2Trail')}</li>
+              <li><strong>{t('aboutPage.covL3Lead')}</strong>{t('aboutPage.covL3Trail')}</li>
+              <li><strong>{t('aboutPage.covL4Lead')}</strong>{t('aboutPage.covL4Trail')}</li>
+              <li><strong>{t('aboutPage.covL5Lead')}</strong>{t('aboutPage.covL5Trail')}</li>
+              <li><strong>{t('aboutPage.covL6Lead')}</strong>{t('aboutPage.covL6Trail')}</li>
+              <li>{t('aboutPage.covL7')}</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('aboutPage.faqTitle')}</h2>
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">How do I find archery ranges near me?</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('aboutPage.faqQ1')}</h3>
                 <p className="text-gray-700">
-                  Use our search function on the <Link href="/" className="text-green-600 hover:underline">homepage</Link> to find archery facilities by city, province, or postal code. Our directory includes indoor ranges, outdoor clubs, and mobile archery services across Canada.
+                  {t('aboutPage.faqA1Lead')}<Link href="/" className="text-green-600 hover:underline">{t('aboutPage.faqA1Link')}</Link>{t('aboutPage.faqA1Trail')}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Do archery ranges provide equipment rental?</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('aboutPage.faqQ2')}</h3>
                 <p className="text-gray-700">
-                  Many facilities offer equipment rental for beginners. Each listing in our directory indicates whether rental equipment is available, along with pricing information when provided by the facility.
+                  {t('aboutPage.faqA2')}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Can I take archery lessons as a complete beginner?</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('aboutPage.faqQ3')}</h3>
                 <p className="text-gray-700">
-                  Absolutely! Most archery ranges and clubs offer beginner lessons. Our directory clearly identifies facilities that provide instruction, from introductory lessons to advanced coaching.
+                  {t('aboutPage.faqA3')}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">What's the difference between an archery range and an archery club?</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('aboutPage.faqQ4')}</h3>
                 <p className="text-gray-700">
-                  Archery ranges are typically commercial facilities offering drop-in shooting, rentals, and lessons. Archery clubs are often membership-based organizations focused on community and competitive shooting. Many facilities operate as both. Our listings specify which model each facility uses.
+                  {t('aboutPage.faqA4')}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">How much does it cost to try archery?</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('aboutPage.faqQ5')}</h3>
                 <p className="text-gray-700">
-                  Introductory archery sessions typically range from $20-$50 for a beginner lesson with equipment rental. Many ranges offer trial sessions or "come and try" events. Check individual facility listings for current pricing.
+                  {t('aboutPage.faqA5')}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">What age can kids start archery?</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('aboutPage.faqQ6')}</h3>
                 <p className="text-gray-700">
-                  Most facilities accept children as young as 8-10 years old, though some offer programs for younger kids. Youth archery programs are increasingly popular across Canada. Check facility listings for age requirements and youth programs.
+                  {t('aboutPage.faqA6')}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Can I practice archery year-round in Canada?</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('aboutPage.faqQ7')}</h3>
                 <p className="text-gray-700">
-                  Yes! Indoor archery ranges operate year-round regardless of weather. Many archers practice indoors during winter and outdoors during summer months. Our directory identifies both indoor and outdoor facilities.
+                  {t('aboutPage.faqA7')}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Is your directory free to use?</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('aboutPage.faqQ8')}</h3>
                 <p className="text-gray-700">
-                  Yes! Archery Ranges Canada is completely free for archers searching for facilities. Range owners can claim free basic listings, with optional premium features available for enhanced visibility.
+                  {t('aboutPage.faqA8')}
                 </p>
               </div>
             </div>
           </section>
 
           <section>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Get In Touch</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('aboutPage.contactTitle')}</h2>
             <p className="text-gray-700 mb-4">
-              Have a suggestion? Know of an archery range we're missing? Want to learn more about premium listings for your facility?
+              {t('aboutPage.contactDesc')}
             </p>
             <div className="bg-green-50 p-6 rounded-lg">
               <p className="text-gray-700 mb-2">
-                <strong>Contact Us:</strong> <Link href="/contact" className="text-green-600 hover:underline">Submit a contact form</Link>
+                <strong>{t('aboutPage.contactSubmitBold')}</strong><Link href="/contact" className="text-green-600 hover:underline">{t('aboutPage.contactSubmitLink')}</Link>
               </p>
               <p className="text-gray-700">
-                <strong>Missing A Range?</strong> Fill out the form on our <Link href="/" className="text-green-600 hover:underline">homepage</Link>
+                <strong>{t('aboutPage.contactMissingBold')}</strong>{t('aboutPage.contactMissingLead')}<Link href="/" className="text-green-600 hover:underline">{t('aboutPage.contactMissingLink')}</Link>
               </p>
             </div>
             <p className="text-gray-700 mt-6">
-              We'd love to hear from you. Whether you're an archer looking for the perfect range or a facility owner wanting to improve your listing, we're here to help grow archery across Canada.
+              {t('aboutPage.contactEnd')}
             </p>
           </section>
 
           <section className="border-t border-gray-200 pt-8 mt-8">
             <p className="text-gray-600 italic text-sm">
-              Archery Ranges Canada is an independent directory service dedicated to promoting archery across the country. We are not affiliated with any specific archery organization, though we work closely with archery ranges, clubs, and provincial associations to ensure our information serves the community.
+              {t('aboutPage.disclaimer')}
             </p>
           </section>
         </div>

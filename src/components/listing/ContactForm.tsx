@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface ContactFormProps {
   rangeId: string;
@@ -21,6 +22,7 @@ interface FormData {
 type FormStatus = 'idle' | 'submitting' | 'success' | 'error';
 
 export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }: ContactFormProps) {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -69,8 +71,8 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
           <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-emerald-500" />
           </div>
-          <h3 className="text-xl font-semibold text-stone-800 mb-2">Message Sent!</h3>
-          <p className="text-stone-600">Your inquiry has been sent to {rangeName}. They'll get back to you soon.</p>
+          <h3 className="text-xl font-semibold text-stone-800 mb-2">{t('rangePage.messageSent')}</h3>
+          <p className="text-stone-600">{t('rangePage.inquirySentTo', { name: rangeName })}</p>
         </div>
       </div>
     );
@@ -79,15 +81,15 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
       <div className="p-6 bg-gradient-to-br from-stone-800 to-stone-900">
-        <h3 className="text-lg font-semibold text-white mb-1">Send a Message</h3>
-        <p className="text-stone-300 text-sm">Have a question? Reach out directly.</p>
+        <h3 className="text-lg font-semibold text-white mb-1">{t('rangePage.sendMessage')}</h3>
+        <p className="text-stone-300 text-sm">{t('rangePage.haveAQuestion')}</p>
       </div>
 
       {whatsappNumber && (
         <div className="p-6 pb-0 space-y-4">
           <div className="bg-emerald-50 rounded-xl p-5 border border-emerald-100 text-center">
-            <h4 className="font-semibold text-emerald-800 mb-2">Chat directly with {rangeName}</h4>
-            <p className="text-sm text-emerald-600 mb-4">Get answers instantly. Tap the button below to message them directly on WhatsApp.</p>
+            <h4 className="font-semibold text-emerald-800 mb-2">{t('rangePage.chatDirectly', { name: rangeName })}</h4>
+            <p className="text-sm text-emerald-600 mb-4">{t('rangePage.chatDirectlyDesc')}</p>
             <a
               href={`https://wa.me/${whatsappNumber}`}
               target="_blank"
@@ -95,7 +97,7 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
               className="inline-flex w-full items-center justify-center gap-2 px-6 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold rounded-xl shadow-sm transition-all duration-200"
             >
               <Send className="w-5 h-5" />
-              Chat on WhatsApp
+              {t('rangePage.chatOnWhatsApp')}
             </a>
           </div>
         </div>
@@ -106,7 +108,7 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
           {whatsappNumber && (
             <div className="flex items-center gap-4 mb-2">
               <div className="h-px bg-stone-200 flex-1"></div>
-              <span className="text-stone-400 text-sm font-medium">OR SEND AN EMAIL</span>
+              <span className="text-stone-400 text-sm font-medium">{t('rangePage.orSendAnEmail')}</span>
               <div className="h-px bg-stone-200 flex-1"></div>
             </div>
           )}
@@ -114,7 +116,7 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
             <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200">
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-red-800">Failed to send</p>
+                <p className="font-medium text-red-800">{t('rangePage.failedToSend')}</p>
                 <p className="text-sm text-red-600">{errorMessage}</p>
               </div>
             </div>
@@ -122,7 +124,7 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
 
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Your Name <span className="text-red-500">*</span>
+              {t('rangePage.yourName')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -138,7 +140,7 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Email Address <span className="text-red-500">*</span>
+              {t('rangePage.emailAddress')} <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
@@ -154,7 +156,7 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
 
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Phone Number <span className="text-stone-400">(optional)</span>
+              {t('rangePage.phoneNumber')} <span className="text-stone-400">{t('rangePage.optional')}</span>
             </label>
             <input
               type="tel"
@@ -169,7 +171,7 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
 
           <div>
             <label htmlFor="subject" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Subject
+              {t('rangePage.subject')}
             </label>
             <select
               id="subject"
@@ -178,20 +180,20 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
               onChange={handleChange}
               className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors text-stone-800 bg-white"
             >
-              <option value="">Select a topic...</option>
-              <option value="general">General Inquiry</option>
-              <option value="membership">Membership Information</option>
-              <option value="lessons">Lessons & Coaching</option>
-              <option value="events">Events & Tournaments</option>
-              <option value="equipment">Equipment Rental</option>
-              <option value="booking">Booking & Reservations</option>
-              <option value="other">Other</option>
+              <option value="">{t('rangePage.selectTopic')}</option>
+              <option value="general">{t('rangePage.topics.general')}</option>
+              <option value="membership">{t('rangePage.topics.membership')}</option>
+              <option value="lessons">{t('rangePage.topics.lessons')}</option>
+              <option value="events">{t('rangePage.topics.events')}</option>
+              <option value="equipment">{t('rangePage.topics.equipment')}</option>
+              <option value="booking">{t('rangePage.topics.booking')}</option>
+              <option value="other">{t('rangePage.topics.other')}</option>
             </select>
           </div>
 
           <div>
             <label htmlFor="message" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Your Message <span className="text-red-500">*</span>
+              {t('rangePage.yourMessage')} <span className="text-red-500">*</span>
             </label>
             <textarea
               id="message"
@@ -201,7 +203,7 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
               value={formData.message}
               onChange={handleChange}
               className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors text-stone-800 placeholder-stone-400 resize-none"
-              placeholder="Tell them what you'd like to know..."
+              placeholder={t('rangePage.tellWhatYouLikeToKnow')}
             />
           </div>
 
@@ -213,22 +215,22 @@ export function ContactForm({ rangeId, rangeName, whatsappNumber, contactEmail }
             {status === 'submitting' ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Sending...
+                {t('rangePage.sending')}
               </>
             ) : (
               <>
                 <Send className="w-5 h-5" />
-                Send Message
+                {t('rangePage.sendMessage')}
               </>
             )}
           </button>
 
-          <p className="text-xs text-stone-500 text-center">Your information will only be shared with {rangeName}.</p>
+          <p className="text-xs text-stone-500 text-center">{t('rangePage.sharedWithOnly', { name: rangeName })}</p>
         </form>
       ) : (
         !whatsappNumber && (
           <div className="p-6 text-center text-stone-500">
-            This range has not added an email or WhatsApp contact method yet.
+            {t('rangePage.noContactMethodYet')}
           </div>
         )
       )}

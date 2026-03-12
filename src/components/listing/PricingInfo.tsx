@@ -1,5 +1,8 @@
+'use client';
+
 import { DollarSign, Users, Calendar, GraduationCap, AlertCircle, Phone } from 'lucide-react';
 import { SubscriptionTier, getTierLimits } from '@/types/range';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface PricingInfoProps {
   membershipRequired?: boolean;
@@ -10,6 +13,7 @@ interface PricingInfoProps {
 }
 
 export function PricingInfo({ membershipRequired, membershipPrice, dropInPrice, lessonPriceRange, tier = 'free' }: PricingInfoProps) {
+  const { t } = useLanguage();
   // Bronze/free tier: show "Contact range for prices"
   const { hasPricing: tierHasPricing } = getTierLimits(tier);
 
@@ -18,13 +22,13 @@ export function PricingInfo({ membershipRequired, membershipPrice, dropInPrice, 
       <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
         <h2 className="text-xl font-semibold text-stone-800 mb-6 flex items-center gap-2">
           <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
-          Pricing
+          {t('rangePage.pricing')}
         </h2>
         <div className="flex items-center gap-4 p-5 rounded-xl bg-stone-50 border border-stone-200">
           <Phone className="w-6 h-6 text-stone-400 flex-shrink-0" />
           <div>
-            <p className="font-medium text-stone-700">Contact range for prices</p>
-            <p className="text-sm text-stone-500 mt-0.5">Please contact this range directly for current pricing and membership information.</p>
+            <p className="font-medium text-stone-700">{t('rangePage.contactRangeForPrices')}</p>
+            <p className="text-sm text-stone-500 mt-0.5">{t('rangePage.contactRangeForPricesDesc')}</p>
           </div>
         </div>
       </section>
@@ -49,15 +53,15 @@ export function PricingInfo({ membershipRequired, membershipPrice, dropInPrice, 
     <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
       <h2 className="text-xl font-semibold text-stone-800 mb-6 flex items-center gap-2">
         <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
-        Pricing
+        {t('rangePage.pricing')}
       </h2>
 
       {membershipRequired && (
         <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 mb-6">
           <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-amber-800">Membership Required</p>
-            <p className="text-sm text-amber-700">This range requires a membership to shoot. Drop-in visits may be available for non-members.</p>
+            <p className="font-medium text-amber-800">{t('rangePage.membershipRequired')}</p>
+            <p className="text-sm text-amber-700">{t('rangePage.membershipRequiredDesc')}</p>
           </div>
         </div>
       )}
@@ -69,10 +73,10 @@ export function PricingInfo({ membershipRequired, membershipPrice, dropInPrice, 
             <div className="relative">
               <div className="flex items-center gap-2 text-stone-500 mb-3">
                 <Calendar className="w-5 h-5 text-emerald-500" />
-                <span className="text-sm font-medium">Drop-In Visit</span>
+                <span className="text-sm font-medium">{t('rangePage.dropInVisit')}</span>
               </div>
               <p className="text-3xl font-bold text-stone-800">{formatPrice(dropInPrice)}</p>
-              <p className="text-sm text-stone-500 mt-1">per session</p>
+              <p className="text-sm text-stone-500 mt-1">{t('rangePage.perSession')}</p>
             </div>
           </div>
         )}
@@ -83,10 +87,10 @@ export function PricingInfo({ membershipRequired, membershipPrice, dropInPrice, 
             <div className="relative">
               <div className="flex items-center gap-2 text-stone-500 mb-3">
                 <Users className="w-5 h-5 text-blue-500" />
-                <span className="text-sm font-medium">Adult Membership</span>
+                <span className="text-sm font-medium">{t('rangePage.adultMembership')}</span>
               </div>
               <p className="text-3xl font-bold text-stone-800">{formatPrice(membershipPrice)}</p>
-              <p className="text-sm text-stone-500 mt-1">per year</p>
+              <p className="text-sm text-stone-500 mt-1">{t('rangePage.perYear')}</p>
             </div>
           </div>
         )}
@@ -97,16 +101,16 @@ export function PricingInfo({ membershipRequired, membershipPrice, dropInPrice, 
             <div className="relative">
               <div className="flex items-center gap-2 text-stone-500 mb-3">
                 <GraduationCap className="w-5 h-5 text-purple-500" />
-                <span className="text-sm font-medium">Lessons</span>
+                <span className="text-sm font-medium">{t('rangePage.lessons')}</span>
               </div>
               <p className="text-2xl font-bold text-stone-800">{lessonPriceRange}</p>
-              <p className="text-sm text-stone-500 mt-1">varies by type</p>
+              <p className="text-sm text-stone-500 mt-1">{t('rangePage.variesByType')}</p>
             </div>
           </div>
         )}
       </div>
 
-      <p className="text-xs text-stone-400 mt-4">Prices are subject to change. Contact the range directly for the most current pricing.</p>
+      <p className="text-xs text-stone-400 mt-4">{t('rangePage.pricesSubjectToChange')}</p>
     </section>
   );
 }

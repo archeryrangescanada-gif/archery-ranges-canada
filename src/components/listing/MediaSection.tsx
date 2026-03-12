@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import { SubscriptionTier, getMaxPhotos, getMaxVideos } from '@/types/range';
 import { ChevronLeft, ChevronRight, Play, X, Expand, ImageIcon } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface MediaSectionProps {
   images: string[];
@@ -21,6 +22,7 @@ function getYouTubeId(url: string): string | null {
 }
 
 export function MediaSection({ images, videos, rangeName, tier, showCarousel, showVideo }: MediaSectionProps) {
+  const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -52,8 +54,8 @@ export function MediaSection({ images, videos, rangeName, tier, showCarousel, sh
       <div className="relative h-64 md:h-96 bg-gradient-to-br from-stone-200 to-stone-300 flex items-center justify-center">
         <div className="text-center text-stone-500">
           <ImageIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          <p className="text-lg font-medium">No photos available</p>
-          <p className="text-sm">Check back soon for images of this range</p>
+          <p className="text-lg font-medium">{t('rangePage.noPhotosAvailable')}</p>
+          <p className="text-sm">{t('rangePage.checkBackSoonForImages')}</p>
         </div>
       </div>
     );
@@ -87,7 +89,7 @@ export function MediaSection({ images, videos, rangeName, tier, showCarousel, sh
               className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors backdrop-blur-sm"
             >
               <Expand className="w-4 h-4" />
-              View Full
+              {t('rangePage.viewFull')}
             </button>
           </>
         ) : null}

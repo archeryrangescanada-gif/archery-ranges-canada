@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { trackCategorySelected } from '@/lib/analytics'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 const iconMap: Record<string, LucideIcon> = {
   GraduationCap,
@@ -31,6 +32,7 @@ interface CategoryButtonsProps {
 }
 
 export function CategoryButtons({ variant = 'section' }: CategoryButtonsProps) {
+  const { t } = useLanguage()
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {categories.map((cat) => {
@@ -47,7 +49,7 @@ export function CategoryButtons({ variant = 'section' }: CategoryButtonsProps) {
             }
           >
             {IconComponent && <IconComponent className="w-3.5 h-3.5" />}
-            {cat.shortName}
+            {t(`categories.${cat.slug}`)}
           </Link>
         )
       })}

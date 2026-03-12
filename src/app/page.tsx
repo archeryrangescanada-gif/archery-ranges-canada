@@ -14,6 +14,7 @@ import { CategoryButtons } from '@/components/CategoryButtons'
 import { trackSearch, trackProvinceSelected } from '@/lib/analytics'
 import { normalizeToArray } from '@/lib/utils/data-normalization'
 import { Province, City } from '@/types/database'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 interface Range {
   id: string
@@ -60,6 +61,7 @@ interface UserLocation {
 }
 
 export default function Home() {
+  const { t } = useLanguage()
   const [provinces, setProvinces] = useState<Province[]>([])
   const [cities, setCities] = useState<City[]>([])
   const [ranges, setRanges] = useState<Range[]>([])
@@ -411,8 +413,8 @@ export default function Home() {
 
   const getLocationDisplayName = () => {
     if (searchLocation) return searchLocation.name
-    if (userLocation) return userLocation.city || 'Your Area'
-    return 'Featured'
+    if (userLocation) return userLocation.city || t('home.yourArea')
+    return t('home.featured')
   }
 
   const locationDisplayName = getLocationDisplayName()
@@ -435,40 +437,40 @@ export default function Home() {
         </div>
         <div className="relative container mx-auto px-4 py-20 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-4">
-            Archery Near Me <span className="mx-6 align-middle">|</span> Canadian Archery Range Directory
+            {t('home.title1')} <span className="mx-6 align-middle">|</span> {t('home.title2')}
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-green-50">
-            Find local archery ranges and clubs across Canada. Search by province, city, or range name to discover facilities near you.
+            {t('home.subtitle')}
           </p>
 
           <div className="max-w-2xl mx-auto">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by province, city, or range name..."
+                placeholder={t('home.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full px-4 sm:px-6 py-3 sm:py-4 pr-20 sm:pr-32 text-sm sm:text-lg text-gray-800 rounded-full shadow-2xl focus:outline-none focus:ring-4 focus:ring-green-300 placeholder:text-sm sm:placeholder:text-base"
               />
               <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 text-white px-4 sm:px-8 py-1.5 sm:py-2 rounded-full text-sm sm:text-base font-semibold transition-colors whitespace-nowrap">
-                Search
+                {t('home.searchButton')}
               </button>
             </div>
 
             <div className="flex items-center justify-center space-x-4 mt-4 flex-wrap gap-2">
               <p className="text-green-100 text-sm">
-                {provinces.length} provinces • {cities.length} cities • {ranges.length} ranges
+                {t('home.stats', { provinces: provinces.length, cities: cities.length, ranges: ranges.length })}
               </p>
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={'text-sm px-4 py-2 rounded-full transition-colors ' + (hasActiveFilters || showFilters ? 'bg-white text-green-700 font-bold' : 'bg-white/20 text-white hover:bg-white/30')}
               >
-                🔧 Filters {hasActiveFilters && '(' + (filters.rangeType.length + filters.amenities.length + filters.priceRange.length) + ')'}
+                🔧 {t('home.filters')} {hasActiveFilters && '(' + (filters.rangeType.length + filters.amenities.length + filters.priceRange.length) + ')'}
               </button>
 
               {userLocation ? (
                 <div className="text-sm px-4 py-2 rounded-full bg-green-500 text-white flex items-center gap-2">
-                  📍 {userLocation.city || 'Location Detected'}
+                  📍 {userLocation.city || t('home.locationDetected')}
                 </div>
               ) : locationLoading ? (
                 <div className="text-sm px-4 py-2 rounded-full bg-white/20 text-white flex items-center gap-2">
@@ -476,14 +478,14 @@ export default function Home() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Detecting...
+                  {t('home.detecting')}
                 </div>
               ) : (
                 <button
                   onClick={getUserLocation}
                   className="text-sm px-4 py-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors flex items-center gap-2"
                 >
-                  📍 Enable Location
+                  📍 {t('home.enableLocation')}
                 </button>
               )}
             </div>
@@ -498,14 +500,14 @@ export default function Home() {
               <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 inline-block">
                 <p className="text-white font-semibold">
                   {searchResults.length > 0
-                    ? 'Found ' + searchResults.length + ' result' + (searchResults.length !== 1 ? 's' : '')
-                    : 'No results found - try different keywords or filters'}
+                    ? t('home.foundResults', { count: searchResults.length, s: searchResults.length !== 1 ? 's' : '' })
+                    : t('home.noResults')}
                 </p>
               </div>
             )}
 
             <div className="mt-6">
-              <p className="text-green-100 text-sm mb-3">Browse by Category</p>
+              <p className="text-green-100 text-sm mb-3">{t('home.browseCategory')}</p>
               <CategoryButtons variant="hero" />
             </div>
           </div>
@@ -528,16 +530,16 @@ export default function Home() {
             <div className="text-center mb-12">
               <div className="inline-block">
                 <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                  ⭐ Premium Featured
+                  ⭐ {t('home.premiumFeatured')}
                 </span>
               </div>
               <h2 className="text-4xl font-bold text-gray-800 mt-4 mb-4">
-                Featured Archery Clubs & Ranges Near {locationDisplayName}
+                {t('home.featuredRangesNear', { location: locationDisplayName })}
               </h2>
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">
                 {searchLocation || userLocation
-                  ? 'Top-rated ranges in ' + locationDisplayName
-                  : 'Top-rated ranges with premium listings'}
+                  ? t('home.topRatedIn', { location: locationDisplayName })
+                  : t('home.topRatedPremium')}
               </p>
             </div>
 
@@ -574,7 +576,7 @@ export default function Home() {
                     </div>
                     <div className="absolute bottom-4 left-4 flex gap-2">
                       <span className="bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
-                        {range.facility_type || 'Indoor/Outdoor'}
+                        {range.facility_type || t('home.indoorOutdoor')}
                       </span>
                       {range.distance !== undefined && range.distance !== Infinity && (
                         <span className="bg-blue-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
@@ -622,7 +624,7 @@ export default function Home() {
 
                     <div className="flex gap-2 pt-4 border-t border-gray-100">
                       <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
-                        View Details
+                        {t('home.viewDetails')}
                       </button>
                       {range.phone_number && (
                         <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
@@ -645,7 +647,7 @@ export default function Home() {
                 href="/featured"
                 className="inline-block bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all"
               >
-                View All Featured Ranges →
+                {t('home.viewAllFeatured')}
               </Link>
             </div>
           </section>
@@ -655,7 +657,7 @@ export default function Home() {
           {(searchQuery.trim() !== '' || hasActiveFilters) && searchResults.length > 0 && (
             <div className="mb-12">
               <h2 className="text-3xl font-bold text-gray-800 mb-6">
-                {searchQuery ? 'Search Results' : 'Filtered Results'}
+                {searchQuery ? t('home.searchResults') : t('home.filteredResults')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {searchResults.map((result) => (
@@ -692,7 +694,7 @@ export default function Home() {
                       </span>
                     </div>
                     <p className="text-green-600 font-medium group-hover:underline">
-                      View details →
+                      {t('home.viewDetailsArrow')}
                     </p>
                   </Link>
                 ))}
@@ -706,7 +708,7 @@ export default function Home() {
             <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[400px]">
               <Image
                 src="/hero-banner.png?v=1"
-                alt="Most Accurate Archery Directory in Canada"
+                alt={t('home.mostAccurate')}
                 fill
                 className="object-cover"
                 sizes="(max-width: 1280px) 100vw, 1280px"
@@ -715,16 +717,16 @@ export default function Home() {
                 <div className="container mx-auto px-8">
                   <div className="max-w-2xl">
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-                      MOST ACCURATE ARCHERY DIRECTORY IN CANADA
+                      {t('home.mostAccurate')}
                     </h2>
                     <p className="text-xl text-green-200 mb-6">
-                      If we don't have an archery range in your area, please notify us so we can improve your experience
+                      {t('home.missingRangeDesc')}
                     </p>
                     <button
                       onClick={() => setShowReportModal(true)}
                       className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-semibold transition-colors shadow-lg"
                     >
-                      Notify Missing Ranges
+                      {t('home.notifyMissing')}
                     </button>
                   </div>
                 </div>
@@ -737,16 +739,16 @@ export default function Home() {
           <section>
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                Explore Archery Ranges by Province
+                {t('home.exploreByProvince')}
               </h2>
               <p className="text-gray-600 text-lg">
-                Select your province to find nearby archery ranges
+                {t('home.selectProvince')}
               </p>
             </div>
 
             {loading ? (
               <div className="text-center py-12">
-                <p className="text-gray-600">Loading provinces...</p>
+                <p className="text-gray-600">{t('home.loadingProvinces')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -768,11 +770,11 @@ export default function Home() {
                       </div>
                       <div className="flex items-center gap-3">
                         <p className="text-green-600 font-medium group-hover:underline">
-                          View ranges →
+                          {t('home.viewRanges')}
                         </p>
                         {provinceRangeCount === 0 && (
                           <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2 py-0.5 rounded-full border border-amber-200">
-                            Coming Soon
+                            {t('home.comingSoon')}
                           </span>
                         )}
                       </div>
@@ -788,10 +790,10 @@ export default function Home() {
           <section className="mt-16 mb-8">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-3">
-                Browse by Category
+                {t('home.browseCategory')}
               </h2>
               <p className="text-gray-600 text-lg">
-                Find ranges by the programs and services they offer
+                {t('home.findPrograms')}
               </p>
             </div>
             <CategoryButtons variant="section" />

@@ -1,5 +1,8 @@
+'use client';
+
 import { Calendar, Clock, MapPin, Users, ExternalLink, DollarSign } from 'lucide-react';
 import { RangeEvent } from '@/types/range';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface EventsSectionProps {
   events: RangeEvent[];
@@ -24,13 +27,15 @@ function formatTime(timeString?: string): string {
 }
 
 export function EventsSection({ events, rangeName }: EventsSectionProps) {
+  const { t } = useLanguage();
+
   if (events.length === 0) return null;
 
   return (
     <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
       <h2 className="text-xl font-semibold text-stone-800 mb-6 flex items-center gap-2">
         <span className="w-1 h-6 bg-red-500 rounded-full"></span>
-        Upcoming Events
+        {t('rangePage.upcomingEvents')}
         <span className="text-base font-normal text-stone-500">({events.length})</span>
       </h2>
 
@@ -83,7 +88,7 @@ export function EventsSection({ events, rangeName }: EventsSectionProps) {
                   {event.max_participants && (
                     <div className="flex items-center gap-1.5">
                       <Users className="w-4 h-4 text-stone-400" />
-                      <span>Max {event.max_participants}</span>
+                      <span>{t('rangePage.maxParticipants', { count: event.max_participants })}</span>
                     </div>
                   )}
 
@@ -105,7 +110,7 @@ export function EventsSection({ events, rangeName }: EventsSectionProps) {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors"
                   >
-                    Register
+                    {t('rangePage.register')}
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
@@ -118,7 +123,7 @@ export function EventsSection({ events, rangeName }: EventsSectionProps) {
       {events.length >= 5 && (
         <div className="mt-4 text-center">
           <button className="text-red-500 hover:text-red-600 font-medium text-sm">
-            View all events at {rangeName} →
+            {t('rangePage.viewAllEvents', { name: rangeName })}
           </button>
         </div>
       )}

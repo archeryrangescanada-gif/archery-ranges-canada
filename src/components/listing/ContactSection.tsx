@@ -1,9 +1,10 @@
 'use client';
 
-import { Phone, Mail, Globe } from 'lucide-react';
+import { Phone, Mail, Globe, ExternalLink, ArrowRight } from 'lucide-react';
 import { trackPhoneClick, trackEmailClick, trackWebsiteClick, RangeContext } from '@/lib/analytics';
 import { SubscriptionTier, getTierLimits } from '@/types/range';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface ContactSectionProps {
   phone?: string;
@@ -15,7 +16,11 @@ interface ContactSectionProps {
   isOwner?: boolean;
 }
 
-export function ContactSection({ phone, email, website, rangeId, rangeName, tier, isOwner = false }: ContactSectionProps) {
+export function ContactSection({ phone, email, website, rangeId, rangeName, tier = 'free', isOwner = false }: ContactSectionProps) {
+  const { t } = useLanguage();
+
+  if (!phone && !email && !website) return null;
+
   const { hasClickableContact } = getTierLimits(tier);
 
   const rangeContext: RangeContext = {
@@ -40,14 +45,14 @@ export function ContactSection({ phone, email, website, rangeId, rangeName, tier
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
         <div className="p-6 bg-emerald-600">
-          <h3 className="text-lg font-semibold text-white">Contact Information</h3>
+          <h3 className="text-lg font-semibold text-white">{t('rangePage.contactInfo')}</h3>
         </div>
         <div className="p-6 space-y-4">
           {phone && (
             <div className="flex items-center gap-4 p-4 rounded-xl bg-stone-50">
               <Phone className="w-5 h-5 text-stone-400" />
               <div>
-                <p className="text-sm text-stone-500">Phone</p>
+                <p className="text-sm text-stone-500">{t('rangePage.phone')}</p>
                 <p className="font-semibold text-stone-800">{phone}</p>
               </div>
             </div>
@@ -56,7 +61,7 @@ export function ContactSection({ phone, email, website, rangeId, rangeName, tier
             <div className="flex items-center gap-4 p-4 rounded-xl bg-stone-50">
               <Mail className="w-5 h-5 text-stone-400" />
               <div>
-                <p className="text-sm text-stone-500">Email</p>
+                <p className="text-sm text-stone-500">{t('rangePage.email')}</p>
                 <p className="font-semibold text-stone-800">{email}</p>
               </div>
             </div>
@@ -65,7 +70,7 @@ export function ContactSection({ phone, email, website, rangeId, rangeName, tier
             <div className="flex items-center gap-4 p-4 rounded-xl bg-stone-50">
               <Globe className="w-5 h-5 text-stone-400" />
               <div>
-                <p className="text-sm text-stone-500">Website</p>
+                <p className="text-sm text-stone-500">{t('rangePage.website')}</p>
                 <p className="font-semibold text-stone-800">{website}</p>
               </div>
             </div>
@@ -74,13 +79,13 @@ export function ContactSection({ phone, email, website, rangeId, rangeName, tier
           {isOwner && (
             <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-xs text-blue-700 text-center">
-                Upgrade to Silver to make your contact info clickable for visitors.
+                {t('rangePage.upgradeSilverMakeClickable')}
               </p>
               <Link
                 href="/dashboard"
                 className="block mt-2 text-center text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
               >
-                Upgrade to Silver →
+                {t('rangePage.upgradeSilverArrow')}
               </Link>
             </div>
           )}
@@ -93,7 +98,7 @@ export function ContactSection({ phone, email, website, rangeId, rangeName, tier
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
       <div className="p-6 bg-emerald-600">
-        <h3 className="text-lg font-semibold text-white">Contact Information</h3>
+        <h3 className="text-lg font-semibold text-white">{t('rangePage.contactInfo')}</h3>
       </div>
       <div className="p-6 space-y-4">
         {phone && (

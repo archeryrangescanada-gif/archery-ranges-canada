@@ -1,5 +1,8 @@
+'use client';
+
 import { MapPin, Star, Building2, TreePine, Home } from 'lucide-react';
 import { FacilityType } from '@/types/range';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface RangeHeaderProps {
   name: string;
@@ -20,10 +23,10 @@ const facilityIcons: Record<FacilityType, React.ReactNode> = {
   both: <Home className="w-4 h-4" />,
 };
 
-const facilityLabels: Record<FacilityType, string> = {
-  indoor: 'Indoor Range',
-  outdoor: 'Outdoor Range',
-  both: 'Indoor & Outdoor',
+const facilityLabelsKeys: Record<FacilityType, string> = {
+  indoor: 'indoorRange',
+  outdoor: 'outdoorRange',
+  both: 'indoorOutdoor',
 };
 
 export function RangeHeader({
@@ -38,6 +41,7 @@ export function RangeHeader({
   isClaimed,
   action,
 }: RangeHeaderProps) {
+  const { t } = useLanguage();
   const fullAddress = [address, city, province, postalCode].filter(Boolean).join(', ');
 
   return (
@@ -51,7 +55,7 @@ export function RangeHeader({
       {facilityType && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 text-stone-600 text-sm font-medium mb-4">
           {facilityIcons[facilityType as FacilityType] || <Building2 className="w-4 h-4" />}
-          {facilityLabels[facilityType as FacilityType] || facilityType}
+          {facilityLabelsKeys[facilityType as FacilityType] ? t(`rangePage.${facilityLabelsKeys[facilityType as FacilityType]}`) : facilityType}
         </div>
       )}
 
@@ -84,7 +88,7 @@ export function RangeHeader({
             <span className="text-lg font-semibold text-stone-800">{rating.toFixed(1)}</span>
           </div>
           <span className="text-stone-500">
-            ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+            {t('rangePage.reviewsCount', { count: reviewCount, reviewString: reviewCount === 1 ? t('rangePage.review') : t('rangePage.reviews') })}
           </span>
         </div>
       )}
@@ -92,7 +96,7 @@ export function RangeHeader({
       {(rating === null || reviewCount === 0) && (
         <div className="flex items-center gap-2 text-stone-400">
           <Star className="w-5 h-5" />
-          <span className="text-sm">No reviews yet</span>
+          <span className="text-sm">{t('rangePage.noReviewsYet')}</span>
         </div>
       )}
     </div>

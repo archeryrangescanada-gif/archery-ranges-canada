@@ -1,5 +1,8 @@
+'use client';
+
 import { Ruler, Target, Building2, TreePine, Crosshair, Weight, Check, X, Settings, History, Shield } from 'lucide-react';
 import { FacilityType, BowType } from '@/types/range';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface RangeSpecificationsProps {
   lengthYards?: number | string;
@@ -9,15 +12,16 @@ interface RangeSpecificationsProps {
   maxDrawWeight?: number | string;
 }
 
-const bowTypeData: Record<BowType, { label: string; icon: React.ReactNode }> = {
-  recurve: { label: 'Recurve', icon: <Target className="w-5 h-5" /> },
-  compound: { label: 'Compound', icon: <Settings className="w-5 h-5" /> },
-  longbow: { label: 'Longbow', icon: <Shield className="w-5 h-5" /> },
-  crossbow: { label: 'Crossbow', icon: <Crosshair className="w-5 h-5" /> },
-  traditional: { label: 'Traditional', icon: <History className="w-5 h-5" /> },
-};
-
 export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, bowTypesAllowed, maxDrawWeight }: RangeSpecificationsProps) {
+  const { t } = useLanguage();
+
+  const bowTypeData: Record<BowType, { label: string; icon: React.ReactNode }> = {
+    recurve: { label: t('rangePage.recurve'), icon: <Target className="w-5 h-5" /> },
+    compound: { label: t('rangePage.compound'), icon: <Settings className="w-5 h-5" /> },
+    longbow: { label: t('rangePage.longbow'), icon: <Shield className="w-5 h-5" /> },
+    crossbow: { label: t('rangePage.crossbow'), icon: <Crosshair className="w-5 h-5" /> },
+    traditional: { label: t('rangePage.traditional'), icon: <History className="w-5 h-5" /> },
+  };
   const allowedBows = (Array.isArray(bowTypesAllowed)
     ? bowTypesAllowed.flatMap(s => typeof s === 'string' ? s.split(',') : s)
     : typeof bowTypesAllowed === 'string'
@@ -37,7 +41,7 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
     <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
       <h2 className="text-xl font-semibold text-stone-800 mb-6 flex items-center gap-2">
         <span className="w-1 h-6 bg-blue-500 rounded-full"></span>
-        Range Specifications
+        {t('rangePage.specifications')}
       </h2>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
@@ -47,11 +51,11 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
               <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
                 <Ruler className="w-5 h-5 text-emerald-600" />
               </div>
-              <span className="text-sm text-stone-500">Range Length</span>
+              <span className="text-sm text-stone-500">{t('rangePage.rangeLength')}</span>
             </div>
             <p className="text-2xl font-bold text-stone-800">
               {lengthYards}
-              <span className="text-sm font-normal text-stone-500 ml-1">yards</span>
+              <span className="text-sm font-normal text-stone-500 ml-1">{t('rangePage.yards')}</span>
             </p>
           </div>
         )}
@@ -62,11 +66,11 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
               <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                 <Target className="w-5 h-5 text-blue-600" />
               </div>
-              <span className="text-sm text-stone-500">Lanes</span>
+              <span className="text-sm text-stone-500">{t('rangePage.lanes')}</span>
             </div>
             <p className="text-2xl font-bold text-stone-800">
               {numberOfLanes}
-              <span className="text-sm font-normal text-stone-500 ml-1">{numberOfLanes === 1 ? 'lane' : 'lanes'}</span>
+              <span className="text-sm font-normal text-stone-500 ml-1">{numberOfLanes === 1 ? t('rangePage.laneLabel') : t('rangePage.lanesLabel')}</span>
             </p>
           </div>
         )}
@@ -77,11 +81,11 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
               <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
                 <Weight className="w-5 h-5 text-orange-600" />
               </div>
-              <span className="text-sm text-stone-500">Max Draw</span>
+              <span className="text-sm text-stone-500">{t('rangePage.maxDraw')}</span>
             </div>
             <p className="text-2xl font-bold text-stone-800">
               {maxDrawWeight}
-              <span className="text-sm font-normal text-stone-500 ml-1">lbs</span>
+              <span className="text-sm font-normal text-stone-500 ml-1">{t('rangePage.lbs')}</span>
             </p>
           </div>
         )}
@@ -98,10 +102,10 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
                   <Crosshair className="w-5 h-5 text-purple-600" />
                 )}
               </div>
-              <span className="text-sm text-stone-500">Facility</span>
+              <span className="text-sm text-stone-500">{t('rangePage.facility')}</span>
             </div>
             <p className="text-lg font-bold text-stone-800 capitalize">
-              {(facilityType as string) === 'both' ? 'Indoor & Outdoor' : facilityType}
+              {(facilityType as string) === 'both' ? t('rangePage.indoorOutdoor') : facilityType === 'indoor' ? t('rangePage.indoorRange') : facilityType === 'outdoor' ? t('rangePage.outdoorRange') : facilityType}
             </p>
           </div>
         )}
@@ -110,7 +114,7 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
       <div className="space-y-6">
         <div>
           <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-            Bow Types Allowed
+            {t('rangePage.bowTypesAllowed')}
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
@@ -127,7 +131,7 @@ export function RangeSpecifications({ lengthYards, numberOfLanes, facilityType, 
 
           {unavailableBows.length > 0 && (
             <div>
-              <p className="text-sm text-stone-500 mb-3">Not allowed at this location:</p>
+              <p className="text-sm text-stone-500 mb-3">{t('rangePage.notAllowedAt')}</p>
               <div className="flex flex-wrap gap-2">
                 {unavailableBows.map((bowType) => (
                   <div key={bowType} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-stone-100 border border-stone-200 text-stone-500">
