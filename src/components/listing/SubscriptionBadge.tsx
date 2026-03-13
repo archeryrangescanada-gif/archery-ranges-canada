@@ -1,4 +1,7 @@
+'use client';
+
 import { Award, Star, Crown } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface SubscriptionBadgeProps {
   type: 'featured' | 'bronze' | 'silver' | 'gold';
@@ -61,6 +64,7 @@ const sizeConfig = {
 };
 
 export function SubscriptionBadge({ type, size = 'md' }: SubscriptionBadgeProps) {
+  const { t } = useLanguage();
   const badge = badgeConfig[type];
   const sizing = sizeConfig[size];
   const Icon = badge.icon;
@@ -78,7 +82,7 @@ export function SubscriptionBadge({ type, size = 'md' }: SubscriptionBadgeProps)
       <span className={`${badge.iconBg} rounded-full ${sizing.iconPadding}`}>
         <Icon className={sizing.iconSize} />
       </span>
-      {badge.label}
+      {t(`badges.${type}`)}
     </div>
   );
 }

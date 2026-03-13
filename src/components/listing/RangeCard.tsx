@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 import Image from 'next/image';
 import { MapPin, Phone, Building2, TreePine, ImageIcon } from 'lucide-react';
 import { Range, getBadgeType, FacilityType } from '@/types/range';
@@ -18,6 +21,7 @@ const facilityIcons: Record<FacilityType, React.ReactNode> = {
 };
 
 export function RangeCard({ range, provinceSlug, citySlug }: RangeCardProps) {
+  const { t } = useLanguage();
   const badgeType = getBadgeType(range.subscription_tier);
   const normalizedImages = normalizeToArray(range.post_images);
   const hasImage = normalizedImages.length > 0;
@@ -41,7 +45,7 @@ export function RangeCard({ range, provinceSlug, citySlug }: RangeCardProps) {
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-400">
             <ImageIcon className="w-12 h-12 mb-2 opacity-50" />
-            <span className="text-sm">No photo</span>
+            <span className="text-sm">{t('rangeLabels.noPhoto')}</span>
           </div>
         )}
 
@@ -55,7 +59,7 @@ export function RangeCard({ range, provinceSlug, citySlug }: RangeCardProps) {
           <div className="absolute bottom-3 right-3 z-10">
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 text-white text-xs font-medium backdrop-blur-sm">
               {facilityIcons[range.facility_type as FacilityType]}
-              {range.facility_type === 'both' ? 'Indoor/Outdoor' : range.facility_type.charAt(0).toUpperCase() + range.facility_type.slice(1)}
+              {t(`facilityTypes.${range.facility_type}`)}
             </span>
           </div>
         )}
@@ -85,8 +89,8 @@ export function RangeCard({ range, provinceSlug, citySlug }: RangeCardProps) {
           )}
 
           <div className="flex items-center gap-2">
-            {range.has_pro_shop && <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">Pro Shop</span>}
-            {range.lessons_available && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Lessons</span>}
+            {range.has_pro_shop && <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">{t('rangeLabels.proShop')}</span>}
+            {range.lessons_available && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{t('rangeLabels.lessons')}</span>}
           </div>
         </div>
       </div>
@@ -96,6 +100,7 @@ export function RangeCard({ range, provinceSlug, citySlug }: RangeCardProps) {
 
 // Featured/Large Card Variant
 export function RangeCardFeatured({ range, provinceSlug, citySlug }: RangeCardProps) {
+  const { t } = useLanguage();
   const badgeType = getBadgeType(range.subscription_tier);
   const normalizedImages = normalizeToArray(range.post_images);
   const hasImage = normalizedImages.length > 0;
@@ -113,7 +118,7 @@ export function RangeCardFeatured({ range, provinceSlug, citySlug }: RangeCardPr
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-stone-400">
             <ImageIcon className="w-16 h-16 mb-2 opacity-50" />
-            <span className="text-sm">No photo available</span>
+            <span className="text-sm">{t('rangeLabels.noPhotoAvailable')}</span>
           </div>
         )}
 
@@ -129,7 +134,7 @@ export function RangeCardFeatured({ range, provinceSlug, citySlug }: RangeCardPr
         {range.facility_type && (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-medium w-fit mb-3">
             {facilityIcons[range.facility_type as FacilityType]}
-            {range.facility_type === 'both' ? 'Indoor & Outdoor' : range.facility_type.charAt(0).toUpperCase() + range.facility_type.slice(1)} Range
+            {t(`facilityTypes.${range.facility_type}Range`)}
           </span>
         )}
 
@@ -145,14 +150,14 @@ export function RangeCardFeatured({ range, provinceSlug, citySlug }: RangeCardPr
         {(range.post_content || range.description) && <p className="text-stone-600 mb-4 line-clamp-3">{range.post_content || range.description}</p>}
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {range.has_pro_shop && <span className="text-xs px-3 py-1.5 rounded-lg bg-stone-100 text-stone-700 font-medium">🏪 Pro Shop</span>}
-          {range.has_3d_course && <span className="text-xs px-3 py-1.5 rounded-lg bg-stone-100 text-stone-700 font-medium">🎯 3D Course</span>}
-          {range.lessons_available && <span className="text-xs px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 font-medium">📚 Lessons</span>}
-          {range.equipment_rental_available && <span className="text-xs px-3 py-1.5 rounded-lg bg-stone-100 text-stone-700 font-medium">🏹 Rentals</span>}
+          {range.has_pro_shop && <span className="text-xs px-3 py-1.5 rounded-lg bg-stone-100 text-stone-700 font-medium">🏪 {t('rangeLabels.proShop')}</span>}
+          {range.has_3d_course && <span className="text-xs px-3 py-1.5 rounded-lg bg-stone-100 text-stone-700 font-medium">🎯 {t('rangeLabels.course3d')}</span>}
+          {range.lessons_available && <span className="text-xs px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 font-medium">📚 {t('rangeLabels.lessons')}</span>}
+          {range.equipment_rental_available && <span className="text-xs px-3 py-1.5 rounded-lg bg-stone-100 text-stone-700 font-medium">🏹 {t('rangeLabels.rentals')}</span>}
         </div>
 
         <span className="inline-flex items-center gap-2 text-emerald-600 font-semibold group-hover:gap-3 transition-all">
-          View Details
+          {t('rangeLabels.viewDetails')}
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
@@ -164,6 +169,7 @@ export function RangeCardFeatured({ range, provinceSlug, citySlug }: RangeCardPr
 
 // Compact/List Card Variant
 export function RangeCardCompact({ range, provinceSlug, citySlug }: RangeCardProps) {
+  const { t } = useLanguage();
   const badgeType = getBadgeType(range.subscription_tier);
   const normalizedImages = normalizeToArray(range.post_images);
 
@@ -197,7 +203,7 @@ export function RangeCardCompact({ range, provinceSlug, citySlug }: RangeCardPro
           </span>
         </div>
 
-        {range.facility_type && <span className="text-xs text-stone-500 capitalize">{range.facility_type} range</span>}
+        {range.facility_type && <span className="text-xs text-stone-500">{t(`facilityTypes.${range.facility_type}Range`)}</span>}
       </div>
 
       {/* Arrow */}
