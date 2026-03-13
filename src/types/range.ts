@@ -1,6 +1,7 @@
 // =====================================================
 // ARCHERY RANGES CANADA - TYPE DEFINITIONS
 // src/types/range.ts
+// Updated to forcefully trigger git recognition
 // =====================================================
 
 export type SubscriptionTier = 'free' | 'bronze' | 'silver' | 'gold' | 'basic' | 'pro' | 'premium';
@@ -291,7 +292,9 @@ export function getMaxVideos(tier: SubscriptionTier, actualCount: number): numbe
   return Math.min(limit, actualCount);
 }
 
-export function getBadgeType(tier: SubscriptionTier): 'featured' | 'bronze' | 'silver' | 'gold' | null {
+export type BadgeType = 'featured' | 'bronze' | 'silver' | 'gold';
+
+export function getBadgeType(tier: SubscriptionTier): BadgeType | null {
   const limits = TIER_LIMITS[tier];
   if (limits.goldBadge) return 'gold';
   if (limits.silverBadge) return 'silver';
