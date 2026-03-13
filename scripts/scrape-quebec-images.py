@@ -21,8 +21,9 @@ def sanitize_filename(name):
     return clean.replace(" ", "_").lower()
 
 async def download_image(session, url, filepath):
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
     try:
-        async with session.get(url, timeout=15) as response:
+        async with session.get(url, headers=headers, timeout=15, ssl=False) as response:
             if response.status == 200:
                 with open(filepath, 'wb') as f:
                     f.write(await response.read())
@@ -32,14 +33,24 @@ async def download_image(session, url, filepath):
     return False
 
 async def main():
+    already_downloaded = set()
+    if os.path.exists('quebec_images_mapping.csv'):
+        with open('quebec_images_mapping.csv', 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            next(reader, None) # skip header
+            for row in reader:
+                if len(row) > 0:
+                    already_downloaded.add(row[0])
+
     ranges = []
     with open(CSV_FILE, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
+            title = row['post_title']
             website = row.get('website', '').strip()
             # Some csv rows might have just http/https, ignoring them if blank
-            if website and website.startswith('http'):
-                ranges.append((row['post_title'], website))
+            if website and website.startswith('http') and title not in already_downloaded:
+                ranges.append((title, website))
 
     if not ranges:
         print("No valid websites found to crawl.")
@@ -47,8 +58,13 @@ async def main():
 
     print(f"Preparing to crawl {len(ranges)} websites...")
 
-    browser_config = BrowserConfig(headless=True)
-    crawler_config = CrawlerRunConfig(page_timeout=30000, screenshot=False)
+    browser_config = BrowserConfig(
+        headless=True,
+        viewport_width=1920,
+        viewport_height=1080,
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
+    crawler_config = CrawlerRunConfig(page_timeout=45000, screenshot=False)
 
     downloaded_mappings = []
 
@@ -111,9 +127,8 @@ async def main():
                     
     print("\n--- Summary ---")
     print(f"Successfully downloaded {len(downloaded_mappings)} images.")
-    with open('quebec_images_mapping.csv', 'w', newline='', encoding='utf-8') as f:
+    with open('quebec_images_mapping.csv', 'a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow(['name', 'image_path'])
         writer.writerows(downloaded_mappings)
     print("Mapping saved to quebec_images_mapping.csv")
 
