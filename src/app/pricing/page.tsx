@@ -424,61 +424,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Platinum CTA Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-br from-stone-800 to-stone-900 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
-            {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-amber-500/20 to-transparent rounded-full blur-3xl"></div>
-
-            <div className="relative">
-              <div className="flex items-center gap-3 mb-4">
-                <Image src="/platinum-badge.png" alt="Gold" width={80} height={80} className="w-20 h-20 object-contain" />
-                <div>
-                  <h2 className="text-3xl font-bold">{t('pricingPage.goldPartner.title')}</h2>
-                  <p className="text-amber-400 font-medium">{t('pricingPage.goldPartner.subtitle')}</p>
-                </div>
-              </div>
-
-              <p className="text-lg text-stone-300 mb-8 max-w-2xl">
-                {t('pricingPage.goldPartner.desc')}
-              </p>
-
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-white/10 rounded-xl p-5">
-                  <Crown className="w-8 h-8 text-amber-400 mb-3" />
-                  <h3 className="font-semibold text-lg mb-2">{t('pricingPage.goldPartner.feat1Title')}</h3>
-                  <p className="text-stone-400 text-sm">
-                    {t('pricingPage.goldPartner.feat1Desc')}
-                  </p>
-                </div>
-                <div className="bg-white/10 rounded-xl p-5">
-                  <FileText className="w-8 h-8 text-amber-400 mb-3" />
-                  <h3 className="font-semibold text-lg mb-2">{t('pricingPage.goldPartner.feat2Title')}</h3>
-                  <p className="text-stone-400 text-sm">
-                    {t('pricingPage.goldPartner.feat2Desc')}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href={process.env.NEXT_PUBLIC_STRIPE_GOLD_URL || "/auth/signup?plan=gold"}
-                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg"
-                >
-                  {t('pricingPage.goldPartner.cta1')}
-                </Link>
-                <Link
-                  href="/contact?subject=gold"
-                  className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-xl font-semibold transition-all"
-                >
-                  {t('pricingPage.goldPartner.cta2')}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* FAQ Section */}
       <section className="py-20 px-4 bg-stone-50">
