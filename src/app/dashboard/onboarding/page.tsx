@@ -7,10 +7,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import Header from '@/components/Header'
-import { Check, ArrowRight, ArrowLeft, Building2, Phone, Image, CreditCard, Search, Plus, MapPin, ChevronRight, Star } from 'lucide-react'
+import { Check, ArrowRight, ArrowLeft, Building2, Phone, Image, Search, Plus, MapPin, ChevronRight, Star } from 'lucide-react'
 
 type Mode = 'choose' | 'claim' | 'create' | 'ai'
-type Step = 'business' | 'contact' | 'details' | 'plan'
+type Step = 'business' | 'contact' | 'details'
 
 interface Range {
   id: string
@@ -37,14 +37,12 @@ interface FormData {
   hasFieldCourse: boolean
   equipmentRental: boolean
   lessonsAvailable: boolean
-  selectedPlan: 'silver' | 'gold' | 'platinum' | ''
 }
 
 const steps: { id: Step; label: string; icon: React.ReactNode }[] = [
   { id: 'business', label: 'Business Info', icon: <Building2 className="w-5 h-5" /> },
   { id: 'contact', label: 'Contact Details', icon: <Phone className="w-5 h-5" /> },
   { id: 'details', label: 'Range Details', icon: <Image className="w-5 h-5" /> },
-  { id: 'plan', label: 'Choose Plan', icon: <CreditCard className="w-5 h-5" /> },
 ]
 
 const provinces = [
@@ -87,40 +85,11 @@ export default function OnboardingPage() {
     hasFieldCourse: false,
     equipmentRental: false,
     lessonsAvailable: false,
-    selectedPlan: '',
   })
 
   const updateField = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
-
-  // Pre-select plan if passed in URL or Cookie
-  useEffect(() => {
-    const mapPlanId = (id: string | null) => {
-      if (!id) return null
-      const normalized = id.toLowerCase()
-      if (['silver', 'gold', 'platinum'].includes(normalized)) return normalized as any
-      return null
-    }
-
-    const planParam = searchParams.get('plan')
-    const mappedUrlPlan = mapPlanId(planParam)
-
-    // 1. Try URL Param
-    if (mappedUrlPlan) {
-      setFormData(prev => ({ ...prev, selectedPlan: mappedUrlPlan }))
-      return
-    }
-
-    // 2. Try Cookie Fallback
-    const match = document.cookie.match(new RegExp('(^| )signup_plan=([^;]+)'))
-    const cookiePlan = match ? match[2] : null
-    const mappedCookiePlan = mapPlanId(cookiePlan)
-
-    if (mappedCookiePlan) {
-      setFormData(prev => ({ ...prev, selectedPlan: mappedCookiePlan }))
-    }
-  }, [searchParams])
 
   // Pre-select range if rangeId passed in URL (from Claim CTA)
   useEffect(() => {
@@ -298,17 +267,6 @@ export default function OnboardingPage() {
 
       const user = session.user
 
-      // Map frontend plan names (Silver/Gold/Platinum) to legacy DB enum values (Basic/Pro/Premium)
-      // This fixes the "invalid input value for enum subscription_tier" error
-      const dbPlanMap: Record<string, string> = {
-        'silver': 'basic',
-        'gold': 'pro',
-        'platinum': 'premium',
-        'free': 'free'
-      }
-
-      const dbTier = dbPlanMap[formData.selectedPlan.toLowerCase()] || 'free'
-
       const provinceId = await findProvince(formData.province)
 
       if (!provinceId) {
@@ -339,7 +297,7 @@ export default function OnboardingPage() {
           has_field_course: formData.hasFieldCourse,
           equipment_rental_available: formData.equipmentRental,
           lessons_available: formData.lessonsAvailable,
-          subscription_tier: dbTier,
+          subscription_tier: 'free',
           owner_id: user.id,
           slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         })
@@ -350,11 +308,7 @@ export default function OnboardingPage() {
         throw insertError
       }
 
-      if (formData.selectedPlan) {
-        router.push('/dashboard/subscribe?plan=' + formData.selectedPlan + '&range=' + data.id)
-      } else {
-        router.push('/dashboard')
-      }
+      router.push('/dashboard')
     } catch (err: any) {
       setError(err.message || 'Failed to create listing')
     } finally {
@@ -943,82 +897,6 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 4: Choose Plan */}
-          {currentStep === 'plan' && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-xl font-semibold text-stone-800 mb-2">Choose Your Plan</h2>
-                <p className="text-stone-600">Select the plan that fits your needs</p>
-              </div>
-
-              <div className="space-y-4">
-                {[
-                  {
-                    id: 'silver',
-                    name: 'Silver',
-                    price: '$49',
-                    period: '/month',
-                    features: ['5 Photos', 'Contact Info', 'Social Links', 'Basic Analytics', 'Standard Support'],
-                  },
-                  {
-                    id: 'gold',
-                    name: 'Gold',
-                    price: '$149',
-                    period: '/month',
-                    popular: true,
-                    features: ['Unlimited Photos', 'Start Conversations', 'Reply to Reviews', 'Advanced Analytics', 'Priority Support'],
-                  },
-                  {
-                    id: 'platinum',
-                    name: 'Platinum',
-                    price: '$399',
-                    period: '/month',
-                    features: ['Everything in Gold', 'Pinned Top Search', 'Home Page Hero', 'Waiver System', '24/7 Support'],
-                  },
-                ].map(plan => (
-                  <button
-                    key={plan.id}
-                    type="button"
-                    onClick={() => updateField('selectedPlan', plan.id)}
-                    className={`w-full text-left p-6 rounded-xl border-2 transition-all ${formData.selectedPlan === plan.id
-                      ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500 ring-offset-2'
-                      : 'border-stone-200 hover:border-stone-300'
-                      }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-semibold text-stone-800">{plan.name}</h3>
-                          {plan.popular && (
-                            <span className="px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
-                              Most Popular
-                            </span>
-                          )}
-                        </div>
-                        <ul className="mt-3 space-y-1">
-                          {plan.features.map((feature, i) => (
-                            <li key={i} className="flex items-center gap-2 text-sm text-stone-600">
-                              <Check className="w-4 h-4 text-emerald-500" />
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-2xl font-bold text-stone-800">{plan.price}</span>
-                        <span className="text-stone-500">{plan.period}</span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <p className="text-sm text-stone-500 text-center">
-                You can start with a free listing and upgrade anytime
-              </p>
-            </div>
-          )}
-
           {/* Navigation Buttons */}
           <div className="flex items-center justify-between mt-8 pt-6 border-t border-stone-200">
             {currentStepIndex > 0 ? (
@@ -1034,7 +912,7 @@ export default function OnboardingPage() {
               <div />
             )}
 
-            {currentStep === 'plan' ? (
+            {currentStep === 'details' ? (
               <button
                 type="button"
                 onClick={handleSubmit}
