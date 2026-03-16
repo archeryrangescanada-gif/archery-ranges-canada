@@ -308,6 +308,12 @@ export default function OnboardingPage() {
         throw insertError
       }
 
+      // Update profile role so the Listings tab appears in the nav dropdown
+      await supabase
+        .from('profiles')
+        .update({ role: 'business_owner' })
+        .eq('id', user.id)
+
       router.push('/dashboard')
     } catch (err: any) {
       setError(err.message || 'Failed to create listing')
