@@ -19,7 +19,8 @@ import {
   Mail,
   Wrench,
   Menu,
-  X
+  X,
+  BookOpen
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -62,6 +63,7 @@ export default function AdminLayout({
     { name: 'Listings', href: '/admin/listings', icon: MapPin },
     { name: 'Claims', href: '/admin/claims', icon: UserCheck },
     { name: 'Ads', href: '/admin/ads', icon: Megaphone },
+    { name: 'Blog', href: '/admin/blog', icon: BookOpen },
     { name: 'Announcements', href: '/admin/announcements', icon: FileText },
     { name: 'Emails', href: '/admin/emails', icon: Mail },
     { name: 'Submissions', href: '/admin/submissions', icon: FileText },
