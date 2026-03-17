@@ -8,8 +8,8 @@ export async function PATCH(
 ) {
   try {
     const authClient = await createServerClient()
-    const { data: { user } } = await authClient.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { data: { user }, error: authError } = await authClient.auth.getUser()
+    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = params
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
@@ -39,8 +39,8 @@ export async function DELETE(
 ) {
   try {
     const authClient = await createServerClient()
-    const { data: { user } } = await authClient.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { data: { user }, error: authError } = await authClient.auth.getUser()
+    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = params
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
