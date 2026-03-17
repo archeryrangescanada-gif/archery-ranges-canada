@@ -23,11 +23,11 @@ export async function PATCH(
       .update(updates)
       .eq('id', id)
       .select()
-      .single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (!data || data.length === 0) return NextResponse.json({ error: 'Post not found' }, { status: 404 })
 
-    return NextResponse.json({ success: true, data })
+    return NextResponse.json({ success: true, data: data[0] })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
