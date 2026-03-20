@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { geocodeAddress } from '@/lib/geocoding'
 
 export async function PATCH(
   request: NextRequest,
@@ -30,6 +31,37 @@ export async function PATCH(
       updates.subscription_tier = tierMap[updates.subscription_tier] || updates.subscription_tier
     }
 
+    // ── Auto-geocode whenever address is being changed ───────────────────────
+    // If the payload contains an address field, re-geocode and update coordinates
+    // so the map pin always matches the displayed address.
+    if ('address' in updates && updates.address) {
+      try {
+        // Fetch city/province names from the existing range record
+        const supabaseAdmin = getSupabaseAdmin()
+        const { data: existing } = await supabaseAdmin
+          .from('ranges')
+          .select('cities(name), provinces(name)')
+          .eq('id', id)
+          .single()
+
+        const city = (existing as any)?.cities?.name ?? null
+        const province = (existing as any)?.provinces?.name ?? null
+
+        const coords = await geocodeAddress(updates.address, city, province)
+        if (coords) {
+          updates.latitude = coords.lat
+          updates.longitude = coords.lng
+          console.log(`📍 Auto-geocoded "${updates.address}" → ${coords.lat}, ${coords.lng}`)
+        } else {
+          console.warn(`⚠️  Could not geocode address: "${updates.address}, ${city}, ${province}"`)
+        }
+      } catch (geocodeErr) {
+        // Don't block the save if geocoding fails — just log it
+        console.error('⚠️  Geocoding error (save will continue):', geocodeErr)
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     // Use admin client since service role key bypasses RLS
     const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
@@ -51,6 +83,7 @@ export async function PATCH(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+
 
 export async function DELETE(
   _request: NextRequest,
