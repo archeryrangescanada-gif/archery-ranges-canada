@@ -49,9 +49,9 @@ interface MapSectionProps {
 export function MapSection({ latitude, longitude, name, address, rangeId, rangeName }: MapSectionProps) {
   const { t } = useLanguage();
   const [isClient, setIsClient] = useState(false);
-  // Use the address string for directions so users are guided to the correct place
-  // even when stored coordinates are inaccurate
-  const encodedAddress = encodeURIComponent(`${name}, ${address}`);
+  // Use ONLY the street address for directions — do NOT include the business name,
+  // because Google Maps may match an old or different business location by name
+  const encodedAddress = encodeURIComponent(address);
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
   const appleMapsUrl = `https://maps.apple.com/?daddr=${encodedAddress}&dirflg=d`;
 

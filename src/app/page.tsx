@@ -435,9 +435,12 @@ export default function Home() {
           />
           <div className="absolute inset-0 bg-black opacity-60"></div>
         </div>
-        <div className="relative container mx-auto px-4 py-20 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4">
-            {t('home.title1')} <span className="mx-6 align-middle">|</span> {t('home.title2')}
+        <div className="relative container mx-auto px-4 py-12 md:py-20 text-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+            {t('home.title1')}
+            <span className="hidden sm:inline mx-6 align-middle">|</span>
+            <br className="sm:hidden" />
+            {t('home.title2')}
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-green-50">
             {t('home.subtitle')}
@@ -543,12 +546,13 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Mobile: horizontal scroll carousel; Desktop: 3-col grid */}
+            <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex sm:grid sm:grid-cols-2 md:grid-cols-3 gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 sm:overflow-visible">
               {featuredRanges.map((range, index) => (
                 <Link
                   key={range.id}
                   href={'/' + range.city?.province?.slug + '/' + range.city?.slug + '/' + range.slug}
-                  className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-green-500"
+                  className="group flex-none w-[85vw] sm:w-auto snap-start bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-green-500"
                 >
                   <div className="relative h-48 bg-gradient-to-br from-green-400 to-green-600 overflow-hidden">
                     <img
@@ -751,7 +755,7 @@ export default function Home() {
                 <p className="text-gray-600">{t('home.loadingProvinces')}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
                 {provinces.map((province) => {
                   const provinceRangeCount = ranges.filter(r => r.city?.province?.slug === province.slug).length;
 

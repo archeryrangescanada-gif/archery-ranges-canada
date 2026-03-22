@@ -29,7 +29,7 @@ export default function AdminBlogPage() {
 
   async function fetchPosts() {
     setLoading(true)
-    const res = await fetch('/api/admin/blog')
+    const res = await fetch('/api/admin/blog', { credentials: 'include' })
     const { data } = await res.json()
     setPosts(data || [])
     setLoading(false)
@@ -38,7 +38,7 @@ export default function AdminBlogPage() {
   async function handleDelete(id: string, title: string) {
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return
     setDeletingId(id)
-    const res = await fetch(`/api/admin/blog/${id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/admin/blog/${id}`, { method: 'DELETE', credentials: 'include' })
     if (res.ok) {
       setPosts(prev => prev.filter(p => p.id !== id))
     } else {
@@ -52,6 +52,7 @@ export default function AdminBlogPage() {
     const res = await fetch(`/api/admin/blog/${post.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ is_published: !post.is_published }),
     })
     if (res.ok) {
@@ -101,13 +102,13 @@ export default function AdminBlogPage() {
             placeholder="Search posts..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value as any)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
         >
           <option value="all">All Status</option>
           <option value="published">Published</option>

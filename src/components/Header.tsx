@@ -43,7 +43,7 @@ export default function Header() {
     }, [])
 
     return (
-        <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-6 shadow-lg relative z-50">
+        <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-3 md:py-6 shadow-lg relative z-50">
             <div className="container mx-auto px-4 flex items-center justify-between relative">
                 <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
                     <Image
@@ -51,7 +51,7 @@ export default function Header() {
                         alt="Archery Ranges Canada"
                         width={200}
                         height={112}
-                        className="h-28 w-auto object-contain"
+                        className="h-12 md:h-20 lg:h-28 w-auto object-contain"
                         priority
                     />
                 </Link>

@@ -46,8 +46,9 @@ export function RangeHeader({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 md:p-8 relative">
+      {/* Action (Favorite button) — absolute on desktop, inline on mobile */}
       {action && (
-        <div className="absolute top-6 right-6 z-10">
+        <div className="hidden md:block absolute top-6 right-6 z-10">
           {action}
         </div>
       )}
@@ -59,12 +60,18 @@ export function RangeHeader({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <h1 className="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight leading-tight">
+      <div className="flex flex-wrap items-start gap-3 mb-4">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-stone-900 tracking-tight leading-tight flex-1 min-w-0">
           {name}
         </h1>
         {isClaimed && (
-          <img src="/claimed-badge.png" alt="Claimed Listing" className="w-8 h-8 object-contain" title="Verified Owner" />
+          <img src="/claimed-badge.png" alt="Claimed Listing" className="w-8 h-8 object-contain flex-shrink-0" title="Verified Owner" />
+        )}
+        {/* Action shown inline on mobile only */}
+        {action && (
+          <div className="md:hidden flex-shrink-0">
+            {action}
+          </div>
         )}
       </div>
 
@@ -101,4 +108,5 @@ export function RangeHeader({
       )}
     </div>
   );
+
 }

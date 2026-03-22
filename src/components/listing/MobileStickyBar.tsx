@@ -31,9 +31,9 @@ export function MobileStickyBar({
   const hasActions = phone || address || (latitude && longitude);
   if (!hasActions) return null;
 
-  // Prefer address-based directions so users are guided to the correct place
+  // Use ONLY the street address — business name can match the wrong location
   const directionsUrl = address
-    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${rangeName}, ${address}`)}`
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`
     : latitude && longitude
       ? `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`
       : null;

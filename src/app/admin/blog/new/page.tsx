@@ -63,6 +63,7 @@ export default function NewBlogPostPage() {
     const res = await fetch('/api/admin/blog', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(payload),
     })
 
@@ -99,7 +100,7 @@ export default function NewBlogPostPage() {
               type="text"
               value={form.title}
               onChange={e => update('title', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="e.g. Best Archery Ranges in Ontario"
             />
           </div>
@@ -110,7 +111,7 @@ export default function NewBlogPostPage() {
               type="text"
               value={form.slug}
               onChange={e => { setSlugManuallyEdited(true); update('slug', e.target.value) }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white font-mono focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="best-archery-ranges-ontario"
             />
             <p className="text-xs text-gray-400 mt-1">/blog/{form.slug || 'your-slug'}</p>
@@ -122,7 +123,7 @@ export default function NewBlogPostPage() {
               value={form.excerpt}
               onChange={e => update('excerpt', e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
               placeholder="Short summary shown on blog listing page..."
             />
           </div>
@@ -133,7 +134,7 @@ export default function NewBlogPostPage() {
               value={form.content}
               onChange={e => update('content', e.target.value)}
               rows={16}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500 resize-y"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white font-mono focus:outline-none focus:ring-2 focus:ring-green-500 resize-y"
               placeholder="Full post content (HTML supported)..."
             />
           </div>
@@ -148,7 +149,7 @@ export default function NewBlogPostPage() {
               <select
                 value={form.category}
                 onChange={e => update('category', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 {CATEGORIES.map(c => <option key={c}>{c}</option>)}
               </select>
@@ -160,7 +161,7 @@ export default function NewBlogPostPage() {
                 min={1}
                 value={form.reading_time}
                 onChange={e => update('reading_time', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
           </div>
@@ -171,7 +172,7 @@ export default function NewBlogPostPage() {
               type="text"
               value={form.author}
               onChange={e => update('author', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="e.g. Josh Peterson"
             />
           </div>
@@ -182,7 +183,7 @@ export default function NewBlogPostPage() {
               type="url"
               value={form.featured_image}
               onChange={e => update('featured_image', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="https://..."
             />
             {form.featured_image && (
@@ -196,7 +197,7 @@ export default function NewBlogPostPage() {
               type="text"
               value={form.tags}
               onChange={e => update('tags', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="archery, canada, tips"
             />
           </div>
@@ -211,7 +212,7 @@ export default function NewBlogPostPage() {
               type="date"
               value={form.published_at}
               onChange={e => update('published_at', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
