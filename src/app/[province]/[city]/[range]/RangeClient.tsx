@@ -19,6 +19,7 @@ import { BreadcrumbNav } from '@/components/listing/BreadcrumbNav';
 import { UpgradeCTA } from '@/components/listing/UpgradeCTA';
 import { ClaimListingBanner } from '@/components/listing/ClaimListingBanner';
 import { RangeAnalyticsProvider } from '@/components/RangeAnalyticsProvider';
+import { MobileStickyBar } from '@/components/listing/MobileStickyBar';
 import { normalizeToArray } from '@/lib/utils/data-normalization';
 import Link from 'next/link';
 import { Calendar } from 'lucide-react';
@@ -64,7 +65,7 @@ export function RangeClient({
         province={range.cities?.provinces?.name || range.province}
         city={range.cities?.name || range.city}
       >
-        <main className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
+        <main className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100 pb-24 md:pb-0">
           {/* Breadcrumb Navigation */}
           <BreadcrumbNav
             province={{ name: range.cities?.provinces?.name || range.province, slug: params.province }}
@@ -103,6 +104,60 @@ export function RangeClient({
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Right Column - Sidebar (rendered first in DOM for mobile; visually reordered via order) */}
+              <div className="space-y-6 order-first lg:order-last">
+                {/* Google Calendar Embed */}
+                {tierLimits.hasEvents && range.google_calendar_embed_url && (
+                  <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+                    <h2 className="text-xl font-semibold text-stone-800 mb-6 flex items-center gap-2 text-sm">
+                      <Calendar className="w-5 h-5 text-emerald-600" />
+                      {t('rangePage.calendarSchedule')}
+                    </h2>
+                    <div className="w-full overflow-hidden rounded-xl border border-stone-200 bg-stone-50" style={{ height: '400px' }}>
+                      <iframe
+                        src={range.google_calendar_embed_url}
+                        style={{ border: 0, width: '100%', height: '100%' }}
+                        frameBorder="0"
+                        scrolling="yes"
+                        title={`${range.name} Events Calendar`}
+                      ></iframe>
+                    </div>
+                  </section>
+                )}
+
+                {/* Contact Card — first on mobile */}
+                <ContactSection
+                  phone={range.phone_number}
+                  email={range.email}
+                  website={range.website}
+                  rangeId={range.id}
+                  rangeName={range.name}
+                  tier={range.subscription_tier}
+                  isOwner={isOwner}
+                />
+
+                {/* Business Hours */}
+                {range.business_hours && (
+                  <BusinessHoursDisplay hours={range.business_hours} />
+                )}
+
+                {/* Contact Form (Basic+) */}
+                {tierLimits.hasContactForm && (
+                  <ContactForm rangeId={range.id} rangeName={range.name} whatsappNumber={range.whatsapp_number} contactEmail={range.email} />
+                )}
+
+                {/* Gold Sponsor Ad (Free/Bronze only) */}
+                {!tierLimits.featuredBadge && goldSponsorAd}
+
+                {/* Upgrade CTA for claimed free tier listings */}
+                {range.subscription_tier === 'free' && range.owner_id && (
+                  <UpgradeCTA
+                    rangeId={range.id}
+                    rangeName={range.name}
+                  />
+                )}
+              </div>
+
               {/* Left Column - Main Content */}
               <div className="lg:col-span-2 space-y-8">
                 {/* Header */}
@@ -295,62 +350,18 @@ export function RangeClient({
                   </Link>
                 </section>
               </div>
-
-              {/* Right Column - Sidebar */}
-              <div className="space-y-6">
-                {/* Google Calendar Embed */}
-                {tierLimits.hasEvents && range.google_calendar_embed_url && (
-                  <section className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-                    <h2 className="text-xl font-semibold text-stone-800 mb-6 flex items-center gap-2 text-sm">
-                      <Calendar className="w-5 h-5 text-emerald-600" />
-                      {t('rangePage.calendarSchedule')}
-                    </h2>
-                    <div className="w-full overflow-hidden rounded-xl border border-stone-200 bg-stone-50" style={{ height: '400px' }}>
-                      <iframe
-                        src={range.google_calendar_embed_url}
-                        style={{ border: 0, width: '100%', height: '100%' }}
-                        frameBorder="0"
-                        scrolling="yes"
-                        title={`${range.name} Events Calendar`}
-                      ></iframe>
-                    </div>
-                  </section>
-                )}
-
-                {/* Contact Card */}
-                <ContactSection
-                  phone={range.phone_number}
-                  email={range.email}
-                  website={range.website}
-                  rangeId={range.id}
-                  rangeName={range.name}
-                  tier={range.subscription_tier}
-                  isOwner={isOwner}
-                />
-
-                {/* Business Hours */}
-                {range.business_hours && (
-                  <BusinessHoursDisplay hours={range.business_hours} />
-                )}
-
-                {/* Contact Form (Basic+) */}
-                {tierLimits.hasContactForm && (
-                  <ContactForm rangeId={range.id} rangeName={range.name} whatsappNumber={range.whatsapp_number} contactEmail={range.email} />
-                )}
-
-                {/* Gold Sponsor Ad (Free/Bronze only) */}
-                {!tierLimits.featuredBadge && goldSponsorAd}
-
-                {/* Upgrade CTA for claimed free tier listings */}
-                {range.subscription_tier === 'free' && range.owner_id && (
-                  <UpgradeCTA
-                    rangeId={range.id}
-                    rangeName={range.name}
-                  />
-                )}
-              </div>
             </div>
           </div>
+
+          {/* Mobile sticky call/directions bar */}
+          <MobileStickyBar
+            phone={range.phone_number}
+            latitude={range.latitude}
+            longitude={range.longitude}
+            address={range.address}
+            rangeId={range.id}
+            rangeName={range.name}
+          />
         </main>
       </RangeAnalyticsProvider>
   );

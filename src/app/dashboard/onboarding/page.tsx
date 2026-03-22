@@ -279,6 +279,30 @@ export default function OnboardingPage() {
         throw new Error('Failed to process city. Please try again.')
       }
 
+      // Geocode the address to get coordinates for the map
+      let latitude = null
+      let longitude = null
+      if (formData.address) {
+        try {
+          const geoRes = await fetch('/api/owner/geocode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              address: formData.address,
+              city: formData.city,
+              province: formData.province
+            })
+          })
+          if (geoRes.ok) {
+            const geoData = await geoRes.json()
+            latitude = geoData.lat
+            longitude = geoData.lng
+          }
+        } catch (geoErr) {
+          console.warn('Geocoding failed during onboarding:', geoErr)
+        }
+      }
+
       const { data, error: insertError } = await supabase
         .from('ranges')
         .insert({
@@ -300,6 +324,8 @@ export default function OnboardingPage() {
           subscription_tier: 'free',
           owner_id: user.id,
           slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          latitude,
+          longitude,
         })
         .select()
         .single()

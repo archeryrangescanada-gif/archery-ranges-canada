@@ -73,6 +73,8 @@ export default function SettingsPage() {
     const [samInput, setSamInput] = useState('')
 
     const [tier, setTier] = useState<SubscriptionTier>('free')
+    const [cityName, setCityName] = useState('')
+    const [provinceName, setProvinceName] = useState('')
 
     const [formData, setFormData] = useState<FormData>({
         name: '',
@@ -142,7 +144,7 @@ export default function SettingsPage() {
 
                 const dataPromise = supabase
                     .from('ranges')
-                    .select('*')
+                    .select('*, cities(name, provinces(name))')
                     .eq('id', rangeId)
                     .eq('owner_id', user.id)
                     .single()
@@ -209,6 +211,8 @@ export default function SettingsPage() {
                     whatsapp_number: rangeData.whatsapp_number || '',
                 })
                 setTier(getUserSubscriptionTier(rangeData))
+                setCityName((rangeData as any)?.cities?.name || '')
+                setProvinceName((rangeData as any)?.cities?.provinces?.name || '')
                 setLoading(false)
 
             } catch (err: any) {
@@ -292,6 +296,30 @@ export default function SettingsPage() {
         }
 
         try {
+            // Auto-geocode the address so the map pin always matches
+            let geocodedLat = formData.latitude
+            let geocodedLng = formData.longitude
+            if (formData.address) {
+                try {
+                    const geoRes = await fetch('/api/owner/geocode', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            address: formData.address,
+                            city: cityName,
+                            province: provinceName
+                        })
+                    })
+                    if (geoRes.ok) {
+                        const geoData = await geoRes.json()
+                        geocodedLat = geoData.lat
+                        geocodedLng = geoData.lng
+                    }
+                } catch (geoErr) {
+                    // Don't block the save if geocoding fails
+                    console.warn('Geocoding failed, saving with existing coordinates:', geoErr)
+                }
+            }
             const { error: updateError } = await supabase
                 .from('ranges')
                 .update({
@@ -325,8 +353,8 @@ export default function SettingsPage() {
                     drop_in_price: formData.dropInPrice ? Number(formData.dropInPrice) : null,
                     lesson_price_range: formData.lessonPriceRange || null,
                     business_hours: Object.keys(formData.businessHours).length > 0 ? formData.businessHours : null,
-                    latitude: formData.latitude,
-                    longitude: formData.longitude,
+                    latitude: geocodedLat,
+                    longitude: geocodedLng,
                     post_images: formData.post_images,
                     video_urls: formData.video_urls,
                     google_calendar_embed_url: cleanCalendarUrl,

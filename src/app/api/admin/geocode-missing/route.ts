@@ -49,8 +49,11 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    // Get all ranges without geocoding
-    const { data: ranges, error: fetchError } = await supabase
+    const { searchParams } = new URL(request.url)
+    const force = searchParams.get('force') === 'true'
+
+    // Get ranges to geocode — either only missing, or all when force=true
+    let query = supabase
       .from('ranges')
       .select(`
         id,
@@ -59,7 +62,12 @@ export async function POST(request: NextRequest) {
         cities(name),
         provinces(name)
       `)
-      .or('latitude.is.null,longitude.is.null')
+
+    if (!force) {
+      query = query.or('latitude.is.null,longitude.is.null')
+    }
+
+    const { data: ranges, error: fetchError } = await query
 
     if (fetchError) {
       console.error('Error fetching ranges:', fetchError)
