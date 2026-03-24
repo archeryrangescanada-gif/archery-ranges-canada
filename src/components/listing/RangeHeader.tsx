@@ -14,6 +14,7 @@ interface RangeHeaderProps {
   rating: number | null;
   reviewCount: number;
   isClaimed?: boolean;
+  isArcheryOntario?: boolean;
   action?: React.ReactNode;
 }
 
@@ -39,6 +40,7 @@ export function RangeHeader({
   rating,
   reviewCount,
   isClaimed,
+  isArcheryOntario,
   action,
 }: RangeHeaderProps) {
   const { t } = useLanguage();
@@ -54,9 +56,17 @@ export function RangeHeader({
       )}
 
       {facilityType && (
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 text-stone-600 text-sm font-medium mb-4">
-          {facilityIcons[facilityType as FacilityType] || <Building2 className="w-4 h-4" />}
-          {facilityLabelsKeys[facilityType as FacilityType] ? t(`rangePage.${facilityLabelsKeys[facilityType as FacilityType]}`) : facilityType}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 text-stone-600 text-sm font-medium">
+            {facilityIcons[facilityType as FacilityType] || <Building2 className="w-4 h-4" />}
+            {facilityLabelsKeys[facilityType as FacilityType] ? t(`rangePage.${facilityLabelsKeys[facilityType as FacilityType]}`) : facilityType}
+          </div>
+          {isArcheryOntario && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 text-red-600 text-sm font-medium border border-red-100">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              Archery Ontario Club
+            </div>
+          )}
         </div>
       )}
 

@@ -171,6 +171,7 @@ export function RangeClient({
                   rating={reviews.length > 0 ? reviews.reduce((sum: any, r: any) => sum + r.rating, 0) / reviews.length : null}
                   reviewCount={reviews.length}
                   isClaimed={!!range.owner_id}
+                  isArcheryOntario={Array.isArray(range.post_tags) && range.post_tags.includes('archery_ontario')}
                   action={<FavoriteButton listingId={range.id} initialIsFavorited={isFavorited} />}
                 />
 
