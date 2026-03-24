@@ -15,6 +15,18 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/arc-booking',
+        destination: 'https://arc-booking-software-josh-kennedys-projects-a2f17453.vercel.app/',
+      },
+      {
+        source: '/arc-booking/:path*',
+        destination: 'https://arc-booking-software-josh-kennedys-projects-a2f17453.vercel.app/:path*',
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
