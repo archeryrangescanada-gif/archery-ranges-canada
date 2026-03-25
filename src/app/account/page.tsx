@@ -55,9 +55,13 @@ export default function DashboardPage() {
 
             setProfile(profileData);
 
-            if (profileData?.role === 'business_owner') {
+            if (profileData?.role === 'business_owner' || profileData?.role === 'admin') {
                 fetchBusinessData(user.id);
             } else {
+                if (!profileData?.first_name || !profileData?.last_name) {
+                    router.push('/account/settings?onboarding=true');
+                    return;
+                }
                 fetchUserData(user.id);
             }
 
