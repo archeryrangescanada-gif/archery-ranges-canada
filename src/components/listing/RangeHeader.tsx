@@ -3,6 +3,7 @@
 import { MapPin, Star, Building2, TreePine, Home } from 'lucide-react';
 import { FacilityType } from '@/types/range';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import Image from 'next/image';
 
 interface RangeHeaderProps {
   name: string;
@@ -75,7 +76,7 @@ export function RangeHeader({
           {name}
         </h1>
         {isClaimed && (
-          <img src="/claimed-badge.png" alt="Claimed Listing" className="w-8 h-8 object-contain flex-shrink-0" title="Verified Owner" />
+          <Image src="/claimed-badge.png" alt="Claimed Listing" width={36} height={36} className="object-contain flex-shrink-0" title="Verified Owner" />
         )}
         {/* Action shown inline on mobile only */}
         {action && (
