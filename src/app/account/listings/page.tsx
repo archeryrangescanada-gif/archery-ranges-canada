@@ -29,7 +29,7 @@ export default function ListingsPage() {
                 .eq('id', user.id)
                 .single();
 
-            if (profile?.role !== 'business_owner' && profile?.role !== 'admin') {
+            if (profile?.role !== 'business_owner' && profile?.role !== 'owner' && profile?.role !== 'admin') {
                 // Redirect to account settings with a message (toast not implemented yet so just redirect)
                 // Ideally: toast.error("You don't have any claimed listings");
                 router.push('/account/settings');

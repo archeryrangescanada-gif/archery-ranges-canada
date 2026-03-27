@@ -124,7 +124,7 @@ export const claimsAPI = {
     // 4. Update user profile role
     const { data: updatedProfile, error: roleError } = await supabaseAdmin
       .from('profiles')
-      .update({ role: 'owner' })
+      .update({ role: 'business_owner' })
       .eq('id', claim.user_id)
       .select()
       .single()

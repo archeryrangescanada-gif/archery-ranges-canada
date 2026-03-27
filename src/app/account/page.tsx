@@ -55,7 +55,7 @@ export default function DashboardPage() {
 
             setProfile(profileData);
 
-            if (profileData?.role === 'business_owner' || profileData?.role === 'admin') {
+            if (profileData?.role === 'business_owner' || profileData?.role === 'owner' || profileData?.role === 'admin') {
                 fetchBusinessData(user.id);
             } else {
                 if (!profileData?.first_name || !profileData?.last_name) {
@@ -104,7 +104,7 @@ export default function DashboardPage() {
         );
     }
 
-    const isBusiness = profile?.role === 'business_owner' || profile?.role === 'admin';
+    const isBusiness = profile?.role === 'business_owner' || profile?.role === 'owner' || profile?.role === 'admin';
 
     return (
         <div className="min-h-screen bg-stone-50 pb-12">
