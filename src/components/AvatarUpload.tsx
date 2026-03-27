@@ -27,11 +27,11 @@ export default function AvatarUpload({ uid, url, size = 150, onUpload }: AvatarU
 
             const file = event.target.files[0]
             const fileExt = file.name.split('.').pop()
-            const filePath = `${uid}-${Math.random()}.${fileExt}`
+            const filePath = `avatars/${uid}-${Math.random()}.${fileExt}`
 
-            // Upload file to Supabase Storage
+            // Upload file to Supabase Storage (using range-images bucket which exists)
             const { error: uploadError } = await supabase.storage
-                .from('avatars')
+                .from('range-images')
                 .upload(filePath, file)
 
             if (uploadError) {
@@ -40,7 +40,7 @@ export default function AvatarUpload({ uid, url, size = 150, onUpload }: AvatarU
 
             // Get public URL
             const { data: { publicUrl } } = supabase.storage
-                .from('avatars')
+                .from('range-images')
                 .getPublicUrl(filePath)
 
             setAvatarUrl(publicUrl)

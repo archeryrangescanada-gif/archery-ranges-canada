@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import UserProfileMenu from './UserProfileMenu'
 import LanguageSwitcher from './LanguageSwitcher'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
+import ProfileCompletionBanner from './ProfileCompletionBanner'
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -43,6 +44,7 @@ export default function Header() {
     }, [])
 
     return (
+        <>
         <header className="bg-gradient-to-r from-emerald-700 to-emerald-800 text-white py-3 md:py-6 shadow-lg relative z-50">
             <div className="container mx-auto px-4 flex items-center justify-between relative">
                 <Link href="/" className="hover:opacity-90 transition-opacity flex items-center">
@@ -150,5 +152,8 @@ export default function Header() {
                 </nav>
             )}
         </header>
+        {/* Profile completion nudge — only shown to logged-in users who haven't filled out their profile */}
+        {!loading && user && <ProfileCompletionBanner />}
+        </>
     )
 }

@@ -223,7 +223,7 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
                             className="flex items-center px-4 py-2 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
                         >
                             <Settings className="w-4 h-4 mr-3 text-stone-500" />
-                            Settings
+                            Profile Settings
                         </Link>
                     </div>
 
