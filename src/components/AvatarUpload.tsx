@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Upload, X, Camera } from 'lucide-react'
 
 interface AvatarUploadProps {
@@ -12,7 +11,6 @@ interface AvatarUploadProps {
 }
 
 export default function AvatarUpload({ uid, url, size = 150, onUpload }: AvatarUploadProps) {
-    const supabase = createClient()
     const [uploading, setUploading] = useState(false)
     const [avatarUrl, setAvatarUrl] = useState<string | null>(url)
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -26,28 +24,27 @@ export default function AvatarUpload({ uid, url, size = 150, onUpload }: AvatarU
             }
 
             const file = event.target.files[0]
-            const fileExt = file.name.split('.').pop()
-            const filePath = `avatars/${uid}-${Math.random()}.${fileExt}`
 
-            // Upload file to Supabase Storage (using range-images bucket which exists)
-            const { error: uploadError } = await supabase.storage
-                .from('range-images')
-                .upload(filePath, file)
+            // Upload via server-side API route (bypasses storage RLS)
+            const formData = new FormData()
+            formData.append('file', file)
 
-            if (uploadError) {
-                throw uploadError
+            const response = await fetch('/api/user/upload-avatar', {
+                method: 'POST',
+                body: formData,
+            })
+
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Upload failed')
             }
 
-            // Get public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('range-images')
-                .getPublicUrl(filePath)
-
-            setAvatarUrl(publicUrl)
-            onUpload(publicUrl)
-        } catch (error) {
+            setAvatarUrl(result.url)
+            onUpload(result.url)
+        } catch (error: any) {
             console.error('Error uploading avatar:', error)
-            alert('Error uploading avatar!')
+            alert(error.message || 'Error uploading avatar!')
         } finally {
             setUploading(false)
         }
