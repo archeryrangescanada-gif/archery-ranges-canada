@@ -76,10 +76,19 @@ export default function AvatarUpload({ uid, url, size = 150, onUpload }: AvatarU
                 body: formData,
             })
 
-            const result = await response.json()
+            let result;
+            try {
+                result = await response.json()
+            } catch (e) {
+                // If it's not JSON, it's likely a server-level error like 413 Payload Too Large
+                if (response.status === 413) {
+                    throw new Error('Image is too large to upload. Please try a smaller photo (under 5MB).')
+                }
+                throw new Error('An unexpected server error occurred during upload.')
+            }
 
             if (!response.ok) {
-                throw new Error(result.error || 'Upload failed')
+                throw new Error(result?.error || 'Upload failed')
             }
 
             setAvatarUrl(result.url)
@@ -132,14 +141,32 @@ export default function AvatarUpload({ uid, url, size = 150, onUpload }: AvatarU
                 className="hidden"
             />
 
-            <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="mt-4 text-sm font-medium text-emerald-600 hover:text-emerald-700"
-            >
-                {uploading ? 'Uploading...' : 'Upload New Photo'}
-            </button>
+            <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
+                <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="text-sm font-medium text-emerald-600 hover:text-emerald-700 disabled:opacity-50"
+                >
+                    {uploading ? 'Uploading...' : 'Upload New Photo'}
+                </button>
+                {avatarUrl && (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (confirm('Are you sure you want to remove your profile photo?')) {
+                                setAvatarUrl(null)
+                                onUpload('') // Update parent with empty string to trigger DB update
+                            }
+                        }}
+                        disabled={uploading}
+                        className="text-sm font-medium text-red-500 hover:text-red-600 disabled:opacity-50"
+                    >
+                        Delete Photo
+                    </button>
+                )}
+            </div>
+            <p className="text-xs text-stone-400 mt-2">Maximum file size: 5MB</p>
         </div>
     )
 }
