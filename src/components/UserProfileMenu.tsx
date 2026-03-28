@@ -61,6 +61,16 @@ export default function UserProfileMenu({ user }: UserProfileMenuProps) {
         }
 
         getProfileAndRange();
+
+        // Listen for profile updates (e.g. avatar upload) to instantly reload
+        const handleProfileUpdate = () => {
+            getProfileAndRange();
+        };
+        window.addEventListener('profile-updated', handleProfileUpdate);
+
+        return () => {
+            window.removeEventListener('profile-updated', handleProfileUpdate);
+        };
     }, [user.id, supabase]);
 
     // Close menu when clicking outside

@@ -93,6 +93,9 @@ export default function AvatarUpload({ uid, url, size = 150, onUpload }: AvatarU
 
             setAvatarUrl(result.url)
             onUpload(result.url)
+            
+            // Notify other components (like the top nav) to refetch profile
+            window.dispatchEvent(new Event('profile-updated'))
         } catch (error: any) {
             console.error('Error uploading avatar:', error)
             alert(error.message || 'Error uploading avatar!')
@@ -157,6 +160,7 @@ export default function AvatarUpload({ uid, url, size = 150, onUpload }: AvatarU
                             if (confirm('Are you sure you want to remove your profile photo?')) {
                                 setAvatarUrl(null)
                                 onUpload('') // Update parent with empty string to trigger DB update
+                                window.dispatchEvent(new Event('profile-updated'))
                             }
                         }}
                         disabled={uploading}
