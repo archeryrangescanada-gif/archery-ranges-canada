@@ -24,10 +24,52 @@ export default function AvatarUpload({ uid, url, size = 150, onUpload }: AvatarU
             }
 
             const file = event.target.files[0]
+            
+            // Client-side compression to bypass Vercel 4.5MB payload limit
+            const compressImage = (file: File): Promise<Blob> => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.readAsDataURL(file)
+                    reader.onload = (e) => {
+                        const img = new Image()
+                        img.src = e.target?.result as string
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas')
+                            const MAX = 800
+                            let width = img.width
+                            let height = img.height
+
+                            if (width > height && width > MAX) {
+                                height *= MAX / width
+                                width = MAX
+                            } else if (height > MAX) {
+                                width *= MAX / height
+                                height = MAX
+                            }
+
+                            canvas.width = width
+                            canvas.height = height
+                            const ctx = canvas.getContext('2d')
+                            ctx?.drawImage(img, 0, 0, width, height)
+
+                            canvas.toBlob((blob) => {
+                                if (blob) resolve(blob)
+                                else reject(new Error('Compression failed'))
+                            }, 'image/jpeg', 0.8)
+                        }
+                        img.onerror = reject
+                    }
+                    reader.onerror = reject
+                })
+            }
+
+            const compressedBlob = await compressImage(file)
+            const compressedFile = new File([compressedBlob], `avatar.jpg`, { type: 'image/jpeg' })
 
             // Upload via server-side API route (bypasses storage RLS)
             const formData = new FormData()
-            formData.append('file', file)
+            formData.append('file', compressedFile)
+
 
             const response = await fetch('/api/user/upload-avatar', {
                 method: 'POST',

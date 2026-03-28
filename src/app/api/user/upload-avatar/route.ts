@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 
+export const maxDuration = 60; // Allow more time for large uploads
+
 export async function POST(request: NextRequest) {
     try {
         // Verify the user is authenticated
